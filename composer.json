@@ -1,6 +1,6 @@
 {
-  "name": "tardigrades/sectionfield",
-  "description": "Section field magic",
+  "name": "dionsnoeijen/sexy-field-api",
+  "description": "This package adds api functionality to sections.",
   "minimum-stability": "stable",
   "license": "MIT",
   "authors": [
