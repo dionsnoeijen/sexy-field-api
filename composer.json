@@ -10,6 +10,7 @@
     }
   ],
   "require": {
+    "tardigrades/sexy-field": "dev-master",
     "symfony/http-foundation": "^3.3.2",
     "symfony/form": "^3.3.2",
     "symfony/config": "^3.3.2",
