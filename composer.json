@@ -11,6 +11,7 @@
   ],
   "require": {
     "tardigrades/sexy-field": "dev-master",
+    "tardigrades/sexy-field-entity": "dev-master",
     "symfony/http-foundation": "^3.3.2",
     "symfony/form": "^3.3.2",
     "symfony/config": "^3.3.2",
@@ -21,6 +22,9 @@
     "psr-4": {
       "Tardigrades\\": "src/"
     }
+  },
+  "suggest": {
+    "tardigrades/sexy-field-doctrine": "You might want to use doctrine for persisting data"
   },
   "require-dev": {
     "phpunit/phpunit": "^6.1",
