@@ -1,7 +1,7 @@
 {
   "name": "tardigrades/sexy-field-api",
   "description": "This package adds api functionality to sections.",
-  "minimum-stability": "stable",
+  "minimum-stability": "dev",
   "license": "MIT",
   "authors": [
     {
@@ -10,9 +10,6 @@
     }
   ],
   "require": {
-    "tardigrades/sexy-field": "dev-master",
-    "tardigrades/sexy-field-entity": "dev-master",
-    "tardigrades/sexy-field-form": "dev-master",
     "symfony/http-foundation": "^3.3.2",
     "symfony/form": "^3.3.2",
     "symfony/config": "^3.3.2",
