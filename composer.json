@@ -22,9 +22,16 @@
     }
   },
   "suggest": {
-    "tardigrades/sexy-field-doctrine": "You might want to use doctrine for persisting data"
+    "tardigrades/sexy-field": "Without the base package this api is nothing",
+    "tardigrated/sexy-field-entity": "You need entities, yes you do",
+    "tardigrades/sexy-field-doctrine": "You might want to use doctrine for persisting data",
+    "tardigrades/sexy-field-form": "The api requires you to use form"
   },
   "require-dev": {
+    "tardigrades/sexy-field": "dev-master",
+    "tardigrades/sexy-field-entity": "dev-master",
+    "tardigrades/sexy-field-doctrine": "dev-master",
+    "tardigrades/sexy-field-form": "dev-master",
     "phpunit/phpunit": "^6.1",
     "squizlabs/PHP_CodeSniffer": "^2.8",
     "mockery/mockery": "^0.9.9",
