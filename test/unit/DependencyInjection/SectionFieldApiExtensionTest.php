@@ -22,11 +22,10 @@ class SectionFieldApiExtensionTest extends TestCase
     {
         $containerBuilder = Mockery::mock(ContainerBuilder::class)->shouldDeferMissing();
 
-        $loader = Mockery::mock(YamlFileLoader::class)->shouldDeferMissing();
+        $loader = Mockery::mock('overload:Symfony\Component\DependencyInjection\Loader\YamlFileLoader');
         $loader->shouldReceive('load')
             ->once()
-            ->with('controllers.yml')
-            ->andReturn();
+            ->with('controllers.yml');
 
         $load = new SectionFieldApiExtension;
         $load->load([], $containerBuilder);
