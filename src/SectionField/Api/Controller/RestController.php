@@ -192,7 +192,8 @@ class RestController
         /** @var \Symfony\Component\Form\FormInterface $form */
         $form = $this->form->buildFormForSection(
             $sectionHandle,
-            $this->requestStack
+            null,
+            false
         );
         $form->handleRequest();
 
@@ -220,7 +221,6 @@ class RestController
 
         $form = $this->form->buildFormForSection(
             $sectionHandle,
-            $this->requestStack,
             SectionFormOptions::fromArray([
                 ReadOptions::ID => $id
             ])
@@ -252,7 +252,6 @@ class RestController
 
         $form = $this->form->buildFormForSection(
             $sectionHandle,
-            $this->requestStack,
             SectionFormOptions::fromArray([
                 ReadOptions::SLUG => $slug
             ]),

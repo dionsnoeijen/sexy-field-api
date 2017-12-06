@@ -197,7 +197,7 @@ class RestControllerTest extends TestCase
         $this->requestStack->shouldReceive('getCurrentRequest')
             ->andReturn($mockedRequest);
 
-        $response = $this->controller->createEntry('sexy');
+        $response = $this->controller->createEntry('sexy', null, false);
         $this->assertSame(
             '{"success":true,"errors":false,"code":200}',
             $response->getContent()
