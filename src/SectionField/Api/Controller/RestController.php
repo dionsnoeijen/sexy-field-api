@@ -95,8 +95,7 @@ class RestController
             $response['fields'][] = $fieldInfo;
         }
 
-        header('Content-Type: application/json');
-        return new JsonResponse($response);
+        return new JsonResponse($response, 200, array('Access-Control-Allow-Origin', '*'));
     }
 
     /**
@@ -177,6 +176,7 @@ class RestController
         }
 
         header('Content-Type: application/json');
+        header('Access-Control-Allow-Origin: *');
         return new Response('[' . implode(',', $result) . ']');
     }
 
@@ -188,6 +188,7 @@ class RestController
     public function createEntry(string $sectionHandle): JsonResponse
     {
         $response = [];
+
         /** @var \Symfony\Component\Form\FormInterface $form */
         $form = $this->form->buildFormForSection(
             $sectionHandle,
@@ -195,14 +196,16 @@ class RestController
             false
         );
         $form->handleRequest();
+
         if ($form->isValid()) {
             $response = $this->save($form);
+            $response['code'] = 200;
         } else {
             $response['errors'] = $this->getFormErrors($form);
             $response['code'] = 400;
         }
 
-        return new JsonResponse($response, $response['code']);
+        return new JsonResponse($response, $response['code'], array('Access-Control-Allow-Origin', '*'));
     }
 
     /**
@@ -220,18 +223,19 @@ class RestController
             $sectionHandle,
             SectionFormOptions::fromArray([
                 ReadOptions::ID => $id
-            ]),
-            false
+            ])
         );
         $form->handleRequest();
+
         if ($form->isValid()) {
             $response = $this->save($form);
+            $response['code'] = 200;
         } else {
             $response['errors'] = $this->getFormErrors($form);
             $response['code'] = 400;
         }
 
-        return new JsonResponse($response, $response['code']);
+        return new JsonResponse($response, $response['code'], array('Access-Control-Allow-Origin', '*'));
     }
 
     /**
@@ -254,14 +258,16 @@ class RestController
             false
         );
         $form->handleRequest();
+
         if ($form->isValid()) {
             $response = $this->save($form);
+            $response['code'] = 200;
         } else {
             $response['errors'] = $this->getFormErrors($form);
             $response['code'] = 400;
         }
 
-        return new JsonResponse($response, $response['code']);
+        return new JsonResponse($response, $response['code'], array('Access-Control-Allow-Origin', '*'));
     }
 
     /**
@@ -282,7 +288,9 @@ class RestController
 
         return new JsonResponse([
             'success' => $success,
-        ], $success ? 200 : 404);
+        ], $success ? 200 : 404,
+            array('Access-Control-Allow-Origin', '*')
+        );
     }
 
     /**
@@ -303,7 +311,9 @@ class RestController
 
         return new JsonResponse([
             'success' => $success,
-        ], $success ? 200 : 404);
+        ], $success ? 200 : 404,
+            array('Access-Control-Allow-Origin', '*')
+        );
     }
 
     private function getContext(): SerializationContext
