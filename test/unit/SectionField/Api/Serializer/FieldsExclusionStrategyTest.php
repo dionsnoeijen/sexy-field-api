@@ -55,4 +55,19 @@ class FieldsExclusionStrategyTest extends TestCase
         $this->assertFalse($strategy->shouldSkipProperty($property, SerializationContext::create()));
         $this->assertTrue($strategy->shouldSkipProperty($propertytwo, SerializationContext::create()));
     }
+
+    /**
+     * @test
+     * @covers ::shouldSkipProperty
+     */
+    public function it_should_not_skip_a_property_if_the_list_is_empty()
+    {
+        $strategy = new FieldsExclusionStrategy([]);
+
+        $property = \Mockery::mock(PropertyMetadata::class);
+        $property->serializedName = false;
+        $property->name = 'bananas';
+
+        $this->assertFalse($strategy->shouldSkipProperty($property, SerializationContext::create()));
+    }
 }

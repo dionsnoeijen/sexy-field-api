@@ -144,7 +144,7 @@ class RestControllerTest extends TestCase
 
         $mockRequest->shouldReceive('get')
             ->with('orderBy', '')
-            ->andReturn('');
+            ->andReturn('name');
 
         $mockRequest->shouldReceive('get')
             ->with('sort', 'DESC')
