@@ -191,8 +191,8 @@ class RestController
         /** @var \Symfony\Component\Form\FormInterface $form */
         $form = $this->form->buildFormForSection(
             $sectionHandle,
-            null,
-            false
+            $this->requestStack,
+            null
         );
         $form->handleRequest();
         if ($form->isValid()) {
