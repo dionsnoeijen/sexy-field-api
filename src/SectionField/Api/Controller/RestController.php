@@ -27,7 +27,7 @@ use Tardigrades\SectionField\ValueObject\SectionFormOptions;
  *
  * @package Tardigrades\SectionField\Api\Controller
  */
-class RestController
+class RestController implements RestControllerInterface
 {
     /** @var ReadSectionInterface */
     private $readSection;
