@@ -15,12 +15,10 @@ class SectionFieldApiExtension extends Extension
         $loader = new YamlFileLoader(
             $container,
             new FileLocator([
-                __DIR__.'/../config/service',
-                __DIR__.'/../config/routing'
+                __DIR__.'/../config/service'
             ])
         );
 
         $loader->load('controllers.yml');
-        $loader->load('api.yml');
     }
 }

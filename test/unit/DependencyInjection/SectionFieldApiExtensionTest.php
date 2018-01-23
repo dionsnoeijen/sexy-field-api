@@ -26,9 +26,6 @@ class SectionFieldApiExtensionTest extends TestCase
         $loader->shouldReceive('load')
             ->once()
             ->with('controllers.yml');
-        $loader->shouldReceive('load')
-            ->once()
-            ->with('api.yml');
 
         $load = new SectionFieldApiExtension;
         $load->load([], $containerBuilder);
