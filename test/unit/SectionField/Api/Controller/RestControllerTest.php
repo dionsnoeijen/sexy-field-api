@@ -12,6 +12,7 @@ use Tardigrades\Entity\Field;
 use Tardigrades\Entity\Section;
 use Tardigrades\SectionField\Form\FormInterface;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
+use Tardigrades\SectionField\Generator\CommonSectionInterface;
 use Tardigrades\SectionField\Service\CreateSectionInterface;
 use Tardigrades\SectionField\Service\DeleteSectionInterface;
 use Tardigrades\SectionField\Service\ReadSectionInterface;
@@ -172,15 +173,20 @@ class RestControllerTest extends TestCase
      */
     public function it_creates_an_entry()
     {
+        $entryMock = Mockery::mock(CommonSectionInterface::class);
+        $entryMock->shouldReceive('getId')
+            ->once()
+            ->andReturn(1);
+
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
 
         $mockedForm->shouldReceive('handleRequest')->once();
         $mockedForm->shouldReceive('isValid')->andReturn(true);
         $mockedForm->shouldReceive('getData')
-            ->andReturn('whatever');
+            ->andReturn($entryMock);
 
         $this->form->shouldReceive('buildFormForSection')
-            ->with('sexy', null, false)
+            ->with('sexy', $this->requestStack, null, false)
             ->andReturn($mockedForm);
 
         $mockedRequest = Mockery::mock(Request::class)->makePartial();
@@ -191,7 +197,7 @@ class RestControllerTest extends TestCase
             ->andReturn(['relation']);
 
         $this->createSection->shouldReceive('save')
-            ->with('whatever', ['relation'])
+            ->with($entryMock, ['relation'])
             ->andReturn(true);
 
         $this->requestStack->shouldReceive('getCurrentRequest')
@@ -213,12 +219,17 @@ class RestControllerTest extends TestCase
      */
     public function it_updates_entries()
     {
+        $entryMock = Mockery::mock(CommonSectionInterface::class);
+        $entryMock->shouldReceive('getId')
+            ->once()
+            ->andReturn(1);
+
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
 
         $mockedForm->shouldReceive('handleRequest')->once();
         $mockedForm->shouldReceive('isValid')->andReturn(true);
         $mockedForm->shouldReceive('getData')
-            ->andReturn('whatever');
+            ->andReturn($entryMock);
 
         $this->form->shouldReceive('buildFormForSection')
             ->andReturn($mockedForm);
@@ -231,7 +242,7 @@ class RestControllerTest extends TestCase
             ->andReturn(['relation']);
 
         $this->createSection->shouldReceive('save')
-            ->with('whatever', ['relation'])
+            ->with($entryMock, ['relation'])
             ->andReturn(true);
 
         $this->requestStack->shouldReceive('getCurrentRequest')
@@ -264,7 +275,7 @@ class RestControllerTest extends TestCase
         $mockedForm->shouldReceive('handleRequest')->once();
         $mockedForm->shouldReceive('isValid')->andReturn(false);
         $mockedForm->shouldReceive('getData')
-            ->andReturn('whatever');
+            ->andReturn(Mockery::mock(CommonSectionInterface::class));
         $mockedForm->shouldReceive('getName')->andReturn('name of form');
         $mockedForm->shouldReceive('getIterator')->andReturn(new \ArrayIterator([$mockedForm]));
 
@@ -284,7 +295,7 @@ class RestControllerTest extends TestCase
             ->andReturn(['relation']);
 
         $this->createSection->shouldReceive('save')
-            ->with('whatever', ['relation'])
+            ->with(Mockery::mock(CommonSectionInterface::class), ['relation'])
             ->andReturn(false);
 
         $this->requestStack->shouldReceive('getCurrentRequest')
@@ -314,13 +325,18 @@ class RestControllerTest extends TestCase
      */
     public function it_deletes_entries()
     {
+        $entryMock = Mockery::mock(CommonSectionInterface::class);
+        $entryMock->shouldReceive('getId')
+            ->once()
+            ->andReturn(1);
+
         $this->readSection->shouldReceive('read')
             ->once()
-            ->andReturn(new \ArrayIterator(['meh']));
+            ->andReturn(new \ArrayIterator([$entryMock]));
 
         $this->deleteSection->shouldReceive('delete')
             ->once()
-            ->with('meh')
+            ->with($entryMock)
             ->andReturn(true);
 
         $response = $this->controller->deleteEntryById('notsexy', 1);
@@ -339,13 +355,18 @@ class RestControllerTest extends TestCase
      */
     public function it_does_not_deletes_entries_and_returns_the_correct_response()
     {
+        $entryMock = Mockery::mock(CommonSectionInterface::class);
+        $entryMock->shouldReceive('getId')
+            ->once()
+            ->andReturn(1);
+
         $this->readSection->shouldReceive('read')
             ->once()
-            ->andReturn(new \ArrayIterator(['meh']));
+            ->andReturn(new \ArrayIterator([$entryMock]));
 
         $this->deleteSection->shouldReceive('delete')
             ->once()
-            ->with('meh')
+            ->with($entryMock)
             ->andReturn(false);
 
         $response = $this->controller->deleteEntryById('notsexy', 1);
