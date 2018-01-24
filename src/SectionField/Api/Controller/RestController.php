@@ -95,7 +95,11 @@ class RestController implements RestControllerInterface
             $response['fields'][] = $fieldInfo;
         }
 
-        return new JsonResponse($response, 200, array('Access-Control-Allow-Origin', '*'));
+        return new JsonResponse(
+            $response,
+            200,
+            array('Access-Control-Allow-Origin' => '*')
+        );
     }
 
     /**
@@ -153,8 +157,8 @@ class RestController implements RestControllerInterface
         $request = $this->requestStack->getCurrentRequest();
 
         $offset = $request->get('offset', 0);
-        $limit = $request->get('limit', 10);
-        $orderBy = $request->get('orderBy', '');
+        $limit = $request->get('limit', 100);
+        $orderBy = $request->get('orderBy', 'created');
         $sort = $request->get('sort', 'DESC');
 
         $readOptions = [
@@ -206,7 +210,11 @@ class RestController implements RestControllerInterface
             $response['code'] = 400;
         }
 
-        return new JsonResponse($response, $response['code'], array('Access-Control-Allow-Origin', '*'));
+        return new JsonResponse(
+            $response,
+            $response['code'],
+            array('Access-Control-Allow-Origin' => '*')
+        );
     }
 
     /**
@@ -237,7 +245,11 @@ class RestController implements RestControllerInterface
             $response['code'] = 400;
         }
 
-        return new JsonResponse($response, $response['code'], array('Access-Control-Allow-Origin', '*'));
+        return new JsonResponse(
+            $response,
+            $response['code'],
+            array('Access-Control-Allow-Origin' => '*')
+        );
     }
 
     /**
@@ -270,7 +282,11 @@ class RestController implements RestControllerInterface
             $response['code'] = 400;
         }
 
-        return new JsonResponse($response, $response['code'], array('Access-Control-Allow-Origin', '*'));
+        return new JsonResponse(
+            $response,
+            $response['code'],
+            array('Access-Control-Allow-Origin' => '*')
+        );
     }
 
     /**
