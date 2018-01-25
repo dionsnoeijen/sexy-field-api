@@ -98,7 +98,10 @@ class RestController implements RestControllerInterface
         return new JsonResponse(
             $response,
             200,
-            array('Access-Control-Allow-Origin' => '*')
+            [
+                'Access-Control-Allow-Methods' => 'OPTIONS',
+                'Access-Control-Allow-Origin' => '*'
+            ]
         );
     }
 
