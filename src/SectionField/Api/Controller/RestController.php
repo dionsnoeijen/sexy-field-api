@@ -220,7 +220,7 @@ class RestController implements RestControllerInterface
     }
 
     /**
-     * PUT (Update) an entry by it's id
+     * PUT (update) an entry by it's id
      *
      * @param string $sectionHandle
      * @param int $id
