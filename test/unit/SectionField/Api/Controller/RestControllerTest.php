@@ -186,7 +186,7 @@ class RestControllerTest extends TestCase
             ->andReturn($entryMock);
 
         $this->form->shouldReceive('buildFormForSection')
-            ->with('sexy', false, false)
+            ->with('sexy', $this->requestStack, false, false)
             ->andReturn($mockedForm);
 
         $mockedRequest = Mockery::mock(Request::class)->makePartial();

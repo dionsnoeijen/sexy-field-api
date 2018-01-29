@@ -2362,16 +2362,16 @@
         },
         {
             "name": "phpdocumentor/reflection-docblock",
-            "version": "4.2.0",
+            "version": "4.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpDocumentor/ReflectionDocBlock.git",
-                "reference": "66465776cfc249844bde6d117abff1d22e06c2da"
+                "reference": "94fd0001232e47129dd3504189fa1c7225010d08"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpDocumentor/ReflectionDocBlock/zipball/66465776cfc249844bde6d117abff1d22e06c2da",
-                "reference": "66465776cfc249844bde6d117abff1d22e06c2da",
+                "url": "https://api.github.com/repos/phpDocumentor/ReflectionDocBlock/zipball/94fd0001232e47129dd3504189fa1c7225010d08",
+                "reference": "94fd0001232e47129dd3504189fa1c7225010d08",
                 "shasum": ""
             },
             "require": {
@@ -2409,7 +2409,7 @@
                 }
             ],
             "description": "With this component, a library can provide support for annotations via DocBlocks or otherwise retrieve information that is embedded in a DocBlock.",
-            "time": "2017-11-27T17:38:31+00:00"
+            "time": "2017-11-30T07:14:17+00:00"
         },
         {
             "name": "phpdocumentor/type-resolver",
@@ -4261,12 +4261,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/dionsnoeijen/sexy-field.git",
-                "reference": "14e20a191d5734ff75c6e621fc350d7040f38182"
+                "reference": "9dcd4660b824df53f6ed9ca01e99f82392503338"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field/zipball/14e20a191d5734ff75c6e621fc350d7040f38182",
-                "reference": "14e20a191d5734ff75c6e621fc350d7040f38182",
+                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field/zipball/9dcd4660b824df53f6ed9ca01e99f82392503338",
+                "reference": "9dcd4660b824df53f6ed9ca01e99f82392503338",
                 "shasum": ""
             },
             "require": {
@@ -4310,7 +4310,7 @@
                 }
             ],
             "description": "SexyField helps you build application structure and accompanying forms.",
-            "time": "2018-01-23T09:36:17+00:00"
+            "time": "2018-01-25T13:03:11+00:00"
         },
         {
             "name": "tardigrades/sexy-field-doctrine",
@@ -4318,12 +4318,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/dionsnoeijen/sexy-field-doctrine.git",
-                "reference": "fc980bd32476b225a3fbc7e4c12bfa51a7dcf0c0"
+                "reference": "df51e9bb580ee14679007181a3ab8a49abc0fcd6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field-doctrine/zipball/fc980bd32476b225a3fbc7e4c12bfa51a7dcf0c0",
-                "reference": "fc980bd32476b225a3fbc7e4c12bfa51a7dcf0c0",
+                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field-doctrine/zipball/df51e9bb580ee14679007181a3ab8a49abc0fcd6",
+                "reference": "df51e9bb580ee14679007181a3ab8a49abc0fcd6",
                 "shasum": ""
             },
             "require": {
@@ -4358,7 +4358,7 @@
                 }
             ],
             "description": "SexyField Doctrine package, containing config generator, writer, reader and deleter",
-            "time": "2017-12-05T12:24:28+00:00"
+            "time": "2018-01-25T13:33:08+00:00"
         },
         {
             "name": "tardigrades/sexy-field-entity",
@@ -4366,12 +4366,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/dionsnoeijen/sexy-field-entity.git",
-                "reference": "bc44e2673d235cb5f9c7da7c40153d793a4c38d0"
+                "reference": "af1e6e9c729225e926ea87e341b2a7fcb1981fa8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field-entity/zipball/bc44e2673d235cb5f9c7da7c40153d793a4c38d0",
-                "reference": "bc44e2673d235cb5f9c7da7c40153d793a4c38d0",
+                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field-entity/zipball/af1e6e9c729225e926ea87e341b2a7fcb1981fa8",
+                "reference": "af1e6e9c729225e926ea87e341b2a7fcb1981fa8",
                 "shasum": ""
             },
             "require": {
@@ -4384,6 +4384,7 @@
             "require-dev": {
                 "mikey179/vfsstream": "^1.6",
                 "mockery/mockery": "^0.9.9",
+                "phing/phing": "^2.16",
                 "phpunit/phpunit": "^6.1",
                 "squizlabs/php_codesniffer": "^2.8",
                 "tardigrades/sexy-field": "dev-master"
@@ -4405,7 +4406,7 @@
                 }
             ],
             "description": "Section field entity generator",
-            "time": "2017-11-30T14:42:29+00:00"
+            "time": "2018-01-29T09:00:15+00:00"
         },
         {
             "name": "tardigrades/sexy-field-form",
