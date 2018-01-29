@@ -216,7 +216,7 @@ class RestController implements RestControllerInterface
         return new JsonResponse(
             $response,
             $response['code'],
-            array('Access-Control-Allow-Origin' => '*')
+            ['Access-Control-Allow-Origin' => '*']
         );
     }
 
@@ -252,7 +252,7 @@ class RestController implements RestControllerInterface
         return new JsonResponse(
             $response,
             $response['code'],
-            array('Access-Control-Allow-Origin' => '*')
+            ['Access-Control-Allow-Origin' => '*']
         );
     }
 
@@ -289,7 +289,7 @@ class RestController implements RestControllerInterface
         return new JsonResponse(
             $response,
             $response['code'],
-            array('Access-Control-Allow-Origin' => '*')
+            ['Access-Control-Allow-Origin' => '*']
         );
     }
 
@@ -312,7 +312,7 @@ class RestController implements RestControllerInterface
         return new JsonResponse([
             'success' => $success,
         ], $success ? 200 : 404,
-            array('Access-Control-Allow-Origin', '*')
+            ['Access-Control-Allow-Origin', '*']
         );
     }
 
@@ -335,7 +335,7 @@ class RestController implements RestControllerInterface
         return new JsonResponse([
             'success' => $success,
         ], $success ? 200 : 404,
-            array('Access-Control-Allow-Origin', '*')
+            ['Access-Control-Allow-Origin', '*']
         );
     }
 
