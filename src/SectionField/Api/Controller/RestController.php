@@ -199,7 +199,6 @@ class RestController implements RestControllerInterface
         /** @var \Symfony\Component\Form\FormInterface $form */
         $form = $this->form->buildFormForSection(
             $sectionHandle,
-            $this->requestStack,
             null,
             false
         );
@@ -233,10 +232,10 @@ class RestController implements RestControllerInterface
 
         $form = $this->form->buildFormForSection(
             $sectionHandle,
-            $this->requestStack,
             SectionFormOptions::fromArray([
                 ReadOptions::ID => $id
-            ])
+            ]),
+            false
         );
         $form->handleRequest();
 
@@ -269,7 +268,6 @@ class RestController implements RestControllerInterface
 
         $form = $this->form->buildFormForSection(
             $sectionHandle,
-            $this->requestStack,
             SectionFormOptions::fromArray([
                 ReadOptions::SLUG => $slug
             ]),
