@@ -139,11 +139,11 @@ class RestControllerTest extends TestCase
             ->andReturn(10);
 
         $mockRequest->shouldReceive('get')
-            ->with('limit', 10)
+            ->with('limit', 100)
             ->andReturn(1);
 
         $mockRequest->shouldReceive('get')
-            ->with('orderBy', '')
+            ->with('orderBy', 'created')
             ->andReturn('');
 
         $mockRequest->shouldReceive('get')
@@ -186,7 +186,7 @@ class RestControllerTest extends TestCase
             ->andReturn($entryMock);
 
         $this->form->shouldReceive('buildFormForSection')
-            ->with('sexy', $this->requestStack, null, false)
+            ->with('sexy', $this->requestStack, false, false)
             ->andReturn($mockedForm);
 
         $mockedRequest = Mockery::mock(Request::class)->makePartial();
@@ -203,7 +203,7 @@ class RestControllerTest extends TestCase
         $this->requestStack->shouldReceive('getCurrentRequest')
             ->andReturn($mockedRequest);
 
-        $response = $this->controller->createEntry('sexy', null, false);
+        $response = $this->controller->createEntry('sexy');
         $this->assertSame(
             '{"success":true,"errors":false,"code":200}',
             $response->getContent()
