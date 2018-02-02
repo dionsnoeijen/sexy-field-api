@@ -213,6 +213,96 @@ class RestControllerTest extends TestCase
     /**
      * @test
      * @covers ::__construct
+     * @covers ::createEntry
+     * @runInSeparateProcess
+     */
+    public function it_fails_creating_an_entry_during_save_and_returns_the_correct_response()
+    {
+        $entryMock = Mockery::mock(CommonSectionInterface::class);
+        $entryMock->shouldReceive('getId')
+            ->once()
+            ->andReturn(1);
+
+        $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
+
+        $mockedForm->shouldReceive('handleRequest')->once();
+        $mockedForm->shouldReceive('isValid')->andReturn(true);
+        $mockedForm->shouldReceive('getData')
+            ->andReturn($entryMock);
+
+        $this->form->shouldReceive('buildFormForSection')
+            ->with('sexy', $this->requestStack, false, false)
+            ->andReturn($mockedForm);
+
+        $mockedRequest = Mockery::mock(Request::class)->makePartial();
+        $mockedRequest->shouldReceive('get')->with('form')
+            ->andReturn(['no']);
+
+        $this->form->shouldReceive('hasRelationship')
+            ->andReturn(['relation']);
+
+        $this->createSection->shouldReceive('save')
+            ->with($entryMock, ['relation'])
+            ->andThrow(\Exception::class, "Exception message");
+
+        $this->requestStack->shouldReceive('getCurrentRequest')
+            ->andReturn($mockedRequest);
+
+        $response = $this->controller->createEntry('sexy');
+        $this->assertSame(
+            '{"code":500,"exception":"Exception message"}',
+            $response->getContent()
+        );
+    }
+
+    /**
+     * @test
+     * @covers ::__construct
+     * @covers ::createEntry
+     * @runInSeparateProcess
+     */
+    public function it_does_not_create_an_entry_and_returns_correct_response()
+    {
+        $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
+
+        $mockedForm->shouldReceive('handleRequest')->once();
+        $mockedForm->shouldReceive('isValid')->andReturn(false);
+        $mockedForm->shouldReceive('getName')->andReturn('name of form');
+        $mockedForm->shouldReceive('getIterator')->andReturn(new \ArrayIterator([$mockedForm]));
+
+        $error = Mockery::mock(FormError::class)->makePartial();
+        $error->shouldReceive('getMessage')->andReturn('you are wrong!');
+        $mockedForm->shouldReceive('getErrors')
+            ->andReturn(['one' => $error]);
+
+        $this->form->shouldReceive('buildFormForSection')
+            ->andReturn($mockedForm);
+
+        $mockedRequest = Mockery::mock(Request::class)->makePartial();
+        $mockedRequest->shouldReceive('get')->with('form')
+            ->andReturn(['no']);
+
+        $this->form->shouldReceive('hasRelationship')
+            ->andReturn(['relation']);
+
+        $this->createSection->shouldReceive('save')
+            ->with(Mockery::mock(CommonSectionInterface::class), ['relation'])
+            ->andReturn(false);
+
+        $this->requestStack->shouldReceive('getCurrentRequest')
+            ->andReturn($mockedRequest);
+
+        $response = $this->controller->createEntry('sexy');
+        $this->assertSame(400, $response->getStatusCode());
+        $this->assertSame(
+            '{"errors":{"0":"you are wrong!","name of form":["you are wrong!"]},"code":400}',
+            $response->getContent()
+        );
+    }
+
+    /**
+     * @test
+     * @covers ::__construct
      * @covers ::updateEntryById
      * @covers ::updateEntryBySlug
      * @runInSeparateProcess
@@ -274,8 +364,6 @@ class RestControllerTest extends TestCase
 
         $mockedForm->shouldReceive('handleRequest')->once();
         $mockedForm->shouldReceive('isValid')->andReturn(false);
-        $mockedForm->shouldReceive('getData')
-            ->andReturn(Mockery::mock(CommonSectionInterface::class));
         $mockedForm->shouldReceive('getName')->andReturn('name of form');
         $mockedForm->shouldReceive('getIterator')->andReturn(new \ArrayIterator([$mockedForm]));
 

@@ -207,7 +207,6 @@ class RestController implements RestControllerInterface
 
         if ($form->isValid()) {
             $response = $this->save($form);
-            $response['code'] = 200;
         } else {
             $response['errors'] = $this->getFormErrors($form);
             $response['code'] = 400;
@@ -243,7 +242,6 @@ class RestController implements RestControllerInterface
 
         if ($form->isValid()) {
             $response = $this->save($form);
-            $response['code'] = 200;
         } else {
             $response['errors'] = $this->getFormErrors($form);
             $response['code'] = 400;
@@ -280,7 +278,6 @@ class RestController implements RestControllerInterface
 
         if ($form->isValid()) {
             $response = $this->save($form);
-            $response['code'] = 200;
         } else {
             $response['errors'] = $this->getFormErrors($form);
             $response['code'] = 400;
