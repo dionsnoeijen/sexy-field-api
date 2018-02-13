@@ -95,7 +95,7 @@ class RestController implements RestControllerInterface
             $response['fields'][] = $fieldInfo;
         }
 
-        return new JsonResponse( $response, 200, [
+        return new JsonResponse($response, 200, [
             'Access-Control-Allow-Methods' => 'OPTIONS',
             'Access-Control-Allow-Origin' => '*'
         ]);
@@ -182,10 +182,13 @@ class RestController implements RestControllerInterface
             $result[] = $serializer->serialize($entry, 'json', $this->getContext());
         }
 
-        return new Response('[' . implode(',', $result) . ']', 200, [
-            'Content-Type' => 'application/json',
-            'Access-Control-Allow-Origin' => '*'
-        ]);
+        return new Response(
+            '[' . implode(',', $result) . ']', 200,
+            [
+                'Content-Type' => 'application/json',
+                'Access-Control-Allow-Origin' => '*'
+            ]
+        );
     }
 
     /**
@@ -219,10 +222,13 @@ class RestController implements RestControllerInterface
             $result[] = $serializer->serialize($entry, 'json', $this->getContext());
         }
 
-        return new Response('[' . implode(',', $result) . ']', 200, [
-            'Content-Type' => 'application/json',
-            'Access-Control-Allow-Origin' => '*'
-        ]);
+        return new Response(
+            '[' . implode(',', $result) . ']', 200,
+            [
+                'Content-Type' => 'application/json',
+                'Access-Control-Allow-Origin' => '*'
+            ]
+        );
     }
 
     /**
@@ -347,7 +353,7 @@ class RestController implements RestControllerInterface
         return new JsonResponse([
             'success' => $success,
         ], $success ? 200 : 404,
-            ['Access-Control-Allow-Origin', '*']
+            ['Access-Control-Allow-Origin' => '*']
         );
     }
 
@@ -370,7 +376,7 @@ class RestController implements RestControllerInterface
         return new JsonResponse([
             'success' => $success,
         ], $success ? 200 : 404,
-            ['Access-Control-Allow-Origin', '*']
+            ['Access-Control-Allow-Origin' => '*']
         );
     }
 
