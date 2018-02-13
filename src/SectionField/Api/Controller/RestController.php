@@ -159,7 +159,7 @@ class RestController implements RestControllerInterface
     {
         $request = $this->requestStack->getCurrentRequest();
 
-        // Theoretically you could have many results on a field value, so add some control over the results with limit, offset ans also sorting
+        // Theoretically you could have many results on a field value, so add some control over the results with limit, offset and also sorting
         $fieldValue = $request->get('value');
         $offset = $request->get('offset', 0);
         $limit = $request->get('limit', 100);
