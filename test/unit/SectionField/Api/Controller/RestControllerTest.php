@@ -15,6 +15,7 @@ use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 use Tardigrades\SectionField\Service\CreateSectionInterface;
 use Tardigrades\SectionField\Service\DeleteSectionInterface;
+use Tardigrades\SectionField\Service\ReadOptions;
 use Tardigrades\SectionField\Service\ReadSectionInterface;
 use Tardigrades\SectionField\Service\SectionManagerInterface;
 use Mockery;
@@ -123,6 +124,49 @@ class RestControllerTest extends TestCase
 
         $response = $this->controller->getEntryBySlug('sexyHandle', 'slug');
         $this->assertSame('"albatros"', $response->getContent());
+    }
+
+    /**
+     * @test
+     * @covers ::__construct
+     * @covers ::getEntriesByFieldValue
+     * @runInSeparateProcess
+     */
+    public function it_should_get_entries_by_field_value()
+    {
+        $sectionHandle = 'rockets';
+        $fieldHandle = 'uuid';
+        $fieldValue = '719d72d7-4f0c-420b-993f-969af9ad34c1';
+        $offset = 0;
+        $limit = 100;
+        $orderBy = 'name';
+        $sort = 'DESC';
+
+        $mockRequest = Mockery::mock(Request::class)->makePartial();
+        $mockRequest->shouldReceive('get')->with('value')->andReturn($fieldValue);
+        $mockRequest->shouldReceive('get')->with('offset', 0)->andReturn($offset);
+        $mockRequest->shouldReceive('get')->with('limit', 100)->andReturn($limit);
+        $mockRequest->shouldReceive('get')->with('orderBy', 'created')->andReturn($orderBy);
+        $mockRequest->shouldReceive('get')->with('sort', 'DESC')->andReturn($sort);
+        $mockRequest->shouldReceive('get')->with('fields', ['id'])->andReturn('');
+
+        $this->requestStack->shouldReceive('getCurrentRequest')->andReturn($mockRequest);
+
+        $readOptions = ReadOptions::fromArray([
+            ReadOptions::SECTION => $sectionHandle,
+            ReadOptions::FIELD => [ $fieldHandle => $fieldValue ],
+            ReadOptions::OFFSET => $offset,
+            ReadOptions::LIMIT => $limit,
+            ReadOptions::ORDER_BY => [ $orderBy => $sort ]
+        ]);
+
+        $this->readSection->shouldReceive('read')
+            ->with(equalTo($readOptions))
+            ->andReturn(new \ArrayIterator(['this', 'that']));
+
+        $response = $this->controller->getEntriesByFieldValue($sectionHandle, $fieldHandle);
+
+        $this->assertSame('["this","that"]', $response->getContent());
     }
 
     /**

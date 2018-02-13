@@ -95,14 +95,10 @@ class RestController implements RestControllerInterface
             $response['fields'][] = $fieldInfo;
         }
 
-        return new JsonResponse(
-            $response,
-            200,
-            [
-                'Access-Control-Allow-Methods' => 'OPTIONS',
-                'Access-Control-Allow-Origin' => '*'
-            ]
-        );
+        return new JsonResponse($response, 200, [
+            'Access-Control-Allow-Methods' => 'OPTIONS',
+            'Access-Control-Allow-Origin' => '*'
+        ]);
     }
 
     /**
@@ -123,8 +119,9 @@ class RestController implements RestControllerInterface
         $serializer = SerializerBuilder::create()->build();
         $jsonContent = $serializer->serialize($entry, 'json', $this->getContext());
 
-        header('Content-Type: application/json');
-        return new Response($jsonContent);
+        return new Response($jsonContent, 200, [
+            'Content-Type' => 'application/json'
+        ]);
     }
 
     /**
@@ -144,8 +141,54 @@ class RestController implements RestControllerInterface
         $serializer = SerializerBuilder::create()->build();
         $jsonContent = $serializer->serialize($entry, 'json', $this->getContext());
 
-        header('Content-Type: application/json');
-        return new Response($jsonContent);
+        return new Response($jsonContent, 200, [
+            'Content-Type' => 'application/json'
+        ]);
+    }
+
+    /**
+     * GET an entry or entries by one of it's field values
+     * Example:
+     * /v1/section/someSectionHandle/uuid?value=719d72d7-4f0c-420b-993f-969af9ad34c1
+     *
+     * @param string $sectionHandle
+     * @param string $fieldHandle
+     * @return Response
+     */
+    public function getEntriesByFieldValue(string $sectionHandle, string $fieldHandle): Response
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        // Theoretically you could have many results on a field value, so add some control over the results with limit, offset and also sorting
+        $fieldValue = $request->get('value');
+        $offset = $request->get('offset', 0);
+        $limit = $request->get('limit', 100);
+        $orderBy = $request->get('orderBy', 'created');
+        $sort = $request->get('sort', 'DESC');
+
+        $readOptions = ReadOptions::fromArray([
+            ReadOptions::SECTION => $sectionHandle,
+            ReadOptions::FIELD => [ $fieldHandle => $fieldValue ],
+            ReadOptions::OFFSET => $offset,
+            ReadOptions::LIMIT => $limit,
+            ReadOptions::ORDER_BY => [ $orderBy => $sort ]
+        ]);
+
+        $entries = $this->readSection->read($readOptions);
+        $serializer = SerializerBuilder::create()->build();
+
+        $result = [];
+        foreach ($entries as $entry) {
+            $result[] = $serializer->serialize($entry, 'json', $this->getContext());
+        }
+
+        return new Response(
+            '[' . implode(',', $result) . ']', 200,
+            [
+                'Content-Type' => 'application/json',
+                'Access-Control-Allow-Origin' => '*'
+            ]
+        );
     }
 
     /**
@@ -164,17 +207,14 @@ class RestController implements RestControllerInterface
         $orderBy = $request->get('orderBy', 'created');
         $sort = $request->get('sort', 'DESC');
 
-        $readOptions = [
+        $readOptions = ReadOptions::fromArray([
             ReadOptions::SECTION => $sectionHandle,
             ReadOptions::OFFSET => $offset,
-            ReadOptions::LIMIT => $limit
-        ];
+            ReadOptions::LIMIT => $limit,
+            ReadOptions::ORDER_BY => [ $orderBy => $sort ]
+        ]);
 
-        if (!empty($orderBy)) {
-            $readOptions[ReadOptions::ORDER_BY] = [$orderBy => $sort];
-        }
-
-        $entries = $this->readSection->read(ReadOptions::fromArray($readOptions));
+        $entries = $this->readSection->read($readOptions);
         $serializer = SerializerBuilder::create()->build();
 
         $result = [];
@@ -182,9 +222,13 @@ class RestController implements RestControllerInterface
             $result[] = $serializer->serialize($entry, 'json', $this->getContext());
         }
 
-        header('Content-Type: application/json');
-        header('Access-Control-Allow-Origin: *');
-        return new Response('[' . implode(',', $result) . ']');
+        return new Response(
+            '[' . implode(',', $result) . ']', 200,
+            [
+                'Content-Type' => 'application/json',
+                'Access-Control-Allow-Origin' => '*'
+            ]
+        );
     }
 
     /**
@@ -309,7 +353,7 @@ class RestController implements RestControllerInterface
         return new JsonResponse([
             'success' => $success,
         ], $success ? 200 : 404,
-            ['Access-Control-Allow-Origin', '*']
+            ['Access-Control-Allow-Origin' => '*']
         );
     }
 
@@ -332,7 +376,7 @@ class RestController implements RestControllerInterface
         return new JsonResponse([
             'success' => $success,
         ], $success ? 200 : 404,
-            ['Access-Control-Allow-Origin', '*']
+            ['Access-Control-Allow-Origin' => '*']
         );
     }
 

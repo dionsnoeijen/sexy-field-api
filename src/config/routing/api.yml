@@ -20,6 +20,11 @@ rest.section.entry.by.slug:
   defaults: { _controller: 'rest.controller:getEntryBySlug' }
   methods: [GET]
 
+rest.section.entry.by.fieldvalue:
+  path: /v1/section/{sectionHandle}/{fieldHandle}
+  defaults: { _controller: 'rest.controller:getEntriesByFieldValue' }
+  methods: [GET]
+
 rest.section.create:
   path: /v1/section/{sectionHandle}
   defaults: { _controller: 'rest.controller:createEntry' }
