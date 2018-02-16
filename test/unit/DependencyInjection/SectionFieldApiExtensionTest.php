@@ -14,6 +14,8 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
  */
 class SectionFieldApiExtensionTest extends TestCase
 {
+    use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+
     /**
      * @test
      * @covers ::load
