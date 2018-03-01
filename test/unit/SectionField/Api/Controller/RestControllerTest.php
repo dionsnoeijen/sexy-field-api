@@ -28,6 +28,8 @@ use Tardigrades\SectionField\ValueObject\Name;
  */
 class RestControllerTest extends TestCase
 {
+    use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+
     /** @var ReadSectionInterface|Mockery\Mock */
     private $readSection;
 
@@ -114,6 +116,7 @@ class RestControllerTest extends TestCase
 
         $mockRequest = Mockery::mock(Request::class)->makePartial();
         $mockRequest->shouldReceive('get')
+            ->with('fields', ['id'])
             ->andReturn('farm, dog, www');
 
         $this->requestStack->shouldReceive('getCurrentRequest')
@@ -218,9 +221,6 @@ class RestControllerTest extends TestCase
     public function it_creates_an_entry()
     {
         $entryMock = Mockery::mock(CommonSectionInterface::class);
-        $entryMock->shouldReceive('getId')
-            ->once()
-            ->andReturn(1);
 
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
 
@@ -242,6 +242,7 @@ class RestControllerTest extends TestCase
 
         $this->createSection->shouldReceive('save')
             ->with($entryMock, ['relation'])
+            ->once()
             ->andReturn(true);
 
         $this->requestStack->shouldReceive('getCurrentRequest')
@@ -263,9 +264,6 @@ class RestControllerTest extends TestCase
     public function it_fails_creating_an_entry_during_save_and_returns_the_correct_response()
     {
         $entryMock = Mockery::mock(CommonSectionInterface::class);
-        $entryMock->shouldReceive('getId')
-            ->once()
-            ->andReturn(1);
 
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
 
@@ -276,6 +274,7 @@ class RestControllerTest extends TestCase
 
         $this->form->shouldReceive('buildFormForSection')
             ->with('sexy', $this->requestStack, false, false)
+            ->once()
             ->andReturn($mockedForm);
 
         $mockedRequest = Mockery::mock(Request::class)->makePartial();
@@ -287,6 +286,7 @@ class RestControllerTest extends TestCase
 
         $this->createSection->shouldReceive('save')
             ->with($entryMock, ['relation'])
+            ->once()
             ->andThrow(\Exception::class, "Exception message");
 
         $this->requestStack->shouldReceive('getCurrentRequest')
@@ -330,8 +330,7 @@ class RestControllerTest extends TestCase
             ->andReturn(['relation']);
 
         $this->createSection->shouldReceive('save')
-            ->with(Mockery::mock(CommonSectionInterface::class), ['relation'])
-            ->andReturn(false);
+            ->never();
 
         $this->requestStack->shouldReceive('getCurrentRequest')
             ->andReturn($mockedRequest);
@@ -354,18 +353,16 @@ class RestControllerTest extends TestCase
     public function it_updates_entries()
     {
         $entryMock = Mockery::mock(CommonSectionInterface::class);
-        $entryMock->shouldReceive('getId')
-            ->once()
-            ->andReturn(1);
 
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
 
-        $mockedForm->shouldReceive('handleRequest')->once();
+        $mockedForm->shouldReceive('handleRequest')->twice();
         $mockedForm->shouldReceive('isValid')->andReturn(true);
         $mockedForm->shouldReceive('getData')
             ->andReturn($entryMock);
 
         $this->form->shouldReceive('buildFormForSection')
+            ->twice()
             ->andReturn($mockedForm);
 
         $mockedRequest = Mockery::mock(Request::class)->makePartial();
@@ -377,6 +374,7 @@ class RestControllerTest extends TestCase
 
         $this->createSection->shouldReceive('save')
             ->with($entryMock, ['relation'])
+            ->twice()
             ->andReturn(true);
 
         $this->requestStack->shouldReceive('getCurrentRequest')
@@ -406,7 +404,7 @@ class RestControllerTest extends TestCase
     {
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
 
-        $mockedForm->shouldReceive('handleRequest')->once();
+        $mockedForm->shouldReceive('handleRequest')->twice();
         $mockedForm->shouldReceive('isValid')->andReturn(false);
         $mockedForm->shouldReceive('getName')->andReturn('name of form');
         $mockedForm->shouldReceive('getIterator')->andReturn(new \ArrayIterator([$mockedForm]));
@@ -417,6 +415,7 @@ class RestControllerTest extends TestCase
             ->andReturn(['one' => $error]);
 
         $this->form->shouldReceive('buildFormForSection')
+            ->twice()
             ->andReturn($mockedForm);
 
         $mockedRequest = Mockery::mock(Request::class)->makePartial();
@@ -427,8 +426,7 @@ class RestControllerTest extends TestCase
             ->andReturn(['relation']);
 
         $this->createSection->shouldReceive('save')
-            ->with(Mockery::mock(CommonSectionInterface::class), ['relation'])
-            ->andReturn(false);
+            ->never();
 
         $this->requestStack->shouldReceive('getCurrentRequest')
             ->andReturn($mockedRequest);
@@ -458,16 +456,13 @@ class RestControllerTest extends TestCase
     public function it_deletes_entries()
     {
         $entryMock = Mockery::mock(CommonSectionInterface::class);
-        $entryMock->shouldReceive('getId')
-            ->once()
-            ->andReturn(1);
 
         $this->readSection->shouldReceive('read')
-            ->once()
+            ->twice()
             ->andReturn(new \ArrayIterator([$entryMock]));
 
         $this->deleteSection->shouldReceive('delete')
-            ->once()
+            ->twice()
             ->with($entryMock)
             ->andReturn(true);
 
@@ -488,16 +483,13 @@ class RestControllerTest extends TestCase
     public function it_does_not_deletes_entries_and_returns_the_correct_response()
     {
         $entryMock = Mockery::mock(CommonSectionInterface::class);
-        $entryMock->shouldReceive('getId')
-            ->once()
-            ->andReturn(1);
 
         $this->readSection->shouldReceive('read')
-            ->once()
+            ->twice()
             ->andReturn(new \ArrayIterator([$entryMock]));
 
         $this->deleteSection->shouldReceive('delete')
-            ->once()
+            ->twice()
             ->with($entryMock)
             ->andReturn(false);
 

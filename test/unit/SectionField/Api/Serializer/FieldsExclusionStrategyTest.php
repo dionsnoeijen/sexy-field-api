@@ -3,6 +3,7 @@ declare (strict_types=1);
 
 namespace Tardigrades\SectionField\Api\Serializer;
 
+use Mockery;
 use JMS\Serializer\Metadata\ClassMetadata;
 use JMS\Serializer\Metadata\PropertyMetadata;
 use PHPUnit\Framework\TestCase;
@@ -14,6 +15,8 @@ use JMS\Serializer\SerializationContext;
  */
 class FieldsExclusionStrategyTest extends TestCase
 {
+    use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+
     /**
      * @test
      * @covers ::__construct
@@ -32,7 +35,7 @@ class FieldsExclusionStrategyTest extends TestCase
     public function it_should_return_false_for_skip_class()
     {
         $strategy = new FieldsExclusionStrategy(['strategic']);
-        $class = \Mockery::mock(ClassMetadata::class)->makePartial();
+        $class = Mockery::mock(ClassMetadata::class)->makePartial();
         $this->assertFalse($strategy->shouldSkipClass($class, SerializationContext::create()));
     }
 
@@ -44,11 +47,11 @@ class FieldsExclusionStrategyTest extends TestCase
     {
         $strategy = new FieldsExclusionStrategy(['apples', 'bananas', 'crustaceans']);
 
-        $property = \Mockery::mock(PropertyMetadata::class);
+        $property = Mockery::mock(PropertyMetadata::class);
         $property->serializedName = false;
         $property->name = 'bananas';
 
-        $propertytwo = \Mockery::mock(PropertyMetadata::class);
+        $propertytwo = Mockery::mock(PropertyMetadata::class);
         $propertytwo->serializedName = false;
         $propertytwo->name = 'dinosaurs';
 
@@ -64,7 +67,7 @@ class FieldsExclusionStrategyTest extends TestCase
     {
         $strategy = new FieldsExclusionStrategy([]);
 
-        $property = \Mockery::mock(PropertyMetadata::class);
+        $property = Mockery::mock(PropertyMetadata::class);
         $property->serializedName = false;
         $property->name = 'bananas';
 
