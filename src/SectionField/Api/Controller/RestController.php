@@ -100,7 +100,6 @@ class RestController implements RestControllerInterface
     ): JsonResponse {
         $response = [];
 
-        $options = $this->getOptions();
         $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
 
         $response['name'] = (string) $section->getName();
@@ -143,9 +142,10 @@ class RestController implements RestControllerInterface
         $requestOptions = $request->get('options');
         if (!empty($requestOptions)) {
             $requestOptions = explode('|', $requestOptions);
-            $options = [array_shift($requestOptions)];
+            $options = [];
+            $fieldHandle = array_shift($requestOptions);
+            $options[$fieldHandle] = [];
             foreach ($requestOptions as $option) {
-                $fieldHandle = null;
                 $keyValue = explode(':', $option);
                 $options[$fieldHandle][$keyValue[0]] = $keyValue[1];
             }
@@ -171,17 +171,20 @@ class RestController implements RestControllerInterface
     ): ?array {
 
         $fieldHandle = (string) $field->getHandle();
+        $options = $this->getOptions();
+
         if (!empty($fieldInfo[$fieldHandle]['to'])) {
             try {
                 $to = $this->readSection->read(
                     ReadOptions::fromArray([
                         ReadOptions::SECTION => $fieldInfo[$fieldHandle]['to'],
                         ReadOptions::LIMIT => !empty($options[$fieldHandle]['limit']) ?
-                            $options[$fieldHandle]['limit'] : self::DEFAULT_RELATIONSHIPS_LIMIT,
+                            (int) $options[$fieldHandle]['limit'] : self::DEFAULT_RELATIONSHIPS_LIMIT,
                         ReadOptions::OFFSET => !empty($options[$fieldHandle]['offset']) ?
                             $options[$fieldHandle]['offset'] : self::DEFAULT_RELATIONSHIPS_OFFSET
                     ])
                 );
+
                 $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']] = [];
                 foreach ($to as $entry) {
                     $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']][] = [
