@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "d5753eeb9c96493f34ae087a4dc1dea2",
+    "content-hash": "bb989b41f15c653269ebe206208931d2",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -4409,6 +4409,52 @@
             "time": "2018-01-29T09:00:15+00:00"
         },
         {
+            "name": "tardigrades/sexy-field-field-types-base",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dionsnoeijen/sexy-field-field-types-base.git",
+                "reference": "185fd8a283fd374fcd3fe69d5753c2a910f25dd2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field-field-types-base/zipball/185fd8a283fd374fcd3fe69d5753c2a910f25dd2",
+                "reference": "185fd8a283fd374fcd3fe69d5753c2a910f25dd2",
+                "shasum": ""
+            },
+            "require": {
+                "doctrine/orm": "^2.5.6",
+                "php": "^7.1",
+                "symfony/form": "^3.3.2"
+            },
+            "require-dev": {
+                "mikey179/vfsstream": "^1.6",
+                "mockery/mockery": "^0.9.9",
+                "phing/phing": "^2.16",
+                "phpunit/phpunit": "^6.1",
+                "squizlabs/php_codesniffer": "^2.8",
+                "tardigrades/sexy-field": "dev-master"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Tardigrades\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Dion Snoeijen",
+                    "email": "hallo@dionsnoeijen.nl"
+                }
+            ],
+            "description": "Section field basic field types",
+            "time": "2018-02-27T12:55:32+00:00"
+        },
+        {
             "name": "tardigrades/sexy-field-form",
             "version": "dev-master",
             "source": {
@@ -4460,7 +4506,7 @@
                 }
             ],
             "description": "SexyField Form. Generate symfony forms based on section configuration.",
-            "time": "2018-01-02T14:32:03+00:00"
+            "time": "2018-01-02 14:32:03"
         },
         {
             "name": "theseer/tokenizer",
@@ -4681,7 +4727,8 @@
         "tardigrades/sexy-field": 20,
         "tardigrades/sexy-field-entity": 20,
         "tardigrades/sexy-field-doctrine": 20,
-        "tardigrades/sexy-field-form": 20
+        "tardigrades/sexy-field-form": 20,
+        "tardigrades/sexy-field-field-types-base": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

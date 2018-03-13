@@ -34,6 +34,7 @@
     "tardigrades/sexy-field-entity": "dev-master",
     "tardigrades/sexy-field-doctrine": "dev-master",
     "tardigrades/sexy-field-form": "dev-master",
+    "tardigrades/sexy-field-field-types-base": "dev-master",
     "phpunit/phpunit": "^6.1",
     "squizlabs/PHP_CodeSniffer": "^2.8",
     "mockery/mockery": "^0.9.9",
