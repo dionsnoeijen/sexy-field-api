@@ -4,12 +4,16 @@ declare (strict_types=1);
 namespace Tardigrades\SectionField\Api\Controller;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\FormError;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Tardigrades\Entity\Field;
-use Tardigrades\Entity\Section;
+use Tardigrades\Entity\FieldType;
+use Tardigrades\Entity\SectionInterface;
+use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Form\FormInterface;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
@@ -76,30 +80,124 @@ class RestControllerTest extends TestCase
      * @covers ::getSectionInfo
      * @runInSeparateProcess
      */
-    public function it_gets_section_info()
+    public function it_gets_section_info_of_a_section_without_relationships()
     {
-        $mockedField = Mockery::mock(new Field())->makePartial();
-        $mockedField->shouldReceive('getHandle')->andReturn(Handle::fromString('FieldHandle'));
+        $sectionName = 'Sexy';
+        $sectionHandle = 'sexyHandle';
+        $section = Mockery::mock(SectionInterface::class);
+        $expectedFieldInfo = [
+            'name' => $sectionName,
+            'handle' => $sectionHandle
+        ];
 
-        $mockedFieldConfig = Mockery::mock('alias:Tardigrades\SectionField\ValueObject\FieldConfig')->makePartial();
-        $mockedFieldConfig->shouldReceive('toArray')->andReturn(['field' => 'thisfield']);
+        $this->sectionManager->shouldReceive('readByHandle')
+            ->once()
+            ->andReturn($section);
 
-        $mockedField->shouldReceive('getConfig')->andReturn($mockedFieldConfig);
+        $section->shouldReceive('getName')
+            ->once()
+            ->andReturn(Name::fromString($sectionName));
 
-        $mockedSection = Mockery::mock(new Section())->makePartial();
-        $mockedSection->shouldReceive('getName')
-            ->andReturn(Name::fromString('sexyName'));
-        $mockedSection->shouldReceive('getHandle')
-            ->andReturn(Handle::fromString('sexyHandle'));
-        $mockedSection->shouldReceive('getFields')
-            ->andReturn(new ArrayCollection([$mockedField]));
+        $section->shouldReceive('getHandle')
+            ->once()
+            ->andReturn(Handle::fromString($sectionHandle));
 
-        $this->sectionManager->shouldReceive('readByHandle')->once()
-            ->andReturn($mockedSection);
+        $section->shouldReceive('getFields')
+            ->once()
+            ->andReturn($this->givenASetOfFieldsForASection());
+
+        $expectedFieldInfo['fields'] = $this->givenASetOfFieldInfo();
+
+        $expectedResponse = new JsonResponse($expectedFieldInfo, 200, [
+            'Access-Control-Allow-Methods' => 'OPTIONS',
+            'Access-Control-Allow-Origin' => '*'
+        ]);
+
         $response = $this->controller->getSectionInfo('sexyHandle');
-        $this->assertSame(
-            '{"name":"sexyName","handle":"sexyHandle","fields":[{"FieldHandle":"thisfield"}]}',
-            $response->getContent());
+        $this->assertEquals($expectedResponse, $response);
+    }
+
+    /**
+     * @test
+     * @covers ::__construct
+     * @covers ::getSectionInfo
+     * @runInSeparateProcess
+     */
+    public function it_gets_section_info_of_a_section_with_relationships()
+    {
+        $sectionName = 'Even more sexy';
+        $sectionHandle = 'evenMoreSexy';
+        $section = Mockery::mock(SectionInterface::class);
+        $request = new Request([
+            'options' => 'someRelationshipFieldHandle|limit:100|offset:0'
+        ]);
+
+        $expectedFieldInfo = [
+            'name' => $sectionName,
+            'handle' => $sectionHandle
+        ];
+
+        $this->sectionManager->shouldReceive('readByHandle')
+            ->once()
+            ->andReturn($section);
+
+        $section->shouldReceive('getName')
+            ->once()
+            ->andReturn(Name::fromString($sectionName));
+
+        $section->shouldReceive('getHandle')
+            ->once()
+            ->andReturn(Handle::fromString($sectionHandle));
+
+        $section->shouldReceive('getFields')
+            ->once()
+            ->andReturn($this->givenASetOfFieldsForASection(true));
+
+        $this->requestStack->shouldReceive('getCurrentRequest')
+            ->once()
+            ->andReturn($request);
+
+        $sectionEntitiesTo = new \ArrayIterator();
+        $formattedRecords = $this->givenSomeFormattedToRecords();
+
+        foreach ($formattedRecords as $formattedRecord) {
+            $section = Mockery::mock(CommonSectionInterface::class);
+
+            $section->shouldReceive('getId')
+                ->once()
+                ->andReturn($formattedRecord['id']);
+
+            $section->shouldReceive('getSlug')
+                ->once()
+                ->andReturn($formattedRecord['slug']);
+
+            $section->shouldReceive('getDefault')
+                ->once()
+                ->andReturn($formattedRecord['name']);
+
+            $section->shouldReceive('getCreated')
+                ->once()
+                ->andReturn($formattedRecord['created']);
+
+            $section->shouldReceive('getUpdated')
+                ->once()
+                ->andReturn($formattedRecord['updated']);
+
+            $sectionEntitiesTo->append($section);
+        }
+
+        $expectedFieldInfo['fields'] = $this->givenASetOfFieldInfo(true);
+        $expectedFieldInfo['fields'][2]['someRelationshipFieldHandle']['whatever'] = $formattedRecords;
+
+        $expectedResponse = new JsonResponse($expectedFieldInfo, 200, [
+            'Access-Control-Allow-Methods' => 'OPTIONS',
+            'Access-Control-Allow-Origin' => '*'
+        ]);
+
+        $this->readSection->shouldReceive('read')->andReturn($sectionEntitiesTo);
+        $response = $this->controller->getSectionInfo('sexyHandle');
+
+        $this->assertEquals($expectedResponse, $response);
     }
 
     /**
@@ -480,7 +578,7 @@ class RestControllerTest extends TestCase
      * @covers ::deleteEntryBySlug
      * @runInSeparateProcess
      */
-    public function it_does_not_deletes_entries_and_returns_the_correct_response()
+    public function it_does_not_deletes_entries_and_return_the_correct_response()
     {
         $entryMock = Mockery::mock(CommonSectionInterface::class);
 
@@ -498,5 +596,118 @@ class RestControllerTest extends TestCase
 
         $response = $this->controller->deleteEntryBySlug('notsexy', 'snail');
         $this->assertSame('{"success":false}', $response->getContent());
+    }
+
+    private function givenASetOfFieldsForASection(bool $includeRelationships = false): Collection
+    {
+        $fields = new ArrayCollection();
+
+        $fields->add(
+            (new Field())
+                ->setId(1)
+                ->setConfig([
+                    'field' => [
+                        'name' => 'Fieldje',
+                        'handle' => 'fieldje'
+                    ]
+                ])
+                ->setHandle('someHandle')
+                ->setFieldType(
+                    (new FieldType())
+                        ->setFullyQualifiedClassName('Some\\Fully\\Qualified\\Classname')
+                        ->setType('TextInput')
+                        ->setId(1)
+                )
+                ->setName('Some name field')
+        );
+
+        $fields->add(
+            (new Field())
+                ->setId(2)
+                ->setConfig([
+                    'field' => [
+                        'name' => 'Nog een fieldje',
+                        'handle' => 'nogEenFieldje'
+                    ]
+                ])
+                ->setHandle('someOtherHandle')
+                ->setFieldType(
+                    (new FieldType())
+                        ->setFullyQualifiedClassName('I\\Am\\The\\Fully\\Qualified\\Classname')
+                        ->setType('TextInput')
+                        ->setId(2)
+                )
+                ->setName('Give me text')
+        );
+
+        if ($includeRelationships) {
+            $fields->add(
+                (new Field())
+                    ->setId(3)
+                    ->setConfig([
+                        'field' => [
+                            'name' => 'Relatie veld',
+                            'handle' => 'someRelationshipFieldHandle',
+                            'to' => 'whatever'
+                        ]
+                    ])
+                    ->setHandle('someRelationshipFieldHandle')
+                    ->setFieldType(
+                        (new FieldType())
+                            ->setFullyQualifiedClassName(Relationship::class)
+                            ->setType('Relationship')
+                            ->setId(3)
+                    )
+                    ->setName('Relatie veld')
+            );
+        }
+
+        return $fields;
+    }
+
+    private function givenSomeFormattedToRecords(): array
+    {
+        return [
+            [
+                'id' => 1,
+                'slug' => 'sleepy-sluggg',
+                'name' => 'Sleepy Slugg',
+                'created' => new \DateTime(),
+                'updated' => new \DateTime(),
+                'selected' => false
+            ],
+            [
+                'id' => 2,
+                'slug' => 'some-slug-slack',
+                'name' => 'Some slack slug',
+                'created' => new \DateTime(),
+                'updated' => new \DateTime(),
+                'selected' => false
+            ],
+            [
+                'id' => 3,
+                'slug' => 'slack-slug-slog',
+                'name' => 'Slack slug slog',
+                'created' => new \DateTime(),
+                'updated' => new \DateTime(),
+                'selected' => false
+            ]
+        ];
+    }
+
+    private function givenASetOfFieldInfo(bool $includeRelationships = false): array
+    {
+        $fieldInfos = [];
+        $fields = $this->givenASetOfFieldsForASection($includeRelationships);
+
+        foreach ($fields as $field) {
+            $fieldInfo = [
+                (string) $field->getHandle() => $field->getConfig()->toArray()['field']
+            ];
+
+            $fieldInfos[] = $fieldInfo;
+        }
+
+        return $fieldInfos;
     }
 }

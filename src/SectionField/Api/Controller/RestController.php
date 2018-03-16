@@ -13,6 +13,7 @@ use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Tardigrades\Entity\FieldInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Api\Serializer\FieldsExclusionStrategy;
+use Tardigrades\SectionField\Generator\CommonSectionInterface;
 use Tardigrades\SectionField\Service\CreateSectionInterface;
 use Tardigrades\SectionField\Service\DeleteSectionInterface;
 use Tardigrades\SectionField\Form\FormInterface;
@@ -100,13 +101,15 @@ class RestController implements RestControllerInterface
     ): JsonResponse {
         $response = [];
 
-        $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
+        $section = $this->sectionManager
+            ->readByHandle(Handle::fromString($sectionHandle));
 
         $response['name'] = (string) $section->getName();
         $response['handle'] = (string) $section->getHandle();
 
         /** @var FieldInterface $field */
         foreach ($section->getFields() as $field) {
+
             $fieldInfo = [
                 (string) $field->getHandle() => $field->getConfig()->toArray()['field']
             ];
@@ -186,6 +189,7 @@ class RestController implements RestControllerInterface
                 );
 
                 $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']] = [];
+                /** @var CommonSectionInterface $entry */
                 foreach ($to as $entry) {
                     $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']][] = [
                         'id' => $entry->getId(),
@@ -224,19 +228,28 @@ class RestController implements RestControllerInterface
         int $id
     ): array {
 
-        $editing = $this->readSection->read(
+        /** @var CommonSectionInterface $editing */
+        $result = $this->readSection->read(
             ReadOptions::fromArray([
                 ReadOptions::SECTION => $sectionHandle,
                 ReadOptions::ID => (int) $id
             ])
         );
 
+
+        var_dump($result);
+
+        $editing = $result->current();
+
+        var_dump('WTF');
+        var_dump($editing);
+
         try {
             $relationshipsEntityMethod = 'get' .
                 ucfirst(Inflector::pluralize(!empty($fieldInfo[$fieldHandle]['as']) ?
                     $fieldInfo[$fieldHandle]['as'] : $fieldInfo[$fieldHandle]['to']));
 
-            $related = $editing[0]->{$relationshipsEntityMethod}();
+            $related = $editing->current()->{$relationshipsEntityMethod}();
             $relatedIds = [];
             foreach ($related as $relation) {
                 $relatedIds[] = $relation->getId();
