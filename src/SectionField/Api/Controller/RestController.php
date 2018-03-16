@@ -229,27 +229,19 @@ class RestController implements RestControllerInterface
     ): array {
 
         /** @var CommonSectionInterface $editing */
-        $result = $this->readSection->read(
+        $editing = $this->readSection->read(
             ReadOptions::fromArray([
                 ReadOptions::SECTION => $sectionHandle,
                 ReadOptions::ID => (int) $id
             ])
-        );
-
-
-        var_dump($result);
-
-        $editing = $result->current();
-
-        var_dump('WTF');
-        var_dump($editing);
+        )->current();
 
         try {
             $relationshipsEntityMethod = 'get' .
                 ucfirst(Inflector::pluralize(!empty($fieldInfo[$fieldHandle]['as']) ?
                     $fieldInfo[$fieldHandle]['as'] : $fieldInfo[$fieldHandle]['to']));
 
-            $related = $editing->current()->{$relationshipsEntityMethod}();
+            $related = $editing->{$relationshipsEntityMethod}();
             $relatedIds = [];
             foreach ($related as $relation) {
                 $relatedIds[] = $relation->getId();
