@@ -37,9 +37,21 @@ rest.section.update.id:
     id: '\d+'
   methods: [PUT]
 
+rest.section.update.id.internal:
+  path: /v1/section/internal/{sectionHandle}/id/{id}
+  defaults: { _controller: 'rest.controller:updateEntryByIdInternal' }
+  requirements:
+    id: '\d+'
+  methods: [PUT]
+
 rest.section.update.slug:
   path: /v1/section/{sectionHandle}/slug/{slug}
   defaults: { _controller: 'rest.controller:updateEntryBySlug' }
+  methods: [PUT]
+
+rest.section.update.slug.internal:
+  path: /v1/section/internal/{sectionHandle}/slug/{slug}
+  defaults: { _controller: 'rest.controller:updateEntryBySlugInternal' }
   methods: [PUT]
 
 rest.section.delete.id:
@@ -51,5 +63,5 @@ rest.section.delete.id:
 
 rest.section.delete.slug:
   path: /v1/section/{sectionHandle}/slug/{slug}
-  defaults: { _controller: 'rest.controller:deleteEntryById' }
+  defaults: { _controller: 'rest.controller:deleteEntryBySlug' }
   methods: [DELETE]
