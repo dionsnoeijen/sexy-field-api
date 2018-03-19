@@ -3,6 +3,7 @@ declare (strict_types=1);
 
 namespace Tardigrades\SectionField\Api\Controller;
 
+use Doctrine\Common\Util\Inflector;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerBuilder;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -10,10 +11,13 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Tardigrades\Entity\FieldInterface;
+use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Api\Serializer\FieldsExclusionStrategy;
+use Tardigrades\SectionField\Generator\CommonSectionInterface;
 use Tardigrades\SectionField\Service\CreateSectionInterface;
 use Tardigrades\SectionField\Service\DeleteSectionInterface;
 use Tardigrades\SectionField\Form\FormInterface;
+use Tardigrades\SectionField\Service\EntryNotFoundException;
 use Tardigrades\SectionField\Service\ReadSectionInterface;
 use Tardigrades\SectionField\Service\SectionManagerInterface;
 use Tardigrades\SectionField\Service\ReadOptions;
@@ -47,6 +51,9 @@ class RestController implements RestControllerInterface
     /** @var RequestStack */
     private $requestStack;
 
+    const DEFAULT_RELATIONSHIPS_LIMIT = 100;
+    const DEFAULT_RELATIONSHIPS_OFFSET = 0;
+
     /**
      * RestController constructor.
      * @param CreateSectionInterface $createSection
@@ -75,23 +82,42 @@ class RestController implements RestControllerInterface
     /**
      * OPTIONS (get) information about the section so you can build
      * awesome forms in your spa, or whatever you need it for.
+     *
+     * You can add options for relationships like this:
+     *
+     * ?options=someRelationshipFieldHandle|limit:100|offset:0
+     *
+     * The limit and offset defaults to:
+     * limit: 100
+     * offset: 0
+     *
      * @param string $sectionHandle
+     * @param string $id
      * @return JsonResponse
      */
-    public function getSectionInfo(string $sectionHandle): JsonResponse
-    {
+    public function getSectionInfo(
+        string $sectionHandle,
+        string $id = null
+    ): JsonResponse {
         $response = [];
 
-        $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
+        $section = $this->sectionManager
+            ->readByHandle(Handle::fromString($sectionHandle));
 
         $response['name'] = (string) $section->getName();
         $response['handle'] = (string) $section->getHandle();
 
         /** @var FieldInterface $field */
         foreach ($section->getFields() as $field) {
+
             $fieldInfo = [
                 (string) $field->getHandle() => $field->getConfig()->toArray()['field']
             ];
+
+            if ((string) $field->getFieldType()->getFullyQualifiedClassName() === Relationship::class) {
+                $fieldInfo = $this->getRelationshipsTo($field, $fieldInfo, $sectionHandle, (int) $id);
+            }
+
             $response['fields'][] = $fieldInfo;
         }
 
@@ -99,6 +125,135 @@ class RestController implements RestControllerInterface
             'Access-Control-Allow-Methods' => 'OPTIONS',
             'Access-Control-Allow-Origin' => '*'
         ]);
+    }
+
+    /**
+     * This is gets the potential options from the [OPTIONS] request.
+     *
+     * It will transform this:
+     * ?options=someRelationshipFieldHandle|limit:100|offset:0
+     *
+     * Into this:
+     * ['someRelationshipFieldHandle'] => [
+     *    'limit' => 100,
+     *    'offset' => 0
+     * ]
+     */
+    private function getOptions(): ?array
+    {
+        $request = $this->requestStack->getCurrentRequest();
+        $requestOptions = $request->get('options');
+        if (!empty($requestOptions)) {
+            $requestOptions = explode('|', $requestOptions);
+            $options = [];
+            $fieldHandle = array_shift($requestOptions);
+            $options[$fieldHandle] = [];
+            foreach ($requestOptions as $option) {
+                $keyValue = explode(':', $option);
+                $options[$fieldHandle][$keyValue[0]] = $keyValue[1];
+            }
+            return $options;
+        }
+        return null;
+    }
+
+    /**
+     * Get entries to populate a relationships field
+     *
+     * @param FieldInterface $field
+     * @param array $fieldInfo
+     * @param string $sectionHandle
+     * @param int|null $id
+     * @return array|null
+     */
+    private function getRelationshipsTo(
+        FieldInterface $field,
+        array $fieldInfo,
+        string $sectionHandle,
+        int $id = null
+    ): ?array {
+
+        $fieldHandle = (string) $field->getHandle();
+        $options = $this->getOptions();
+
+        if (!empty($fieldInfo[$fieldHandle]['to'])) {
+            try {
+                $to = $this->readSection->read(
+                    ReadOptions::fromArray([
+                        ReadOptions::SECTION => $fieldInfo[$fieldHandle]['to'],
+                        ReadOptions::LIMIT => !empty($options[$fieldHandle]['limit']) ?
+                            (int) $options[$fieldHandle]['limit'] : self::DEFAULT_RELATIONSHIPS_LIMIT,
+                        ReadOptions::OFFSET => !empty($options[$fieldHandle]['offset']) ?
+                            $options[$fieldHandle]['offset'] : self::DEFAULT_RELATIONSHIPS_OFFSET
+                    ])
+                );
+
+                $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']] = [];
+                /** @var CommonSectionInterface $entry */
+                foreach ($to as $entry) {
+                    $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']][] = [
+                        'id' => $entry->getId(),
+                        'slug' => (string) $entry->getSlug(),
+                        'name' => $entry->getDefault(),
+                        'created' => $entry->getCreated(),
+                        'updated' => $entry->getUpdated(),
+                        'selected' => false
+                    ];
+                }
+            } catch (EntryNotFoundException $exception) {
+                $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']]['error'] = $exception->getMessage();
+            }
+
+            if (!empty($id)) {
+                $fieldInfo = $this->setSelectedRelationshipsTo($sectionHandle, $fieldHandle, $fieldInfo, $id);
+            }
+        }
+
+        return $fieldInfo;
+    }
+
+    /**
+     * If editing an entry with relationships, mark related as true
+     *
+     * @param string $sectionHandle
+     * @param string $fieldHandle
+     * @param array $fieldInfo
+     * @param int $id
+     * @return array
+     */
+    private function setSelectedRelationshipsTo(
+        string $sectionHandle,
+        string $fieldHandle,
+        array $fieldInfo,
+        int $id
+    ): array {
+
+        /** @var CommonSectionInterface $editing */
+        $editing = $this->readSection->read(
+            ReadOptions::fromArray([
+                ReadOptions::SECTION => $sectionHandle,
+                ReadOptions::ID => (int) $id
+            ])
+        )->current();
+
+        try {
+            $relationshipsEntityMethod = 'get' .
+                ucfirst(Inflector::pluralize(!empty($fieldInfo[$fieldHandle]['as']) ?
+                    $fieldInfo[$fieldHandle]['as'] : $fieldInfo[$fieldHandle]['to']));
+
+            $related = $editing->{$relationshipsEntityMethod}();
+            $relatedIds = [];
+            foreach ($related as $relation) {
+                $relatedIds[] = $relation->getId();
+            }
+            foreach ($fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']] as &$relatable) {
+                if (!empty($relatable['id']) && in_array($relatable['id'], $relatedIds)) {
+                    $relatable['selected'] = true;
+                }
+            }
+        } catch (\Exception $exception) {}
+
+        return $fieldInfo;
     }
 
     /**

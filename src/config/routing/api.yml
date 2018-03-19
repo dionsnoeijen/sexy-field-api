@@ -4,8 +4,8 @@ rest.section.all:
   methods: [GET]
 
 rest.section.info:
-  path: /v1/section/{sectionHandle}
-  defaults: { _controller: 'rest.controller:getSectionInfo' }
+  path: /v1/section/{sectionHandle}/{id}
+  defaults: { _controller: 'rest.controller:getSectionInfo', id: null }
   methods: [OPTIONS]
 
 rest.section.entry.by.id:
