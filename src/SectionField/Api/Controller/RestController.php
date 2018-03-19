@@ -428,7 +428,46 @@ class RestController implements RestControllerInterface
     public function updateEntryById(string $sectionHandle, int $id): JsonResponse
     {
         $response = [];
+        $this->putToPost();
 
+        $form = $this->form->buildFormForSection(
+            $sectionHandle,
+            $this->requestStack,
+            SectionFormOptions::fromArray([
+                ReadOptions::ID => (int) $id
+            ]),
+            false
+        );
+
+        $form->handleRequest();
+        if ($form->isValid()) {
+            $response = $this->save($form);
+        } else {
+            $response['errors'] = $this->getFormErrors($form);
+            $response['code'] = 400;
+        }
+
+        return new JsonResponse(
+            $response,
+            $response['code'],
+            ['Access-Control-Allow-Origin' => '*']
+        );
+    }
+
+    /**
+     * PUT (Update) an entry by it's id.
+     * This is for internal calls, service to service when you cannot
+     * send along all fields that belong to the section you are updating
+     *
+     * @param string $sectionHandle
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function updateEntryByIdInternal(string $sectionHandle, int $id): JsonResponse
+    {
+        $response = [];
+        $this->putToPost();
+        $request = $this->requestStack->getCurrentRequest();
         $form = $this->form->buildFormForSection(
             $sectionHandle,
             $this->requestStack,
@@ -437,7 +476,7 @@ class RestController implements RestControllerInterface
             ]),
             false
         );
-        $form->handleRequest();
+        $form->submit($request->get($form->getName()), false);
 
         if ($form->isValid()) {
             $response = $this->save($form);
@@ -474,6 +513,44 @@ class RestController implements RestControllerInterface
             false
         );
         $form->handleRequest();
+
+        if ($form->isValid()) {
+            $response = $this->save($form);
+        } else {
+            $response['errors'] = $this->getFormErrors($form);
+            $response['code'] = 400;
+        }
+
+        return new JsonResponse(
+            $response,
+            $response['code'],
+            ['Access-Control-Allow-Origin' => '*']
+        );
+    }
+
+    /**
+     * PUT (Update) an entry by it's slug.
+     * This is for internal calls, service to service when you cannot
+     * send along all fields that belong to the section you are updating
+     *
+     * @param string $sectionHandle
+     * @param string $slug
+     * @return JsonResponse
+     */
+    public function updateEntryBySlugInternal(string $sectionHandle, string $slug): JsonResponse
+    {
+        $response = [];
+        $this->putToPost();
+        $request = $this->requestStack->getCurrentRequest();
+        $form = $this->form->buildFormForSection(
+            $sectionHandle,
+            $this->requestStack,
+            SectionFormOptions::fromArray([
+                ReadOptions::SLUG => $slug
+            ]),
+            false
+        );
+        $form->submit($request->get($form->getName()), false);
 
         if ($form->isValid()) {
             $response = $this->save($form);
@@ -560,9 +637,9 @@ class RestController implements RestControllerInterface
         $data = $form->getData();
 
         $request = $this->requestStack->getCurrentRequest();
-        $relationships = $this->form->hasRelationship($request->get('form'));
+
         try {
-            $this->createSection->save($data, $relationships);
+            $this->createSection->save($data);
             $response['success'] = true;
             $response['errors'] = false;
             $response['code'] = 200;
@@ -582,7 +659,7 @@ class RestController implements RestControllerInterface
     {
         $errors = [];
         foreach ($form->getErrors(true, true) as $field=>$formError) {
-            $errors[] = $formError->getMessage();
+            $errors[$field] = $formError->getMessage();
         }
 
         /** @var SymfonyFormInterface $child */
@@ -595,5 +672,18 @@ class RestController implements RestControllerInterface
         }
 
         return $errors;
+    }
+
+    /**
+     * Symfony doesn't know how to handle put.
+     * Transform put data to POST.
+     */
+    private function putToPost(): void
+    {
+        $request = $this->requestStack->getCurrentRequest();
+        $put = $request->getContent();
+        parse_str($put, $_POST);
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
     }
 }
