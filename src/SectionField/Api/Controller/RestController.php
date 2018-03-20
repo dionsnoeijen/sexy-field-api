@@ -130,7 +130,7 @@ class RestController implements RestControllerInterface
 
     /**
      * This is tricky, the form requires the properties from the entity
-     * as their name="form[entityProperty]" but this doesn't nescessarily
+     * as their name="form[entityProperty]" but this doesn't
      * reflect what is configured because of pluralizing and/or relationship
      * fields that would not use the configured handle but the "to" or "as"
      * field. Find a better solution for this problem.
