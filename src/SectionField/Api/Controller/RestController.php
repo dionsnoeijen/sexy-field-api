@@ -101,22 +101,23 @@ class RestController implements RestControllerInterface
     ): JsonResponse {
         $response = [];
 
-        $section = $this->sectionManager
-            ->readByHandle(Handle::fromString($sectionHandle));
+        $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
 
         $response['name'] = (string) $section->getName();
         $response['handle'] = (string) $section->getHandle();
 
+        $fieldProperties = $this->getEntityProperties($sectionHandle);
+
         /** @var FieldInterface $field */
         foreach ($section->getFields() as $field) {
 
-            $fieldInfo = [
-                (string) $field->getHandle() => $field->getConfig()->toArray()['field']
-            ];
+            $fieldInfo = [ (string) $field->getHandle() => $field->getConfig()->toArray()['field'] ];
 
             if ((string) $field->getFieldType()->getFullyQualifiedClassName() === Relationship::class) {
                 $fieldInfo = $this->getRelationshipsTo($field, $fieldInfo, $sectionHandle, (int) $id);
             }
+
+            $fieldInfo = $this->matchFormFieldsWithConfig($fieldProperties, $fieldInfo);
 
             $response['fields'][] = $fieldInfo;
         }
@@ -125,6 +126,70 @@ class RestController implements RestControllerInterface
             'Access-Control-Allow-Methods' => 'OPTIONS',
             'Access-Control-Allow-Origin' => '*'
         ]);
+    }
+
+    /**
+     * This is tricky, the form requires the properties from the entity
+     * as their name="form[entityProperty]" but this doesn't nescessarily
+     * reflect what is configured because of pluralizing and/or relationship
+     * fields that would not use the configured handle but the "to" or "as"
+     * field. Find a better solution for this problem.
+     *
+     * @param string $sectionHandle
+     * @return array
+     */
+    private function getEntityProperties(string $sectionHandle): array
+    {
+        $form = $this->form->buildFormForSection(
+            $sectionHandle,
+            $this->requestStack,
+            null,
+            false
+        )->getData();
+        $reflect = new \ReflectionClass($form);
+        $properties = array_map(function($data) {
+            return $data->name;
+        }, $reflect->getProperties());
+
+        return $properties;
+    }
+
+    private function matchFormFieldsWithConfig(array $entityProperties, array $fieldInfo): array
+    {
+        $newHandle = null;
+        $oldHandle = array_keys($fieldInfo)[0];
+        $newHandle = !empty($fieldInfo[$oldHandle]['as']) ?
+            $this->matchesWithInArray($fieldInfo[$oldHandle]['as'], $entityProperties) : null;
+        if (is_null($newHandle)) {
+            $newHandle = !empty($fieldInfo[$oldHandle]['to']) ?
+                $this->matchesWithInArray($fieldInfo[$oldHandle]['to'], $entityProperties) : null;
+        }
+
+        if (!is_null($newHandle)) {
+            $update = [];
+            $update[$newHandle] = $fieldInfo[array_keys($fieldInfo)[0]];
+            $update[$newHandle]['handle'] = $newHandle;
+            return $update;
+        }
+
+        return $fieldInfo;
+    }
+
+    private function matchesWithInArray(string $needle, array $search): ?string
+    {
+        $match = [];
+        foreach ($search as $key => $value) {
+            similar_text($needle, $value, $percent);
+            $match[$key] = $percent;
+        }
+
+        $highestValue = max($match);
+        if ($highestValue > 80 && $highestValue < 100) {
+            $keyHighest = array_keys($match, $highestValue)[0];
+            return $search[$keyHighest];
+        }
+
+        return null;
     }
 
     /**

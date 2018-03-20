@@ -90,6 +90,18 @@ class RestControllerTest extends TestCase
             'handle' => $sectionHandle
         ];
 
+        $entryMock = Mockery::mock(CommonSectionInterface::class);
+
+        $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
+        $mockedForm->shouldReceive('getData')
+            ->once()
+            ->andReturn($entryMock);
+
+        $this->form->shouldReceive('buildFormForSection')
+            ->once()
+            ->with($sectionHandle, $this->requestStack, null, false)
+            ->andReturn($mockedForm);
+
         $this->sectionManager->shouldReceive('readByHandle')
             ->once()
             ->andReturn($section);
@@ -136,6 +148,16 @@ class RestControllerTest extends TestCase
             'name' => $sectionName,
             'handle' => $sectionHandle
         ];
+
+        $entryMock = Mockery::mock(CommonSectionInterface::class);
+        $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
+        $mockedForm->shouldReceive('getData')
+            ->once()
+            ->andReturn($entryMock);
+
+        $this->form->shouldReceive('buildFormForSection')
+            ->once()
+            ->andReturn($mockedForm);
 
         $this->sectionManager->shouldReceive('readByHandle')
             ->once()
