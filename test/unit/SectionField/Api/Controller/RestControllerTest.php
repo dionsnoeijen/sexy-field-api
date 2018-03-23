@@ -5,6 +5,7 @@ namespace Tardigrades\SectionField\Api\Controller;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Guzzle\Http\Message\Header\HeaderCollection;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -78,7 +79,6 @@ class RestControllerTest extends TestCase
      * @test
      * @covers ::__construct
      * @covers ::getSectionInfo
-     * @runInSeparateProcess
      */
     public function it_gets_section_info_of_a_section_without_relationships()
     {
@@ -89,6 +89,12 @@ class RestControllerTest extends TestCase
             'name' => $sectionName,
             'handle' => $sectionHandle
         ];
+
+        $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
+
+        $this->requestStack->shouldReceive('getCurrentRequest')
+            ->once()
+            ->andReturn($request);
 
         $entryMock = Mockery::mock(CommonSectionInterface::class);
 
@@ -121,8 +127,8 @@ class RestControllerTest extends TestCase
         $expectedFieldInfo['fields'] = $this->givenASetOfFieldInfo();
 
         $expectedResponse = new JsonResponse($expectedFieldInfo, 200, [
-            'Access-Control-Allow-Methods' => 'OPTIONS',
-            'Access-Control-Allow-Origin' => '*'
+            'Access-Control-Allow-Origin' => 'iamtheorigin.com',
+            'Access-Control-Allow-Credentials' => 'true'
         ]);
 
         $response = $this->controller->getSectionInfo('sexyHandle');
@@ -140,14 +146,17 @@ class RestControllerTest extends TestCase
         $sectionName = 'Even more sexy';
         $sectionHandle = 'evenMoreSexy';
         $section = Mockery::mock(SectionInterface::class);
-        $request = new Request([
-            'options' => 'someRelationshipFieldHandle|limit:100|offset:0'
-        ]);
 
         $expectedFieldInfo = [
             'name' => $sectionName,
             'handle' => $sectionHandle
         ];
+
+        $request = new Request([
+            'options' => 'someRelationshipFieldHandle|limit:100|offset:0'
+        ], [], [], [], [], [
+            'HTTP_ORIGIN' => 'iamtheorigin.com'
+        ]);
 
         $entryMock = Mockery::mock(CommonSectionInterface::class);
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
@@ -211,12 +220,14 @@ class RestControllerTest extends TestCase
         $expectedFieldInfo['fields'] = $this->givenASetOfFieldInfo(true);
         $expectedFieldInfo['fields'][2]['someRelationshipFieldHandle']['whatever'] = $formattedRecords;
 
-        $expectedResponse = new JsonResponse($expectedFieldInfo, 200, [
-            'Access-Control-Allow-Methods' => 'OPTIONS',
-            'Access-Control-Allow-Origin' => '*'
+        $expectedResponse = new JsonResponse(
+            $expectedFieldInfo, 200, [
+            'Access-Control-Allow-Origin' => 'iamtheorigin.com',
+            'Access-Control-Allow-Credentials' => 'true'
         ]);
 
         $this->readSection->shouldReceive('read')->andReturn($sectionEntitiesTo);
+
         $response = $this->controller->getSectionInfo('sexyHandle');
 
         $this->assertEquals($expectedResponse, $response);
@@ -227,33 +238,29 @@ class RestControllerTest extends TestCase
      * @covers ::__construct
      * @covers ::getEntryById
      * @covers ::getEntryBySlug
-     * @runInSeparateProcess
      */
     public function it_should_get_entry_by_id()
     {
-        $this->readSection->shouldReceive('read')
-            ->andReturn(new \ArrayIterator(['albatros', 'frogfish']));
-
-        $mockRequest = Mockery::mock(Request::class)->makePartial();
-        $mockRequest->shouldReceive('get')
-            ->with('fields', ['id'])
-            ->andReturn('farm, dog, www');
+        $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
 
         $this->requestStack->shouldReceive('getCurrentRequest')
-            ->andReturn($mockRequest);
+            ->andReturn($request);
+
+        $this->readSection
+            ->shouldReceive('read')
+            ->andReturn(new \ArrayIterator([['albatros'], ['frogfish']]));
 
         $response = $this->controller->getEntryById('sexyHandle', '90000');
-        $this->assertSame('"albatros"', $response->getContent());
+        $this->assertSame('["albatros"]', $response->getContent());
 
         $response = $this->controller->getEntryBySlug('sexyHandle', 'slug');
-        $this->assertSame('"albatros"', $response->getContent());
+        $this->assertSame('["albatros"]', $response->getContent());
     }
 
     /**
      * @test
      * @covers ::__construct
      * @covers ::getEntriesByFieldValue
-     * @runInSeparateProcess
      */
     public function it_should_get_entries_by_field_value()
     {
@@ -265,15 +272,18 @@ class RestControllerTest extends TestCase
         $orderBy = 'name';
         $sort = 'DESC';
 
-        $mockRequest = Mockery::mock(Request::class)->makePartial();
-        $mockRequest->shouldReceive('get')->with('value')->andReturn($fieldValue);
-        $mockRequest->shouldReceive('get')->with('offset', 0)->andReturn($offset);
-        $mockRequest->shouldReceive('get')->with('limit', 100)->andReturn($limit);
-        $mockRequest->shouldReceive('get')->with('orderBy', 'created')->andReturn($orderBy);
-        $mockRequest->shouldReceive('get')->with('sort', 'DESC')->andReturn($sort);
-        $mockRequest->shouldReceive('get')->with('fields', ['id'])->andReturn('');
+        $request = new Request([
+            'value' => $fieldValue,
+            'offset' => $offset,
+            'limit' => $limit,
+            'orderBy' => $orderBy,
+            'sort' => $sort,
+            'fields' => ['id']
+        ]);
 
-        $this->requestStack->shouldReceive('getCurrentRequest')->andReturn($mockRequest);
+        $this->requestStack->shouldReceive('getCurrentRequest')
+            ->once()
+            ->andReturn($request);
 
         $readOptions = ReadOptions::fromArray([
             ReadOptions::SECTION => $sectionHandle,
@@ -285,22 +295,25 @@ class RestControllerTest extends TestCase
 
         $this->readSection->shouldReceive('read')
             ->with(equalTo($readOptions))
-            ->andReturn(new \ArrayIterator(['this', 'that']));
+            ->andReturn(new \ArrayIterator([['this'], ['that']]));
 
         $response = $this->controller->getEntriesByFieldValue($sectionHandle, $fieldHandle);
 
-        $this->assertSame('["this","that"]', $response->getContent());
+        $this->assertSame('[["this"],["that"]]', $response->getContent());
     }
 
     /**
      * @test
      * @covers ::__construct
      * @covers ::getEntries
-     * @runInSeparateProcess
      */
     public function it_should_get_the_entries()
     {
         $mockRequest = Mockery::mock(Request::class)->makePartial();
+        $mockRequest->shouldReceive('getMethod')
+            ->once()
+            ->andReturn('NOT_OPTIONS');
+
         $mockRequest->shouldReceive('get')
             ->with('offset', 0)
             ->andReturn(10);
@@ -321,25 +334,36 @@ class RestControllerTest extends TestCase
             ->with('fields', ['id'])
             ->andReturn('');
 
+        $mockRequest->headers = Mockery::mock(HeaderCollection::class);
+        $mockRequest->headers->shouldReceive('get')
+            ->with('Origin')
+            ->once()
+            ->andReturn('someorigin.com');
+
         $this->requestStack->shouldReceive('getCurrentRequest')
             ->andReturn($mockRequest);
 
         $this->readSection->shouldReceive('read')
-            ->andReturn(new \ArrayIterator(['this', 'that']));
+            ->andReturn(new \ArrayIterator([['this'], ['that']]));
 
         $response = $this->controller->getEntries('sexy');
 
-        $this->assertSame('["this","that"]', $response->getContent());
+        $this->assertSame('[["this"],["that"]]', $response->getContent());
     }
 
     /**
      * @test
      * @covers ::__construct
      * @covers ::createEntry
-     * @runInSeparateProcess
      */
     public function it_creates_an_entry()
     {
+        $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
+
+        $this->requestStack->shouldReceive('getCurrentRequest')
+            ->once()
+            ->andReturn($request);
+
         $entryMock = Mockery::mock(CommonSectionInterface::class);
 
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
@@ -376,10 +400,15 @@ class RestControllerTest extends TestCase
      * @test
      * @covers ::__construct
      * @covers ::createEntry
-     * @runInSeparateProcess
      */
     public function it_fails_creating_an_entry_during_save_and_returns_the_correct_response()
     {
+        $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
+
+        $this->requestStack->shouldReceive('getCurrentRequest')
+            ->once()
+            ->andReturn($request);
+
         $entryMock = Mockery::mock(CommonSectionInterface::class);
 
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
@@ -401,14 +430,14 @@ class RestControllerTest extends TestCase
         $this->createSection->shouldReceive('save')
             ->with($entryMock)
             ->once()
-            ->andThrow(\Exception::class, "Exception message");
+            ->andThrow(\Exception::class, "Something went wrong");
 
         $this->requestStack->shouldReceive('getCurrentRequest')
             ->andReturn($mockedRequest);
 
         $response = $this->controller->createEntry('sexy');
         $this->assertSame(
-            '{"code":500,"exception":"Exception message"}',
+            '{"code":500,"exception":"Something went wrong"}',
             $response->getContent()
         );
     }
@@ -456,15 +485,20 @@ class RestControllerTest extends TestCase
      * @covers ::__construct
      * @covers ::updateEntryById
      * @covers ::updateEntryBySlug
-     * @runInSeparateProcess
      */
     public function it_updates_entries()
     {
+        $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
+
+        $this->requestStack->shouldReceive('getCurrentRequest')
+            ->times(4)
+            ->andReturn($request);
+
         $entryMock = Mockery::mock(CommonSectionInterface::class);
 
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
-
-        $mockedForm->shouldReceive('handleRequest')->twice();
+        $mockedForm->shouldReceive('submit')->twice();
+        $mockedForm->shouldReceive('getName')->twice();
         $mockedForm->shouldReceive('isValid')->andReturn(true);
         $mockedForm->shouldReceive('getData')
             ->andReturn($entryMock);
@@ -473,17 +507,10 @@ class RestControllerTest extends TestCase
             ->twice()
             ->andReturn($mockedForm);
 
-        $mockedRequest = Mockery::mock(Request::class)->makePartial();
-        $mockedRequest->shouldReceive('get')->with('form')
-            ->andReturn(['no']);
-
         $this->createSection->shouldReceive('save')
             ->with($entryMock)
             ->twice()
             ->andReturn(true);
-
-        $this->requestStack->shouldReceive('getCurrentRequest')
-            ->andReturn($mockedRequest);
 
         $response = $this->controller->updateEntryById('sexy', 9);
         $this->assertSame(
@@ -555,6 +582,12 @@ class RestControllerTest extends TestCase
     {
         $entryMock = Mockery::mock(CommonSectionInterface::class);
 
+        $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
+
+        $this->requestStack->shouldReceive('getCurrentRequest')
+            ->twice()
+            ->andReturn($request);
+
         $this->readSection->shouldReceive('read')
             ->twice()
             ->andReturn(new \ArrayIterator([$entryMock]));
@@ -578,9 +611,15 @@ class RestControllerTest extends TestCase
      * @covers ::deleteEntryBySlug
      * @runInSeparateProcess
      */
-    public function it_does_not_deletes_entries_and_return_the_correct_response()
+    public function it_does_not_delete_entries_and_return_the_correct_response()
     {
         $entryMock = Mockery::mock(CommonSectionInterface::class);
+
+        $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
+
+        $this->requestStack->shouldReceive('getCurrentRequest')
+            ->twice()
+            ->andReturn($request);
 
         $this->readSection->shouldReceive('read')
             ->twice()

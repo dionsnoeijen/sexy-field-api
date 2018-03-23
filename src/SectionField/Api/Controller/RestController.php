@@ -6,6 +6,8 @@ namespace Tardigrades\SectionField\Api\Controller;
 use Doctrine\Common\Util\Inflector;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerBuilder;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Tardigrades\Entity\FieldInterface;
@@ -53,6 +55,8 @@ class RestController implements RestControllerInterface
     const DEFAULT_RELATIONSHIPS_LIMIT = 100;
     const DEFAULT_RELATIONSHIPS_OFFSET = 0;
 
+    const OPTIONS_CALL = 'options';
+
     /**
      * RestController constructor.
      * @param CreateSectionInterface $createSection
@@ -79,7 +83,7 @@ class RestController implements RestControllerInterface
     }
 
     /**
-     * OPTIONS (get) information about the section so you can build
+     * GET information about the section so you can build
      * awesome forms in your spa, or whatever you need it for.
      *
      * You can add options for relationships like this:
@@ -99,6 +103,13 @@ class RestController implements RestControllerInterface
         string $id = null
     ): JsonResponse {
 
+        $request = $this->requestStack->getCurrentRequest();
+
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
+        }
+
         try {
             $response = [];
 
@@ -115,7 +126,7 @@ class RestController implements RestControllerInterface
                 $fieldInfo = [(string)$field->getHandle() => $field->getConfig()->toArray()['field']];
 
                 if ((string)$field->getFieldType()->getFullyQualifiedClassName() === Relationship::class) {
-                    $fieldInfo = $this->getRelationshipsTo($field, $fieldInfo, $sectionHandle, (int)$id);
+                    $fieldInfo = $this->getRelationshipsTo($request, $field, $fieldInfo, $sectionHandle, (int) $id);
                 }
 
                 $fieldInfo = $this->matchFormFieldsWithConfig($fieldProperties, $fieldInfo);
@@ -123,16 +134,22 @@ class RestController implements RestControllerInterface
                 $response['fields'][] = $fieldInfo;
             }
 
-            return new JsonResponse($response, 200, [
-                'Access-Control-Allow-Methods' => 'OPTIONS'
-            ]);
-        } catch (SectionNotFoundException $exception) {
-
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], $exception->getCode(), [
-                'Access-Control-Allow-Methods' => 'OPTIONS'
-            ]);
+            return new JsonResponse(
+                $response,
+                JsonResponse::HTTP_OK,
+                $this->getDefaultResponseHeaders($request)
+            );
+        } catch (\Exception $exception) {
+            if ($exception instanceof EntryNotFoundException ||
+                $exception instanceof SectionNotFoundException) {
+                return new JsonResponse([
+                    'message' => $exception->getMessage()
+                ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
+            } else {
+                return new JsonResponse([
+                    'message' => 'Something went wrong'
+                ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            }
         }
     }
 
@@ -144,6 +161,13 @@ class RestController implements RestControllerInterface
      */
     public function getEntryById(string $sectionHandle, string $id): JsonResponse
     {
+        $request = $this->requestStack->getCurrentRequest();
+
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
+        }
+
         try {
             $entry = $this->readSection->read(ReadOptions::fromArray([
                 ReadOptions::SECTION => $sectionHandle,
@@ -151,13 +175,19 @@ class RestController implements RestControllerInterface
             ]))->current();
 
             $serializer = SerializerBuilder::create()->build();
-            $jsonContent = $serializer->serialize($entry, 'json', $this->getContext());
+            $content = $serializer->toArray($entry, $this->getContext($request));
 
-            return new JsonResponse($jsonContent, 200);
-        } catch (EntryNotFoundException $exception) {
-            return new JsonResponse([
-                'error' => $exception->getMessage()
-            ], $exception->getCode());
+            return new JsonResponse($content, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
+        } catch (\Exception $exception) {
+            if ($exception instanceof EntryNotFoundException) {
+                return new JsonResponse([
+                    'message' => $exception->getMessage()
+                ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
+            } else {
+                return new JsonResponse([
+                    'message' => 'Something went wrong'
+                ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            }
         }
     }
 
@@ -169,6 +199,13 @@ class RestController implements RestControllerInterface
      */
     public function getEntryBySlug(string $sectionHandle, string $slug): JsonResponse
     {
+        $request = $this->requestStack->getCurrentRequest();
+
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
+        }
+
         try {
             $entry = $this->readSection->read(ReadOptions::fromArray([
                 ReadOptions::SECTION => $sectionHandle,
@@ -176,13 +213,19 @@ class RestController implements RestControllerInterface
             ]))->current();
 
             $serializer = SerializerBuilder::create()->build();
-            $jsonContent = $serializer->serialize($entry, 'json', $this->getContext());
+            $content = $serializer->toArray($entry, $this->getContext($request));
 
-            return new JsonResponse($jsonContent, 200);
-        } catch (EntryNotFoundException $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], $exception->getCode());
+            return new JsonResponse($content, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
+        } catch (\Exception $exception) {
+            if ($exception instanceof EntryNotFoundException) {
+                return new JsonResponse([
+                    'message' => $exception->getMessage()
+                ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
+            } else {
+                return new JsonResponse([
+                    'message' => 'Something went wrong'
+                ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            }
         }
     }
 
@@ -199,6 +242,11 @@ class RestController implements RestControllerInterface
     {
         $request = $this->requestStack->getCurrentRequest();
 
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
+        }
+
         // Theoretically you could have many results on a field value, so add some control over the results with limit, offset and also sorting
         $fieldValue = $request->get('value');
         $offset = $request->get('offset', 0);
@@ -209,23 +257,27 @@ class RestController implements RestControllerInterface
         try {
             $entries = $this->readSection->read(ReadOptions::fromArray([
                 ReadOptions::SECTION => $sectionHandle,
-                ReadOptions::FIELD => [$fieldHandle => $fieldValue],
+                ReadOptions::FIELD => [ $fieldHandle => $fieldValue ],
                 ReadOptions::OFFSET => $offset,
                 ReadOptions::LIMIT => $limit,
-                ReadOptions::ORDER_BY => [$orderBy => $sort]
+                ReadOptions::ORDER_BY => [ $orderBy => $sort ]
             ]));
-
             $serializer = SerializerBuilder::create()->build();
             $result = [];
             foreach ($entries as $entry) {
-                $result[] = $serializer->serialize($entry, 'json', $this->getContext());
+                $result[] = $serializer->toArray($entry, $this->getContext($request));
             }
-
-            return new JsonResponse($result, 200);
-        } catch (EntryNotFoundException $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], $exception->getCode());
+            return new JsonResponse($result, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
+        } catch (\Exception $exception) {
+            if ($exception instanceof EntryNotFoundException) {
+                return new JsonResponse([
+                    'message' => $exception->getMessage()
+                ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
+            } else {
+                return new JsonResponse([
+                    'message' => 'Something went wrong'
+                ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            }
         }
     }
 
@@ -240,31 +292,45 @@ class RestController implements RestControllerInterface
 
         $request = $this->requestStack->getCurrentRequest();
 
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
+        }
+
         $offset = $request->get('offset', 0);
         $limit = $request->get('limit', 100);
         $orderBy = $request->get('orderBy', 'created');
         $sort = $request->get('sort', 'DESC');
 
         try {
-
             $entries = $this->readSection->read(ReadOptions::fromArray([
                 ReadOptions::SECTION => $sectionHandle,
                 ReadOptions::OFFSET => $offset,
                 ReadOptions::LIMIT => $limit,
-                ReadOptions::ORDER_BY => [$orderBy => $sort]
+                ReadOptions::ORDER_BY => [ $orderBy => $sort ]
             ]));
             $serializer = SerializerBuilder::create()->build();
 
             $result = [];
             foreach ($entries as $entry) {
-                $result[] = $serializer->serialize($entry, 'json', $this->getContext());
+                $result[] = $serializer->toArray($entry, $this->getContext($request));
             }
 
-            return new JsonResponse($result, 200);
-        } catch (EntryNotFoundException $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], $exception->getCode());
+            return new JsonResponse(
+                $result,
+                JsonResponse::HTTP_OK,
+                $this->getDefaultResponseHeaders($request)
+            );
+        } catch (\Exception $exception) {
+            if ($exception instanceof EntryNotFoundException) {
+                return new JsonResponse([
+                    'message' => $exception->getMessage()
+                ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
+            } else {
+                return new JsonResponse([
+                    'message' => 'Something went wrong'
+                ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            }
         }
     }
 
@@ -275,6 +341,13 @@ class RestController implements RestControllerInterface
      */
     public function createEntry(string $sectionHandle): JsonResponse
     {
+        $request = $this->requestStack->getCurrentRequest();
+
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, POST');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
+        }
+
         try {
             $response = [];
 
@@ -291,22 +364,23 @@ class RestController implements RestControllerInterface
                 $response = $this->save($form);
             } else {
                 $response['errors'] = $this->getFormErrors($form);
-                $response['code'] = 400;
+                $response['code'] = JsonResponse::HTTP_BAD_REQUEST;
             }
 
             return new JsonResponse(
                 $response,
-                $response['code']
+                $response['code'],
+                $this->getDefaultResponseHeaders($request)
             );
         } catch (\Exception $exception) {
             return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], $exception->getCode());
+                'message' => 'Something went wrong'
+            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
         }
     }
 
     /**
-     * PUT (Update) an entry by it's id
+     * PUT (Update) an entry by it's id.
      *
      * @param string $sectionHandle
      * @param int $id
@@ -314,52 +388,16 @@ class RestController implements RestControllerInterface
      */
     public function updateEntryById(string $sectionHandle, int $id): JsonResponse
     {
-        try {
-            $response = [];
-            $this->putToPost();
+        $request = $this->requestStack->getCurrentRequest();
 
-            $form = $this->form->buildFormForSection(
-                $sectionHandle,
-                $this->requestStack,
-                SectionFormOptions::fromArray([
-                    ReadOptions::ID => (int)$id
-                ]),
-                false
-            );
-            $form->handleRequest();
-            if ($form->isValid()) {
-                $response = $this->save($form);
-            } else {
-                $response['errors'] = $this->getFormErrors($form);
-                $response['code'] = 400;
-            }
-
-            return new JsonResponse(
-                $response,
-                $response['code']
-            );
-        } catch (\Exception $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], $exception->getCode());
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, PUT');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
         }
-    }
 
-    /**
-     * PUT (Update) an entry by it's id.
-     * This is for internal calls, service to service when you cannot
-     * send along all fields that belong to the section you are updating
-     *
-     * @param string $sectionHandle
-     * @param int $id
-     * @return JsonResponse
-     */
-    public function updateEntryByIdInternal(string $sectionHandle, int $id): JsonResponse
-    {
         try {
             $response = [];
             $this->putToPost();
-            $request = $this->requestStack->getCurrentRequest();
             $form = $this->form->buildFormForSection(
                 $sectionHandle,
                 $this->requestStack,
@@ -374,58 +412,18 @@ class RestController implements RestControllerInterface
                 $response = $this->save($form);
             } else {
                 $response['errors'] = $this->getFormErrors($form);
-                $response['code'] = 400;
+                $response['code'] = JsonResponse::HTTP_BAD_REQUEST;
             }
 
             return new JsonResponse(
                 $response,
-                $response['code']
+                $response['code'],
+                $this->getDefaultResponseHeaders($request)
             );
         } catch (\Exception $exception) {
             return new JsonResponse([
                 'message' => $exception->getMessage()
-            ], $exception->getCode());
-        }
-    }
-
-    /**
-     * PUT (Update) an entry by one of it's field values
-     * Use this with a slug
-     *
-     * @param string $sectionHandle
-     * @param string $slug
-     * @return JsonResponse
-     */
-    public function updateEntryBySlug(string $sectionHandle, string $slug): JsonResponse
-    {
-        try {
-            $response = [];
-
-            $form = $this->form->buildFormForSection(
-                $sectionHandle,
-                $this->requestStack,
-                SectionFormOptions::fromArray([
-                    ReadOptions::SLUG => $slug
-                ]),
-                false
-            );
-            $form->handleRequest();
-
-            if ($form->isValid()) {
-                $response = $this->save($form);
-            } else {
-                $response['errors'] = $this->getFormErrors($form);
-                $response['code'] = 400;
-            }
-
-            return new JsonResponse(
-                $response,
-                $response['code']
-            );
-        } catch (\Exception $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], $exception->getCode());
+            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
         }
     }
 
@@ -438,12 +436,18 @@ class RestController implements RestControllerInterface
      * @param string $slug
      * @return JsonResponse
      */
-    public function updateEntryBySlugInternal(string $sectionHandle, string $slug): JsonResponse
+    public function updateEntryBySlug(string $sectionHandle, string $slug): JsonResponse
     {
+        $request = $this->requestStack->getCurrentRequest();
+
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, PUT');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
+        }
+
         try {
             $response = [];
             $this->putToPost();
-            $request = $this->requestStack->getCurrentRequest();
             $form = $this->form->buildFormForSection(
                 $sectionHandle,
                 $this->requestStack,
@@ -458,17 +462,18 @@ class RestController implements RestControllerInterface
                 $response = $this->save($form);
             } else {
                 $response['errors'] = $this->getFormErrors($form);
-                $response['code'] = 400;
+                $response['code'] = JsonResponse::HTTP_BAD_REQUEST;
             }
 
             return new JsonResponse(
                 $response,
-                $response['code']
+                $response['code'],
+                $this->getDefaultResponseHeaders($request)
             );
         } catch (\Exception $exception) {
             return new JsonResponse([
                 'message' => $exception->getMessage()
-            ], $exception->getCode());
+            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
         }
     }
 
@@ -480,17 +485,30 @@ class RestController implements RestControllerInterface
      */
     public function deleteEntryById(string $sectionHandle, int $id): JsonResponse
     {
+        $request = $this->requestStack->getCurrentRequest();
+
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, DELETE');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
+        }
+
         $readOptions = ReadOptions::fromArray([
             ReadOptions::SECTION => $sectionHandle,
             ReadOptions::ID => (int) $id
         ]);
 
-        $entry = $this->readSection->read($readOptions)[0];
-        $success = $this->deleteSection->delete($entry);
+        try {
+            $entry = $this->readSection->read($readOptions)->current();
+            $success = $this->deleteSection->delete($entry);
 
-        return new JsonResponse([
-            'success' => $success,
-        ], $success ? 200 : 404);
+            return new JsonResponse([
+                'success' => $success,
+            ], $success ? JsonResponse::HTTP_OK : JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
+        } catch (\Exception $exception) {
+            return new JsonResponse([
+                'message' => $exception->getMessage()
+            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+        }
     }
 
     /**
@@ -501,22 +519,60 @@ class RestController implements RestControllerInterface
      */
     public function deleteEntryBySlug(string $sectionHandle, string $slug): JsonResponse
     {
-        $readOptions = ReadOptions::fromArray([
-            ReadOptions::SECTION => $sectionHandle,
-            ReadOptions::SLUG => $slug
-        ]);
+        $request = $this->requestStack->getCurrentRequest();
 
-        $entry = $this->readSection->read($readOptions)[0];
-        $success = $this->deleteSection->delete($entry);
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, DELETE');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
+        }
 
-        return new JsonResponse([
-            'success' => $success,
-        ], $success ? 200 : 404);
+        try {
+            $entry = $this->readSection->read(ReadOptions::fromArray([
+                ReadOptions::SECTION => $sectionHandle,
+                ReadOptions::SLUG => $slug
+            ]))->current();
+            $success = $this->deleteSection->delete($entry);
+            return new JsonResponse([
+                'success' => $success,
+            ], $success ? JsonResponse::HTTP_OK : JsonResponse::HTTP_NOT_FOUND,
+                $this->getDefaultResponseHeaders($request)
+            );
+        } catch (\Exception $exception) {
+            if ($exception instanceof EntryNotFoundException) {
+                return new JsonResponse([
+                    'message' => $exception->getMessage()
+                ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
+            } else {
+                return new JsonResponse([
+                    'message' => $exception->getMessage()
+                ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            }
+        }
     }
 
-    private function getContext(): SerializationContext
+    /**
+     * Send along on options call
+     * @todo: Make headers configurable
+     *
+     * @param Request $request
+     * @param string $allowMethods
+     * @return null|JsonResponse
+     */
+    private function preFlightOptions(Request $request, string $allowMethods = null): ?JsonResponse
     {
-        $request = $this->requestStack->getCurrentRequest();
+        if (strtolower($request->getMethod()) === self::OPTIONS_CALL) {
+            return new JsonResponse([], JsonResponse::HTTP_OK, [
+                'Access-Control-Allow-Methods' => !empty($allowMethods) ?
+                    $allowMethods : 'OPTIONS',
+                'Access-Control-Allow-Credentials' => 'true'
+            ]);
+        }
+
+        return null;
+    }
+
+    private function getContext(Request $request): SerializationContext
+    {
         $fields = $request->get('fields', ['id']);
 
         if (is_string($fields)) {
@@ -538,16 +594,14 @@ class RestController implements RestControllerInterface
         $response = [];
         $data = $form->getData();
 
-        $request = $this->requestStack->getCurrentRequest();
-
         try {
             $this->createSection->save($data);
             $response['success'] = true;
             $response['errors'] = false;
-            $response['code'] = 200;
+            $response['code'] = JsonResponse::HTTP_OK;
         } catch (\Exception $exception) {
-            $response['code'] = 500;
-            $response['exception'] = $exception->getMessage();
+            $response['code'] = JsonResponse::HTTP_INTERNAL_SERVER_ERROR;
+            $response['exception'] = 'Something went wrong';
         }
 
         return $response;
@@ -654,7 +708,7 @@ class RestController implements RestControllerInterface
     }
 
     /**
-     * This is gets the potential options from the [OPTIONS] request.
+     * This is gets the potential parameters from the section info request.
      *
      * It will transform this:
      * ?options=someRelationshipFieldHandle|limit:100|offset:0
@@ -664,10 +718,11 @@ class RestController implements RestControllerInterface
      *    'limit' => 100,
      *    'offset' => 0
      * ]
+     * @param Request $request
+     * @return array|null
      */
-    private function getOptions(): ?array
+    private function getOptions(Request $request): ?array
     {
-        $request = $this->requestStack->getCurrentRequest();
         $requestOptions = $request->get('options');
         if (!empty($requestOptions)) {
             $requestOptions = explode('|', $requestOptions);
@@ -687,12 +742,14 @@ class RestController implements RestControllerInterface
      * Get entries to populate a relationships field
      *
      * @param FieldInterface $field
+     * @param Request $request
      * @param array $fieldInfo
      * @param string $sectionHandle
      * @param int|null $id
      * @return array|null
      */
     private function getRelationshipsTo(
+        Request $request,
         FieldInterface $field,
         array $fieldInfo,
         string $sectionHandle,
@@ -700,7 +757,7 @@ class RestController implements RestControllerInterface
     ): ?array {
 
         $fieldHandle = (string) $field->getHandle();
-        $options = $this->getOptions();
+        $options = $this->getOptions($request);
 
         if (!empty($fieldInfo[$fieldHandle]['to'])) {
             try {
@@ -736,6 +793,20 @@ class RestController implements RestControllerInterface
         }
 
         return $fieldInfo;
+    }
+
+    /**
+     * @todo: Make sure the allow headers are configurable.
+     * @param $request
+     * @return array
+     */
+    private function getDefaultResponseHeaders($request): array
+    {
+        $origin = $request->headers->get('Origin');
+        return [
+            'Access-Control-Allow-Origin' => !empty($origin) ? $origin : '*',
+            'Access-Control-Allow-Credentials' => 'true'
+        ];
     }
 
     /**
