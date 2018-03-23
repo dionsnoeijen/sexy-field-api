@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Guzzle\Http\Message\Header\HeaderCollection;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\FormError;
+use Symfony\Component\HttpFoundation\HeaderBag;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -443,7 +444,9 @@ class RestControllerTest extends TestCase
     }
 
     /**
-     * @todo: Fix this test. It throws a massive error.
+     * @test
+     * @covers ::__construct
+     * @covers ::createEntry
      */
     public function it_does_not_create_an_entry_and_returns_correct_response()
     {
@@ -457,7 +460,7 @@ class RestControllerTest extends TestCase
         $error = Mockery::mock(FormError::class)->makePartial();
         $error->shouldReceive('getMessage')->andReturn('you are wrong!');
         $mockedForm->shouldReceive('getErrors')
-            ->andReturn(['one' => $error]);
+            ->andReturn([$error]);
 
         $this->form->shouldReceive('buildFormForSection')
             ->andReturn($mockedForm);
@@ -465,6 +468,12 @@ class RestControllerTest extends TestCase
         $mockedRequest = Mockery::mock(Request::class)->makePartial();
         $mockedRequest->shouldReceive('get')->with('form')
             ->andReturn(['no']);
+        $mockedRequest->shouldReceive('getMethod')
+            ->andReturn('not options');
+
+        $mockedRequest->headers = Mockery::mock(HeaderBag::class);
+        $mockedRequest->headers->shouldReceive('get')->with('Origin')
+            ->andReturn('Some origin');
 
         $this->createSection->shouldReceive('save')
             ->never();
@@ -526,21 +535,25 @@ class RestControllerTest extends TestCase
     }
 
     /**
-     * @todo: Fix this test, it throws a massive error.
+     * @test
+     * @covers ::__construct
+     * @covers ::updateEntryById
+     * @covers ::updateEntryBySlug
      */
     public function it_does_not_update_entries_and_returns_correct_response()
     {
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
 
-        $mockedForm->shouldReceive('handleRequest')->twice();
+        $mockedForm->shouldReceive('handleRequest')->never();
         $mockedForm->shouldReceive('isValid')->andReturn(false);
         $mockedForm->shouldReceive('getName')->andReturn('name of form');
         $mockedForm->shouldReceive('getIterator')->andReturn(new \ArrayIterator([$mockedForm]));
+        $mockedForm->shouldReceive('submit')->with('foo', false);
 
         $error = Mockery::mock(FormError::class)->makePartial();
         $error->shouldReceive('getMessage')->andReturn('you are wrong!');
         $mockedForm->shouldReceive('getErrors')
-            ->andReturn(['one' => $error]);
+            ->andReturn([$error]);
 
         $this->form->shouldReceive('buildFormForSection')
             ->twice()
@@ -549,6 +562,15 @@ class RestControllerTest extends TestCase
         $mockedRequest = Mockery::mock(Request::class)->makePartial();
         $mockedRequest->shouldReceive('get')->with('form')
             ->andReturn(['no']);
+        $mockedRequest->shouldReceive('getMethod')
+            ->andReturn('not options');
+        $mockedRequest->shouldReceive('get')
+            ->with('name of form')
+            ->andReturn('foo');
+
+        $mockedRequest->headers = Mockery::mock(HeaderBag::class);
+        $mockedRequest->headers->shouldReceive('get')->with('Origin')
+            ->andReturn('Some origin');
 
         $this->createSection->shouldReceive('save')
             ->never();
