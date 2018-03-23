@@ -1,67 +1,65 @@
+# # GET ALL ENTRIES OF SECTION
 rest.section.all:
   path: /v1/section/{sectionHandle}
   defaults: { _controller: 'rest.controller:getEntries' }
-  methods: [GET]
+  methods: [ GET, OPTIONS ]
 
+# GET INFORMATION OF SECTION, HOW TO BUILD FORM
 rest.section.info:
-  path: /v1/section/{sectionHandle}/{id}
+  path: /v1/section/info/{sectionHandle}/{id}
   defaults: { _controller: 'rest.controller:getSectionInfo', id: null }
-  methods: [OPTIONS]
+  methods: [ GET, OPTIONS ]
 
+# SELECT BY ID
 rest.section.entry.by.id:
-  path: /v1/section/{sectionHandle}/{id}
+  path: /v1/section/{sectionHandle}/id/{id}
   defaults: { _controller: 'rest.controller:getEntryById' }
   requirements:
     id: '\d+'
-  methods: [GET]
+  methods: [ GET, OPTIONS ]
 
+# SELECT BY SLUG
 rest.section.entry.by.slug:
-  path: /v1/section/{sectionHandle}/{slug}
+  path: /v1/section/{sectionHandle}/slug/{slug}
   defaults: { _controller: 'rest.controller:getEntryBySlug' }
-  methods: [GET]
+  methods: [ GET, OPTIONS ]
 
+# SELECT BY FIELD AND IT'S VALUE
 rest.section.entry.by.fieldvalue:
-  path: /v1/section/{sectionHandle}/{fieldHandle}
+  path: /v1/section/fieldvalue/{sectionHandle}/{fieldHandle}
   defaults: { _controller: 'rest.controller:getEntriesByFieldValue' }
-  methods: [GET]
+  methods: [ GET, OPTIONS ]
 
+# CREATE NEW ENTRY
 rest.section.create:
   path: /v1/section/{sectionHandle}
   defaults: { _controller: 'rest.controller:createEntry' }
-  methods: [POST]
+  methods: [ POST, OPTIONS ]
 
+# UPDATE BY ID
 rest.section.update.id:
   path: /v1/section/{sectionHandle}/id/{id}
   defaults: { _controller: 'rest.controller:updateEntryById' }
   requirements:
     id: '\d+'
-  methods: [PUT]
+  methods: [ PUT, OPTIONS ]
 
-rest.section.update.id.internal:
-  path: /v1/section/internal/{sectionHandle}/id/{id}
-  defaults: { _controller: 'rest.controller:updateEntryByIdInternal' }
-  requirements:
-    id: '\d+'
-  methods: [PUT]
-
+# UPDATE BY SLUG
 rest.section.update.slug:
   path: /v1/section/{sectionHandle}/slug/{slug}
   defaults: { _controller: 'rest.controller:updateEntryBySlug' }
-  methods: [PUT]
+  methods: [ PUT, OPTIONS ]
 
-rest.section.update.slug.internal:
-  path: /v1/section/internal/{sectionHandle}/slug/{slug}
-  defaults: { _controller: 'rest.controller:updateEntryBySlugInternal' }
-  methods: [PUT]
-
+# DELETE BY ID
 rest.section.delete.id:
   path: /v1/section/{sectionHandle}/id/{id}
   defaults: { _controller: 'rest.controller:deleteEntryById' }
   requirements:
     id: '\d+'
-  methods: [DELETE]
+  methods: [ DELETE, OPTIONS ]
 
+# DELETE BY SLUG
 rest.section.delete.slug:
   path: /v1/section/{sectionHandle}/slug/{slug}
   defaults: { _controller: 'rest.controller:deleteEntryBySlug' }
-  methods: [DELETE]
+  methods: [ DELETE, OPTIONS ]

@@ -7,8 +7,8 @@ use Doctrine\Common\Util\Inflector;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerBuilder;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Tardigrades\Entity\FieldInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
@@ -21,6 +21,7 @@ use Tardigrades\SectionField\Service\EntryNotFoundException;
 use Tardigrades\SectionField\Service\ReadSectionInterface;
 use Tardigrades\SectionField\Service\SectionManagerInterface;
 use Tardigrades\SectionField\Service\ReadOptions;
+use Tardigrades\SectionField\Service\SectionNotFoundException;
 use Tardigrades\SectionField\ValueObject\Handle;
 use Tardigrades\SectionField\ValueObject\SectionFormOptions;
 
@@ -54,6 +55,8 @@ class RestController implements RestControllerInterface
     const DEFAULT_RELATIONSHIPS_LIMIT = 100;
     const DEFAULT_RELATIONSHIPS_OFFSET = 0;
 
+    const OPTIONS_CALL = 'options';
+
     /**
      * RestController constructor.
      * @param CreateSectionInterface $createSection
@@ -80,7 +83,7 @@ class RestController implements RestControllerInterface
     }
 
     /**
-     * OPTIONS (get) information about the section so you can build
+     * GET information about the section so you can build
      * awesome forms in your spa, or whatever you need it for.
      *
      * You can add options for relationships like this:
@@ -99,33 +102,545 @@ class RestController implements RestControllerInterface
         string $sectionHandle,
         string $id = null
     ): JsonResponse {
-        $response = [];
 
-        $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
+        $request = $this->requestStack->getCurrentRequest();
 
-        $response['name'] = (string) $section->getName();
-        $response['handle'] = (string) $section->getHandle();
-
-        $fieldProperties = $this->getEntityProperties($sectionHandle);
-
-        /** @var FieldInterface $field */
-        foreach ($section->getFields() as $field) {
-
-            $fieldInfo = [ (string) $field->getHandle() => $field->getConfig()->toArray()['field'] ];
-
-            if ((string) $field->getFieldType()->getFullyQualifiedClassName() === Relationship::class) {
-                $fieldInfo = $this->getRelationshipsTo($field, $fieldInfo, $sectionHandle, (int) $id);
-            }
-
-            $fieldInfo = $this->matchFormFieldsWithConfig($fieldProperties, $fieldInfo);
-
-            $response['fields'][] = $fieldInfo;
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
         }
 
-        return new JsonResponse($response, 200, [
-            'Access-Control-Allow-Methods' => 'OPTIONS',
-            'Access-Control-Allow-Origin' => '*'
+        try {
+            $response = [];
+
+            $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
+
+            $response['name'] = (string)$section->getName();
+            $response['handle'] = (string)$section->getHandle();
+
+            $fieldProperties = $this->getEntityProperties($sectionHandle);
+
+            /** @var FieldInterface $field */
+            foreach ($section->getFields() as $field) {
+
+                $fieldInfo = [(string)$field->getHandle() => $field->getConfig()->toArray()['field']];
+
+                if ((string)$field->getFieldType()->getFullyQualifiedClassName() === Relationship::class) {
+                    $fieldInfo = $this->getRelationshipsTo($request, $field, $fieldInfo, $sectionHandle, (int) $id);
+                }
+
+                $fieldInfo = $this->matchFormFieldsWithConfig($fieldProperties, $fieldInfo);
+
+                $response['fields'][] = $fieldInfo;
+            }
+
+            return new JsonResponse(
+                $response,
+                JsonResponse::HTTP_OK,
+                $this->getDefaultResponseHeaders($request)
+            );
+        } catch (\Exception $exception) {
+            if ($exception instanceof EntryNotFoundException ||
+                $exception instanceof SectionNotFoundException) {
+                return new JsonResponse([
+                    'message' => $exception->getMessage()
+                ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
+            } else {
+                return new JsonResponse([
+                    'message' => 'Something went wrong'
+                ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            }
+        }
+    }
+
+    /**
+     * GET an entry by id
+     * @param string $sectionHandle
+     * @param string $id
+     * @return JsonResponse
+     */
+    public function getEntryById(string $sectionHandle, string $id): JsonResponse
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
+        }
+
+        try {
+            $entry = $this->readSection->read(ReadOptions::fromArray([
+                ReadOptions::SECTION => $sectionHandle,
+                ReadOptions::ID => (int)$id
+            ]))->current();
+
+            $serializer = SerializerBuilder::create()->build();
+            $content = $serializer->toArray($entry, $this->getContext($request));
+
+            return new JsonResponse($content, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
+        } catch (\Exception $exception) {
+            if ($exception instanceof EntryNotFoundException) {
+                return new JsonResponse([
+                    'message' => $exception->getMessage()
+                ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
+            } else {
+                return new JsonResponse([
+                    'message' => 'Something went wrong'
+                ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            }
+        }
+    }
+
+    /**
+     * GET an entry by it's slug
+     * @param string $sectionHandle
+     * @param string $slug
+     * @return JsonResponse
+     */
+    public function getEntryBySlug(string $sectionHandle, string $slug): JsonResponse
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
+        }
+
+        try {
+            $entry = $this->readSection->read(ReadOptions::fromArray([
+                ReadOptions::SECTION => $sectionHandle,
+                ReadOptions::SLUG => $slug
+            ]))->current();
+
+            $serializer = SerializerBuilder::create()->build();
+            $content = $serializer->toArray($entry, $this->getContext($request));
+
+            return new JsonResponse($content, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
+        } catch (\Exception $exception) {
+            if ($exception instanceof EntryNotFoundException) {
+                return new JsonResponse([
+                    'message' => $exception->getMessage()
+                ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
+            } else {
+                return new JsonResponse([
+                    'message' => 'Something went wrong'
+                ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            }
+        }
+    }
+
+    /**
+     * GET an entry or entries by one of it's field values
+     * Example:
+     * /v1/section/someSectionHandle/uuid?value=719d72d7-4f0c-420b-993f-969af9ad34c1
+     *
+     * @param string $sectionHandle
+     * @param string $fieldHandle
+     * @return JsonResponse
+     */
+    public function getEntriesByFieldValue(string $sectionHandle, string $fieldHandle): JsonResponse
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
+        }
+
+        // Theoretically you could have many results on a field value, so add some control over the results with limit, offset and also sorting
+        $fieldValue = $request->get('value');
+        $offset = $request->get('offset', 0);
+        $limit = $request->get('limit', 100);
+        $orderBy = $request->get('orderBy', 'created');
+        $sort = $request->get('sort', 'DESC');
+
+        try {
+            $entries = $this->readSection->read(ReadOptions::fromArray([
+                ReadOptions::SECTION => $sectionHandle,
+                ReadOptions::FIELD => [ $fieldHandle => $fieldValue ],
+                ReadOptions::OFFSET => $offset,
+                ReadOptions::LIMIT => $limit,
+                ReadOptions::ORDER_BY => [ $orderBy => $sort ]
+            ]));
+            $serializer = SerializerBuilder::create()->build();
+            $result = [];
+            foreach ($entries as $entry) {
+                $result[] = $serializer->toArray($entry, $this->getContext($request));
+            }
+            return new JsonResponse($result, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
+        } catch (\Exception $exception) {
+            if ($exception instanceof EntryNotFoundException) {
+                return new JsonResponse([
+                    'message' => $exception->getMessage()
+                ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
+            } else {
+                return new JsonResponse([
+                    'message' => 'Something went wrong'
+                ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            }
+        }
+    }
+
+    /**
+     * GET Multiple entries
+     * @param string $sectionHandle
+     * @return JsonResponse
+     */
+    public function getEntries(
+        string $sectionHandle
+    ): JsonResponse {
+
+        $request = $this->requestStack->getCurrentRequest();
+
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
+        }
+
+        $offset = $request->get('offset', 0);
+        $limit = $request->get('limit', 100);
+        $orderBy = $request->get('orderBy', 'created');
+        $sort = $request->get('sort', 'DESC');
+
+        try {
+            $entries = $this->readSection->read(ReadOptions::fromArray([
+                ReadOptions::SECTION => $sectionHandle,
+                ReadOptions::OFFSET => $offset,
+                ReadOptions::LIMIT => $limit,
+                ReadOptions::ORDER_BY => [ $orderBy => $sort ]
+            ]));
+            $serializer = SerializerBuilder::create()->build();
+
+            $result = [];
+            foreach ($entries as $entry) {
+                $result[] = $serializer->toArray($entry, $this->getContext($request));
+            }
+
+            return new JsonResponse(
+                $result,
+                JsonResponse::HTTP_OK,
+                $this->getDefaultResponseHeaders($request)
+            );
+        } catch (\Exception $exception) {
+            if ($exception instanceof EntryNotFoundException) {
+                return new JsonResponse([
+                    'message' => $exception->getMessage()
+                ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
+            } else {
+                return new JsonResponse([
+                    'message' => 'Something went wrong'
+                ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            }
+        }
+    }
+
+    /**
+     * POST a new entry
+     * @param string $sectionHandle
+     * @return JsonResponse
+     */
+    public function createEntry(string $sectionHandle): JsonResponse
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, POST');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
+        }
+
+        try {
+            $response = [];
+
+            /** @var \Symfony\Component\Form\FormInterface $form */
+            $form = $this->form->buildFormForSection(
+                $sectionHandle,
+                $this->requestStack,
+                null,
+                false
+            );
+            $form->handleRequest();
+
+            if ($form->isValid()) {
+                $response = $this->save($form);
+            } else {
+                $response['errors'] = $this->getFormErrors($form);
+                $response['code'] = JsonResponse::HTTP_BAD_REQUEST;
+            }
+
+            return new JsonResponse(
+                $response,
+                $response['code'],
+                $this->getDefaultResponseHeaders($request)
+            );
+        } catch (\Exception $exception) {
+            return new JsonResponse([
+                'message' => 'Something went wrong'
+            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+        }
+    }
+
+    /**
+     * PUT (Update) an entry by it's id.
+     *
+     * @param string $sectionHandle
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function updateEntryById(string $sectionHandle, int $id): JsonResponse
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, PUT');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
+        }
+
+        try {
+            $response = [];
+            $this->putToPost();
+            $form = $this->form->buildFormForSection(
+                $sectionHandle,
+                $this->requestStack,
+                SectionFormOptions::fromArray([
+                    ReadOptions::ID => $id
+                ]),
+                false
+            );
+            $form->submit($request->get($form->getName()), false);
+
+            if ($form->isValid()) {
+                $response = $this->save($form);
+            } else {
+                $response['errors'] = $this->getFormErrors($form);
+                $response['code'] = JsonResponse::HTTP_BAD_REQUEST;
+            }
+
+            return new JsonResponse(
+                $response,
+                $response['code'],
+                $this->getDefaultResponseHeaders($request)
+            );
+        } catch (\Exception $exception) {
+            return new JsonResponse([
+                'message' => $exception->getMessage()
+            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+        }
+    }
+
+    /**
+     * PUT (Update) an entry by it's slug.
+     * This is for internal calls, service to service when you cannot
+     * send along all fields that belong to the section you are updating
+     *
+     * @param string $sectionHandle
+     * @param string $slug
+     * @return JsonResponse
+     */
+    public function updateEntryBySlug(string $sectionHandle, string $slug): JsonResponse
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, PUT');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
+        }
+
+        try {
+            $response = [];
+            $this->putToPost();
+            $form = $this->form->buildFormForSection(
+                $sectionHandle,
+                $this->requestStack,
+                SectionFormOptions::fromArray([
+                    ReadOptions::SLUG => $slug
+                ]),
+                false
+            );
+            $form->submit($request->get($form->getName()), false);
+
+            if ($form->isValid()) {
+                $response = $this->save($form);
+            } else {
+                $response['errors'] = $this->getFormErrors($form);
+                $response['code'] = JsonResponse::HTTP_BAD_REQUEST;
+            }
+
+            return new JsonResponse(
+                $response,
+                $response['code'],
+                $this->getDefaultResponseHeaders($request)
+            );
+        } catch (\Exception $exception) {
+            return new JsonResponse([
+                'message' => $exception->getMessage()
+            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+        }
+    }
+
+    /**
+     * DELETE an entry by it's id
+     * @param string $sectionHandle
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function deleteEntryById(string $sectionHandle, int $id): JsonResponse
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, DELETE');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
+        }
+
+        $readOptions = ReadOptions::fromArray([
+            ReadOptions::SECTION => $sectionHandle,
+            ReadOptions::ID => (int) $id
         ]);
+
+        try {
+            $entry = $this->readSection->read($readOptions)->current();
+            $success = $this->deleteSection->delete($entry);
+
+            return new JsonResponse([
+                'success' => $success,
+            ], $success ? JsonResponse::HTTP_OK : JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
+        } catch (\Exception $exception) {
+            return new JsonResponse([
+                'message' => $exception->getMessage()
+            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+        }
+    }
+
+    /**
+     * DELETE an entry by it's slug
+     * @param string $sectionHandle
+     * @param string $slug
+     * @return JsonResponse
+     */
+    public function deleteEntryBySlug(string $sectionHandle, string $slug): JsonResponse
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, DELETE');
+        if (!empty($optionsResponse)) {
+            return $optionsResponse;
+        }
+
+        try {
+            $entry = $this->readSection->read(ReadOptions::fromArray([
+                ReadOptions::SECTION => $sectionHandle,
+                ReadOptions::SLUG => $slug
+            ]))->current();
+            $success = $this->deleteSection->delete($entry);
+            return new JsonResponse([
+                'success' => $success,
+            ], $success ? JsonResponse::HTTP_OK : JsonResponse::HTTP_NOT_FOUND,
+                $this->getDefaultResponseHeaders($request)
+            );
+        } catch (\Exception $exception) {
+            if ($exception instanceof EntryNotFoundException) {
+                return new JsonResponse([
+                    'message' => $exception->getMessage()
+                ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
+            } else {
+                return new JsonResponse([
+                    'message' => $exception->getMessage()
+                ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            }
+        }
+    }
+
+    /**
+     * Send along on options call
+     * @todo: Make headers configurable
+     *
+     * @param Request $request
+     * @param string $allowMethods
+     * @return null|JsonResponse
+     */
+    private function preFlightOptions(Request $request, string $allowMethods = null): ?JsonResponse
+    {
+        if (strtolower($request->getMethod()) === self::OPTIONS_CALL) {
+            return new JsonResponse([], JsonResponse::HTTP_OK, [
+                'Access-Control-Allow-Methods' => !empty($allowMethods) ?
+                    $allowMethods : 'OPTIONS',
+                'Access-Control-Allow-Credentials' => 'true'
+            ]);
+        }
+
+        return null;
+    }
+
+    private function getContext(Request $request): SerializationContext
+    {
+        $fields = $request->get('fields', ['id']);
+
+        if (is_string($fields)) {
+            $fields = explode(',', $fields);
+        }
+
+        $context = new SerializationContext();
+        $context->addExclusionStrategy(new FieldsExclusionStrategy($fields));
+
+        return $context;
+    }
+
+    /**
+     * @param SymfonyFormInterface $form
+     * @return array
+     */
+    private function save(SymfonyFormInterface $form): array
+    {
+        $response = [];
+        $data = $form->getData();
+
+        try {
+            $this->createSection->save($data);
+            $response['success'] = true;
+            $response['errors'] = false;
+            $response['code'] = JsonResponse::HTTP_OK;
+        } catch (\Exception $exception) {
+            $response['code'] = JsonResponse::HTTP_INTERNAL_SERVER_ERROR;
+            $response['exception'] = 'Something went wrong';
+        }
+
+        return $response;
+    }
+
+    /**
+     * @param SymfonyFormInterface $form
+     * @return array
+     */
+    private function getFormErrors(SymfonyFormInterface $form): array
+    {
+        $errors = [];
+        foreach ($form->getErrors(true, true) as $field=>$formError) {
+            $errors[$field] = $formError->getMessage();
+        }
+
+        /** @var SymfonyFormInterface $child */
+        foreach ($form as $child) {
+            if (!$child->isValid()) {
+                foreach ($child->getErrors() as $error) {
+                    $errors[$child->getName()][] = $error->getMessage();
+                }
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Symfony doesn't know how to handle put.
+     * Transform put data to POST.
+     */
+    private function putToPost(): void
+    {
+        $request = $this->requestStack->getCurrentRequest();
+        $put = $request->getContent();
+        parse_str($put, $_POST);
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
     }
 
     /**
@@ -193,7 +708,7 @@ class RestController implements RestControllerInterface
     }
 
     /**
-     * This is gets the potential options from the [OPTIONS] request.
+     * This is gets the potential parameters from the section info request.
      *
      * It will transform this:
      * ?options=someRelationshipFieldHandle|limit:100|offset:0
@@ -203,10 +718,11 @@ class RestController implements RestControllerInterface
      *    'limit' => 100,
      *    'offset' => 0
      * ]
+     * @param Request $request
+     * @return array|null
      */
-    private function getOptions(): ?array
+    private function getOptions(Request $request): ?array
     {
-        $request = $this->requestStack->getCurrentRequest();
         $requestOptions = $request->get('options');
         if (!empty($requestOptions)) {
             $requestOptions = explode('|', $requestOptions);
@@ -226,12 +742,14 @@ class RestController implements RestControllerInterface
      * Get entries to populate a relationships field
      *
      * @param FieldInterface $field
+     * @param Request $request
      * @param array $fieldInfo
      * @param string $sectionHandle
      * @param int|null $id
      * @return array|null
      */
     private function getRelationshipsTo(
+        Request $request,
         FieldInterface $field,
         array $fieldInfo,
         string $sectionHandle,
@@ -239,7 +757,7 @@ class RestController implements RestControllerInterface
     ): ?array {
 
         $fieldHandle = (string) $field->getHandle();
-        $options = $this->getOptions();
+        $options = $this->getOptions($request);
 
         if (!empty($fieldInfo[$fieldHandle]['to'])) {
             try {
@@ -275,6 +793,20 @@ class RestController implements RestControllerInterface
         }
 
         return $fieldInfo;
+    }
+
+    /**
+     * @todo: Make sure the allow headers are configurable.
+     * @param $request
+     * @return array
+     */
+    private function getDefaultResponseHeaders($request): array
+    {
+        $origin = $request->headers->get('Origin');
+        return [
+            'Access-Control-Allow-Origin' => !empty($origin) ? $origin : '*',
+            'Access-Control-Allow-Credentials' => 'true'
+        ];
     }
 
     /**
@@ -319,436 +851,5 @@ class RestController implements RestControllerInterface
         } catch (\Exception $exception) {}
 
         return $fieldInfo;
-    }
-
-    /**
-     * GET an entry by id
-     * @param string $sectionHandle
-     * @param string $id
-     * @return Response
-     */
-    public function getEntryById(string $sectionHandle, string $id): Response
-    {
-        $readOptions = ReadOptions::fromArray([
-            ReadOptions::SECTION => $sectionHandle,
-            ReadOptions::ID => (int) $id
-        ]);
-
-        $entry = $this->readSection->read($readOptions)[0];
-
-        $serializer = SerializerBuilder::create()->build();
-        $jsonContent = $serializer->serialize($entry, 'json', $this->getContext());
-
-        return new Response($jsonContent, 200, [
-            'Content-Type' => 'application/json'
-        ]);
-    }
-
-    /**
-     * GET an entry by it's slug
-     * @param string $sectionHandle
-     * @param string $slug
-     * @return Response
-     */
-    public function getEntryBySlug(string $sectionHandle, string $slug): Response
-    {
-        $readOptions = ReadOptions::fromArray([
-            ReadOptions::SECTION => $sectionHandle,
-            ReadOptions::SLUG => $slug
-        ]);
-
-        $entry = $this->readSection->read($readOptions)[0];
-        $serializer = SerializerBuilder::create()->build();
-        $jsonContent = $serializer->serialize($entry, 'json', $this->getContext());
-
-        return new Response($jsonContent, 200, [
-            'Content-Type' => 'application/json'
-        ]);
-    }
-
-    /**
-     * GET an entry or entries by one of it's field values
-     * Example:
-     * /v1/section/someSectionHandle/uuid?value=719d72d7-4f0c-420b-993f-969af9ad34c1
-     *
-     * @param string $sectionHandle
-     * @param string $fieldHandle
-     * @return Response
-     */
-    public function getEntriesByFieldValue(string $sectionHandle, string $fieldHandle): Response
-    {
-        $request = $this->requestStack->getCurrentRequest();
-
-        // Theoretically you could have many results on a field value, so add some control over the results with limit, offset and also sorting
-        $fieldValue = $request->get('value');
-        $offset = $request->get('offset', 0);
-        $limit = $request->get('limit', 100);
-        $orderBy = $request->get('orderBy', 'created');
-        $sort = $request->get('sort', 'DESC');
-
-        $readOptions = ReadOptions::fromArray([
-            ReadOptions::SECTION => $sectionHandle,
-            ReadOptions::FIELD => [ $fieldHandle => $fieldValue ],
-            ReadOptions::OFFSET => $offset,
-            ReadOptions::LIMIT => $limit,
-            ReadOptions::ORDER_BY => [ $orderBy => $sort ]
-        ]);
-
-        $entries = $this->readSection->read($readOptions);
-        $serializer = SerializerBuilder::create()->build();
-
-        $result = [];
-        foreach ($entries as $entry) {
-            $result[] = $serializer->serialize($entry, 'json', $this->getContext());
-        }
-
-        return new Response(
-            '[' . implode(',', $result) . ']', 200,
-            [
-                'Content-Type' => 'application/json',
-                'Access-Control-Allow-Origin' => '*'
-            ]
-        );
-    }
-
-    /**
-     * GET Multiple entries
-     * @param string $sectionHandle
-     * @return Response
-     */
-    public function getEntries(
-        string $sectionHandle
-    ): Response {
-
-        $request = $this->requestStack->getCurrentRequest();
-
-        $offset = $request->get('offset', 0);
-        $limit = $request->get('limit', 100);
-        $orderBy = $request->get('orderBy', 'created');
-        $sort = $request->get('sort', 'DESC');
-
-        $readOptions = ReadOptions::fromArray([
-            ReadOptions::SECTION => $sectionHandle,
-            ReadOptions::OFFSET => $offset,
-            ReadOptions::LIMIT => $limit,
-            ReadOptions::ORDER_BY => [ $orderBy => $sort ]
-        ]);
-
-        $entries = $this->readSection->read($readOptions);
-        $serializer = SerializerBuilder::create()->build();
-
-        $result = [];
-        foreach ($entries as $entry) {
-            $result[] = $serializer->serialize($entry, 'json', $this->getContext());
-        }
-
-        return new Response(
-            '[' . implode(',', $result) . ']', 200,
-            [
-                'Content-Type' => 'application/json',
-                'Access-Control-Allow-Origin' => '*'
-            ]
-        );
-    }
-
-    /**
-     * POST a new entry
-     * @param string $sectionHandle
-     * @return JsonResponse
-     */
-    public function createEntry(string $sectionHandle): JsonResponse
-    {
-        $response = [];
-
-        /** @var \Symfony\Component\Form\FormInterface $form */
-        $form = $this->form->buildFormForSection(
-            $sectionHandle,
-            $this->requestStack,
-            null,
-            false
-        );
-        $form->handleRequest();
-
-        if ($form->isValid()) {
-            $response = $this->save($form);
-        } else {
-            $response['errors'] = $this->getFormErrors($form);
-            $response['code'] = 400;
-        }
-
-        return new JsonResponse(
-            $response,
-            $response['code'],
-            ['Access-Control-Allow-Origin' => '*']
-        );
-    }
-
-    /**
-     * PUT (Update) an entry by it's id
-     *
-     * @param string $sectionHandle
-     * @param int $id
-     * @return JsonResponse
-     */
-    public function updateEntryById(string $sectionHandle, int $id): JsonResponse
-    {
-        $response = [];
-        $this->putToPost();
-
-        $form = $this->form->buildFormForSection(
-            $sectionHandle,
-            $this->requestStack,
-            SectionFormOptions::fromArray([
-                ReadOptions::ID => (int) $id
-            ]),
-            false
-        );
-
-        $form->handleRequest();
-        if ($form->isValid()) {
-            $response = $this->save($form);
-        } else {
-            $response['errors'] = $this->getFormErrors($form);
-            $response['code'] = 400;
-        }
-
-        return new JsonResponse(
-            $response,
-            $response['code'],
-            ['Access-Control-Allow-Origin' => '*']
-        );
-    }
-
-    /**
-     * PUT (Update) an entry by it's id.
-     * This is for internal calls, service to service when you cannot
-     * send along all fields that belong to the section you are updating
-     *
-     * @param string $sectionHandle
-     * @param int $id
-     * @return JsonResponse
-     */
-    public function updateEntryByIdInternal(string $sectionHandle, int $id): JsonResponse
-    {
-        $response = [];
-        $this->putToPost();
-        $request = $this->requestStack->getCurrentRequest();
-        $form = $this->form->buildFormForSection(
-            $sectionHandle,
-            $this->requestStack,
-            SectionFormOptions::fromArray([
-                ReadOptions::ID => $id
-            ]),
-            false
-        );
-        $form->submit($request->get($form->getName()), false);
-
-        if ($form->isValid()) {
-            $response = $this->save($form);
-        } else {
-            $response['errors'] = $this->getFormErrors($form);
-            $response['code'] = 400;
-        }
-
-        return new JsonResponse(
-            $response,
-            $response['code'],
-            ['Access-Control-Allow-Origin' => '*']
-        );
-    }
-
-    /**
-     * PUT (Update) an entry by one of it's field values
-     * Use this with a slug
-     *
-     * @param string $sectionHandle
-     * @param string $slug
-     * @return JsonResponse
-     */
-    public function updateEntryBySlug(string $sectionHandle, string $slug): JsonResponse
-    {
-        $response = [];
-
-        $form = $this->form->buildFormForSection(
-            $sectionHandle,
-            $this->requestStack,
-            SectionFormOptions::fromArray([
-                ReadOptions::SLUG => $slug
-            ]),
-            false
-        );
-        $form->handleRequest();
-
-        if ($form->isValid()) {
-            $response = $this->save($form);
-        } else {
-            $response['errors'] = $this->getFormErrors($form);
-            $response['code'] = 400;
-        }
-
-        return new JsonResponse(
-            $response,
-            $response['code'],
-            ['Access-Control-Allow-Origin' => '*']
-        );
-    }
-
-    /**
-     * PUT (Update) an entry by it's slug.
-     * This is for internal calls, service to service when you cannot
-     * send along all fields that belong to the section you are updating
-     *
-     * @param string $sectionHandle
-     * @param string $slug
-     * @return JsonResponse
-     */
-    public function updateEntryBySlugInternal(string $sectionHandle, string $slug): JsonResponse
-    {
-        $response = [];
-        $this->putToPost();
-        $request = $this->requestStack->getCurrentRequest();
-        $form = $this->form->buildFormForSection(
-            $sectionHandle,
-            $this->requestStack,
-            SectionFormOptions::fromArray([
-                ReadOptions::SLUG => $slug
-            ]),
-            false
-        );
-        $form->submit($request->get($form->getName()), false);
-
-        if ($form->isValid()) {
-            $response = $this->save($form);
-        } else {
-            $response['errors'] = $this->getFormErrors($form);
-            $response['code'] = 400;
-        }
-
-        return new JsonResponse(
-            $response,
-            $response['code'],
-            ['Access-Control-Allow-Origin' => '*']
-        );
-    }
-
-    /**
-     * DELETE an entry by it's id
-     * @param string $sectionHandle
-     * @param int $id
-     * @return JsonResponse
-     */
-    public function deleteEntryById(string $sectionHandle, int $id): JsonResponse
-    {
-        $readOptions = ReadOptions::fromArray([
-            ReadOptions::SECTION => $sectionHandle,
-            ReadOptions::ID => (int) $id
-        ]);
-
-        $entry = $this->readSection->read($readOptions)[0];
-        $success = $this->deleteSection->delete($entry);
-
-        return new JsonResponse([
-            'success' => $success,
-        ], $success ? 200 : 404,
-            ['Access-Control-Allow-Origin' => '*']
-        );
-    }
-
-    /**
-     * DELETE an entry by it's slug
-     * @param string $sectionHandle
-     * @param string $slug
-     * @return JsonResponse
-     */
-    public function deleteEntryBySlug(string $sectionHandle, string $slug): JsonResponse
-    {
-        $readOptions = ReadOptions::fromArray([
-            ReadOptions::SECTION => $sectionHandle,
-            ReadOptions::SLUG => $slug
-        ]);
-
-        $entry = $this->readSection->read($readOptions)[0];
-        $success = $this->deleteSection->delete($entry);
-
-        return new JsonResponse([
-            'success' => $success,
-        ], $success ? 200 : 404,
-            ['Access-Control-Allow-Origin' => '*']
-        );
-    }
-
-    private function getContext(): SerializationContext
-    {
-        $request = $this->requestStack->getCurrentRequest();
-        $fields = $request->get('fields', ['id']);
-
-        if (is_string($fields)) {
-            $fields = explode(',', $fields);
-        }
-
-        $context = new SerializationContext();
-        $context->addExclusionStrategy(new FieldsExclusionStrategy($fields));
-
-        return $context;
-    }
-
-    /**
-     * @param SymfonyFormInterface $form
-     * @return array
-     */
-    private function save(SymfonyFormInterface $form): array
-    {
-        $response = [];
-        $data = $form->getData();
-
-        $request = $this->requestStack->getCurrentRequest();
-
-        try {
-            $this->createSection->save($data);
-            $response['success'] = true;
-            $response['errors'] = false;
-            $response['code'] = 200;
-        } catch (\Exception $exception) {
-            $response['code'] = 500;
-            $response['exception'] = $exception->getMessage();
-        }
-
-        return $response;
-    }
-
-    /**
-     * @param SymfonyFormInterface $form
-     * @return array
-     */
-    private function getFormErrors(SymfonyFormInterface $form): array
-    {
-        $errors = [];
-        foreach ($form->getErrors(true, true) as $field=>$formError) {
-            $errors[$field] = $formError->getMessage();
-        }
-
-        /** @var SymfonyFormInterface $child */
-        foreach ($form as $child) {
-            if (!$child->isValid()) {
-                foreach ($child->getErrors() as $error) {
-                    $errors[$child->getName()][] = $error->getMessage();
-                }
-            }
-        }
-
-        return $errors;
-    }
-
-    /**
-     * Symfony doesn't know how to handle put.
-     * Transform put data to POST.
-     */
-    private function putToPost(): void
-    {
-        $request = $this->requestStack->getCurrentRequest();
-        $put = $request->getContent();
-        parse_str($put, $_POST);
-
-        $_SERVER['REQUEST_METHOD'] = 'POST';
     }
 }
