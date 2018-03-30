@@ -12,8 +12,8 @@ Here are some examples of how you can build your GET requests.
 
 ### One recipe
 ```
-/v1/section/info/{sectionHandle}/{id}
-/v1/section/recipe/15?fields=id,title,description,recipeType,created,updated
+/v1/section/{sectionHandle}/id/{id}
+/v1/section/recipe/id/15?fields=id,title,description,recipeType,created,updated
 ```
 
 ### All recipes
@@ -40,7 +40,7 @@ So in this case the `recipe` entity has a property called `ingredients`
 The fields `name`, `amount`, `unit` are properties of the ingredient.
 
 ```
-/v1/section/recipe/3?fields=id,title,description,recipeType,created,updated,ingredients,name,amount,unit
+/v1/section/recipe/id/3?fields=id,title,description,recipeType,created,updated,ingredients,name,amount,unit
 ```
 
 
