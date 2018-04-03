@@ -141,6 +141,8 @@ class RestController implements RestControllerInterface
                 $response['fields'][] = $fieldInfo;
             }
 
+            $response = array_merge($response, $section->getConfig()->toArray());
+
             return new JsonResponse(
                 $response,
                 JsonResponse::HTTP_OK,
@@ -366,7 +368,7 @@ class RestController implements RestControllerInterface
                 null,
                 false
             );
-            $form->handleRequest();
+            $form->submit($request->get($form->getName()));
 
             if ($form->isValid()) {
                 $response = $this->save($form);
