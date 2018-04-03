@@ -10,4 +10,7 @@ namespace Tardigrades\SectionField\Api\Controller;
  * https://symfony.com/doc/3.4/event_dispatcher/before_after_filters.html
  * @package Tardigrades\SectionField\Api\Controller
  */
-interface RestControllerInterface {}
+interface RestControllerInterface
+{
+
+}
