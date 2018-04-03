@@ -29,6 +29,7 @@ use Tardigrades\SectionField\Service\SectionManagerInterface;
 use Mockery;
 use Tardigrades\SectionField\ValueObject\Handle;
 use Tardigrades\SectionField\ValueObject\Name;
+use Tardigrades\SectionField\ValueObject\SectionConfig;
 
 /**
  * @coversDefaultClass Tardigrades\SectionField\Api\Controller\RestController
@@ -132,7 +133,24 @@ class RestControllerTest extends TestCase
             ->once()
             ->andReturn($this->givenASetOfFieldsForASection());
 
-        $expectedFieldInfo['fields'] = $this->givenASetOfFieldInfo();
+        $fields = $this->givenASetOfFieldInfo();
+
+        $sectionConfig = SectionConfig::fromArray([
+            'section' => [
+                'name' => 'Some section',
+                'handle' => 'Some handle',
+                'fields' => $fields,
+                'default' => 'default',
+                'namespace' => 'NameSpace'
+            ]
+        ]);
+        $section->shouldReceive('getConfig')
+            ->once()
+            ->andReturn($sectionConfig);
+
+        $expectedFieldInfo['fields'] = $fields;
+
+        $expectedFieldInfo = array_merge($expectedFieldInfo, $sectionConfig->toArray());
 
         $expectedResponse = new JsonResponse($expectedFieldInfo, 200, [
             'Access-Control-Allow-Origin' => 'iamtheorigin.com',
@@ -192,6 +210,28 @@ class RestControllerTest extends TestCase
             ->once()
             ->andReturn($this->givenASetOfFieldsForASection(true));
 
+        $sectionConfig = SectionConfig::fromArray([
+            'section' => [
+                'name' => 'Some section',
+                'handle' => 'Some handle',
+                'fields' => [
+                    'these',
+                    'are',
+                    'the',
+                    'handles',
+                    'in',
+                    'the',
+                    'correct',
+                    'order'
+                ],
+                'default' => 'default',
+                'namespace' => 'NameSpace'
+            ]
+        ]);
+        $section->shouldReceive('getConfig')
+            ->once()
+            ->andReturn($sectionConfig);
+
         $this->requestStack->shouldReceive('getCurrentRequest')
             ->once()
             ->andReturn($request);
@@ -227,6 +267,8 @@ class RestControllerTest extends TestCase
 
         $expectedFieldInfo['fields'] = $this->givenASetOfFieldInfo(true);
         $expectedFieldInfo['fields'][2]['someRelationshipFieldHandle']['whatever'] = $formattedRecords;
+
+        $expectedFieldInfo = array_merge($expectedFieldInfo, $sectionConfig->toArray());
 
         $expectedResponse = new JsonResponse(
             $expectedFieldInfo,
@@ -379,8 +421,10 @@ class RestControllerTest extends TestCase
 
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
 
-        $mockedForm->shouldReceive('handleRequest')->once();
-        $mockedForm->shouldReceive('isValid')->andReturn(true);
+        $mockedForm->shouldReceive('submit')->once();
+        $mockedForm->shouldReceive('getName')->once();
+        $mockedForm->shouldReceive('isValid')
+            ->andReturn(true);
         $mockedForm->shouldReceive('getData')
             ->andReturn($entryMock);
 
@@ -424,7 +468,8 @@ class RestControllerTest extends TestCase
 
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
 
-        $mockedForm->shouldReceive('handleRequest')->once();
+        $mockedForm->shouldReceive('submit')->once();
+        $mockedForm->shouldReceive('getName')->once();
         $mockedForm->shouldReceive('isValid')->andReturn(true);
         $mockedForm->shouldReceive('getData')
             ->andReturn($entryMock);
@@ -462,7 +507,8 @@ class RestControllerTest extends TestCase
     {
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
 
-        $mockedForm->shouldReceive('handleRequest')->once();
+        $mockedForm->shouldReceive('submit')->once();
+        $mockedForm->shouldReceive('getName')->once();
         $mockedForm->shouldReceive('isValid')->andReturn(false);
         $mockedForm->shouldReceive('getName')->andReturn('name of form');
         $mockedForm->shouldReceive('getIterator')->andReturn(new \ArrayIterator([$mockedForm]));
@@ -476,16 +522,18 @@ class RestControllerTest extends TestCase
             ->andReturn($mockedForm);
 
         $mockedRequest = Mockery::mock(Request::class)->makePartial();
-        $mockedRequest->shouldReceive('get')->with('form')
-            ->andReturn(['no']);
+        $mockedRequest->shouldReceive('get')->once();
         $mockedRequest->shouldReceive('getMethod')
             ->andReturn('not options');
 
         $mockedRequest->headers = Mockery::mock(HeaderBag::class);
-        $mockedRequest->headers->shouldReceive('get')->with('Origin')
+        $mockedRequest->headers
+            ->shouldReceive('get')
+            ->with('Origin')
             ->andReturn('Some origin');
 
-        $this->createSection->shouldReceive('save')
+        $this->createSection
+            ->shouldReceive('save')
             ->never();
 
         $this->requestStack->shouldReceive('getCurrentRequest')
