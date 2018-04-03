@@ -142,6 +142,7 @@ class RestController implements RestControllerInterface
             }
 
             $response = array_merge($response, $section->getConfig()->toArray());
+            $response['fields'] = $this->orderFields($response);
 
             return new JsonResponse(
                 $response,
@@ -717,6 +718,7 @@ class RestController implements RestControllerInterface
         $oldHandle = array_keys($fieldInfo)[0];
         $newHandle = !empty($fieldInfo[$oldHandle]['as']) ?
             $this->matchesWithInArray($fieldInfo[$oldHandle]['as'], $entityProperties) : null;
+
         if (is_null($newHandle)) {
             $newHandle = !empty($fieldInfo[$oldHandle]['to']) ?
                 $this->matchesWithInArray($fieldInfo[$oldHandle]['to'], $entityProperties) : null;
@@ -894,5 +896,26 @@ class RestController implements RestControllerInterface
         }
 
         return $fieldInfo;
+    }
+
+    private function orderFields($fields): array
+    {
+        $originalFields = $fields['fields'];
+        $desiredFieldsOrder = $fields['section']['fields'];
+        $originalFieldsOrder = [];
+        $result = [];
+
+        foreach ($originalFields as $field) {
+            $handle = array_keys($field)[0];
+            $handle = !empty($field[$handle]['originalHandle']) ? $field[$handle]['originalHandle'] : $handle;
+            $originalFieldsOrder[] = $handle;
+        }
+
+        foreach ($desiredFieldsOrder as $handle) {
+            $fieldIndex = array_search($handle, $originalFieldsOrder);
+            $result[] = $originalFields[$fieldIndex];
+        }
+
+        return $result;
     }
 }

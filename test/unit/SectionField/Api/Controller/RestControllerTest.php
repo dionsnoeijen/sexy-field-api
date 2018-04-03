@@ -139,7 +139,10 @@ class RestControllerTest extends TestCase
             'section' => [
                 'name' => 'Some section',
                 'handle' => 'Some handle',
-                'fields' => $fields,
+                'fields' => [
+                    'someHandle',
+                    'someOtherHandle'
+                ],
                 'default' => 'default',
                 'namespace' => 'NameSpace'
             ]
@@ -215,14 +218,9 @@ class RestControllerTest extends TestCase
                 'name' => 'Some section',
                 'handle' => 'Some handle',
                 'fields' => [
-                    'these',
-                    'are',
-                    'the',
-                    'handles',
-                    'in',
-                    'the',
-                    'correct',
-                    'order'
+                    'someHandle',
+                    'someOtherHandle',
+                    'someRelationshipFieldHandle'
                 ],
                 'default' => 'default',
                 'namespace' => 'NameSpace'
