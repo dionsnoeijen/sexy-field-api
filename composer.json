@@ -23,6 +23,11 @@
       "Tardigrades\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Tardigrades\\": "tests/unit"
+    }
+  },
   "suggest": {
     "tardigrades/sexy-field": "Without the base package this api is nothing",
     "tardigrated/sexy-field-entity": "You need entities, yes you do",
@@ -36,8 +41,9 @@
     "tardigrades/sexy-field-form": "dev-master",
     "tardigrades/sexy-field-field-types-base": "dev-master",
     "phpunit/phpunit": "^6.1",
-    "squizlabs/PHP_CodeSniffer": "^2.8",
+    "squizlabs/PHP_CodeSniffer": "^3.2",
     "mockery/mockery": "^0.9.9",
-    "mikey179/vfsStream": "^1.6"
+    "mikey179/vfsStream": "^1.6",
+    "phing/phing": "^2.16"
   }
 }

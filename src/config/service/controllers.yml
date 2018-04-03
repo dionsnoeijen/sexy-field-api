@@ -8,3 +8,4 @@ services:
       - '@section_field.form'
       - '@section_field.manager.doctrine.section_manager'
       - '@request_stack'
+      - '@event_dispatcher'

@@ -6,6 +6,7 @@ namespace Tardigrades\SectionField\Api\Controller;
 use Doctrine\Common\Util\Inflector;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerBuilder;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -13,6 +14,7 @@ use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Tardigrades\Entity\FieldInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Api\Serializer\FieldsExclusionStrategy;
+use Tardigrades\SectionField\Event\SectionEntryUpdated;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 use Tardigrades\SectionField\Service\CreateSectionInterface;
 use Tardigrades\SectionField\Service\DeleteSectionInterface;
@@ -52,6 +54,9 @@ class RestController implements RestControllerInterface
     /** @var RequestStack */
     private $requestStack;
 
+    /** @var EventDispatcherInterface */
+    private $dispatcher;
+
     const DEFAULT_RELATIONSHIPS_LIMIT = 100;
     const DEFAULT_RELATIONSHIPS_OFFSET = 0;
 
@@ -65,6 +70,7 @@ class RestController implements RestControllerInterface
      * @param FormInterface $form
      * @param SectionManagerInterface $sectionManager
      * @param RequestStack $requestStack
+     * @param EventDispatcherInterface $dispatcher
      */
     public function __construct(
         CreateSectionInterface $createSection,
@@ -72,7 +78,8 @@ class RestController implements RestControllerInterface
         DeleteSectionInterface $deleteSection,
         FormInterface $form,
         SectionManagerInterface $sectionManager,
-        RequestStack $requestStack
+        RequestStack $requestStack,
+        EventDispatcherInterface $dispatcher
     ) {
         $this->readSection = $readSection;
         $this->createSection = $createSection;
@@ -80,6 +87,7 @@ class RestController implements RestControllerInterface
         $this->form = $form;
         $this->sectionManager = $sectionManager;
         $this->requestStack = $requestStack;
+        $this->dispatcher = $dispatcher;
     }
 
     /**
@@ -122,7 +130,6 @@ class RestController implements RestControllerInterface
 
             /** @var FieldInterface $field */
             foreach ($section->getFields() as $field) {
-
                 $fieldInfo = [(string)$field->getHandle() => $field->getConfig()->toArray()['field']];
 
                 if ((string)$field->getFieldType()->getFullyQualifiedClassName() === Relationship::class) {
@@ -247,7 +254,8 @@ class RestController implements RestControllerInterface
             return $optionsResponse;
         }
 
-        // Theoretically you could have many results on a field value, so add some control over the results with limit, offset and also sorting
+        // Theoretically you could have many results on a field value, so add some control over the results with limit,
+        // offset and also sorting
         $fieldValue = $request->get('value');
         $offset = $request->get('offset', 0);
         $limit = $request->get('limit', 100);
@@ -406,10 +414,25 @@ class RestController implements RestControllerInterface
                 ]),
                 false
             );
+
+            $originalEntry = clone $this->readSection->read(
+                ReadOptions::fromArray([
+                    ReadOptions::SECTION => $sectionHandle,
+                    ReadOptions::ID => $id
+                ])
+            )->current();
+
             $form->submit($request->get($form->getName()), false);
 
             if ($form->isValid()) {
+                $newEntry = $form->getData();
+
                 $response = $this->save($form);
+
+                $this->dispatcher->dispatch(
+                    SectionEntryUpdated::NAME,
+                    new SectionEntryUpdated($originalEntry, $newEntry)
+                );
             } else {
                 $response['errors'] = $this->getFormErrors($form);
                 $response['code'] = JsonResponse::HTTP_BAD_REQUEST;
@@ -456,10 +479,25 @@ class RestController implements RestControllerInterface
                 ]),
                 false
             );
+
+            $originalEntry = clone $this->readSection->read(
+                ReadOptions::fromArray([
+                    ReadOptions::SECTION => $sectionHandle,
+                    ReadOptions::SLUG => $slug
+                ])
+            )->current();
+
             $form->submit($request->get($form->getName()), false);
 
             if ($form->isValid()) {
+                $newEntry = $form->getData();
+
                 $response = $this->save($form);
+
+                $this->dispatcher->dispatch(
+                    SectionEntryUpdated::NAME,
+                    new SectionEntryUpdated($originalEntry, $newEntry)
+                );
             } else {
                 $response['errors'] = $this->getFormErrors($form);
                 $response['code'] = JsonResponse::HTTP_BAD_REQUEST;
@@ -501,9 +539,11 @@ class RestController implements RestControllerInterface
             $entry = $this->readSection->read($readOptions)->current();
             $success = $this->deleteSection->delete($entry);
 
-            return new JsonResponse([
-                'success' => $success,
-            ], $success ? JsonResponse::HTTP_OK : JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
+            return new JsonResponse(
+                ['success' => $success],
+                $success ? JsonResponse::HTTP_OK : JsonResponse::HTTP_NOT_FOUND,
+                $this->getDefaultResponseHeaders($request)
+            );
         } catch (\Exception $exception) {
             return new JsonResponse([
                 'message' => $exception->getMessage()
@@ -532,9 +572,9 @@ class RestController implements RestControllerInterface
                 ReadOptions::SLUG => $slug
             ]))->current();
             $success = $this->deleteSection->delete($entry);
-            return new JsonResponse([
-                'success' => $success,
-            ], $success ? JsonResponse::HTTP_OK : JsonResponse::HTTP_NOT_FOUND,
+            return new JsonResponse(
+                ['success' => $success],
+                $success ? JsonResponse::HTTP_OK : JsonResponse::HTTP_NOT_FOUND,
                 $this->getDefaultResponseHeaders($request)
             );
         } catch (\Exception $exception) {
@@ -614,7 +654,7 @@ class RestController implements RestControllerInterface
     private function getFormErrors(SymfonyFormInterface $form): array
     {
         $errors = [];
-        foreach ($form->getErrors(true, true) as $field=>$formError) {
+        foreach ($form->getErrors(true, true) as $field => $formError) {
             $errors[$field] = $formError->getMessage();
         }
 
@@ -662,7 +702,7 @@ class RestController implements RestControllerInterface
             false
         )->getData();
         $reflect = new \ReflectionClass($form);
-        $properties = array_map(function($data) {
+        $properties = array_map(function ($data) {
             return $data->name;
         }, $reflect->getProperties());
 
@@ -848,7 +888,8 @@ class RestController implements RestControllerInterface
                     $relatable['selected'] = true;
                 }
             }
-        } catch (\Exception $exception) {}
+        } catch (\Exception $exception) {
+        }
 
         return $fieldInfo;
     }

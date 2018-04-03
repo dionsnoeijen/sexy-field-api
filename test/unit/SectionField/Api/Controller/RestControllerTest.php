@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Guzzle\Http\Message\Header\HeaderCollection;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\HeaderBag;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,6 +17,7 @@ use Tardigrades\Entity\Field;
 use Tardigrades\Entity\FieldType;
 use Tardigrades\Entity\SectionInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
+use Tardigrades\SectionField\Event\SectionEntryUpdated;
 use Tardigrades\SectionField\Form\FormInterface;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
@@ -54,6 +56,9 @@ class RestControllerTest extends TestCase
     /** @var RequestStack|Mockery\Mock */
     private $requestStack;
 
+    /** @var EventDispatcherInterface|Mockery\Mock */
+    private $dispatcher;
+
     /** @var  RestController */
     private $controller;
 
@@ -65,6 +70,7 @@ class RestControllerTest extends TestCase
         $this->deleteSection = Mockery::mock(DeleteSectionInterface::class);
         $this->form = Mockery::mock(FormInterface::class);
         $this->sectionManager = Mockery::mock(SectionManagerInterface::class);
+        $this->dispatcher = Mockery::mock(EventDispatcherInterface::class);
 
         $this->controller = new RestController(
             $this->createSection,
@@ -72,7 +78,8 @@ class RestControllerTest extends TestCase
             $this->deleteSection,
             $this->form,
             $this->sectionManager,
-            $this->requestStack
+            $this->requestStack,
+            $this->dispatcher
         );
     }
 
@@ -222,10 +229,13 @@ class RestControllerTest extends TestCase
         $expectedFieldInfo['fields'][2]['someRelationshipFieldHandle']['whatever'] = $formattedRecords;
 
         $expectedResponse = new JsonResponse(
-            $expectedFieldInfo, 200, [
-            'Access-Control-Allow-Origin' => 'iamtheorigin.com',
-            'Access-Control-Allow-Credentials' => 'true'
-        ]);
+            $expectedFieldInfo,
+            200,
+            [
+                'Access-Control-Allow-Origin' => 'iamtheorigin.com',
+                'Access-Control-Allow-Credentials' => 'true'
+            ]
+        );
 
         $this->readSection->shouldReceive('read')->andReturn($sectionEntitiesTo);
 
@@ -503,21 +513,48 @@ class RestControllerTest extends TestCase
             ->times(4)
             ->andReturn($request);
 
-        $entryMock = Mockery::mock(CommonSectionInterface::class);
+        $originalEntryMock = Mockery::mock(CommonSectionInterface::class);
+        $iteratorMock = Mockery::mock(\ArrayIterator::class);
+        $iteratorMock->shouldReceive('current')
+            ->twice()
+            ->andReturn($originalEntryMock);
+
+        $newEntryMock = Mockery::mock(CommonSectionInterface::class);
+        $this->readSection->shouldReceive('read')
+            ->twice()
+            ->with(
+                Mockery::on(
+                    function (ReadOptions $readOptions) {
+                        $this->assertSame('sexy', (string) $readOptions->getSection()[0]);
+                        if ($readOptions->getId()) {
+                            $this->assertSame(9, $readOptions->getId()->toInt());
+                        } elseif ($readOptions->getSlug()) {
+                            $this->assertSame('snail', (string) $readOptions->getSlug());
+                        }
+
+                        return true;
+                    }
+                )
+            )
+            ->andReturn($iteratorMock);
+
+        $this->dispatcher->shouldReceive('dispatch')
+            ->twice()
+            ->withArgs([SectionEntryUpdated::NAME, Mockery::type(SectionEntryUpdated::class)]);
 
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
         $mockedForm->shouldReceive('submit')->twice();
         $mockedForm->shouldReceive('getName')->twice();
         $mockedForm->shouldReceive('isValid')->andReturn(true);
         $mockedForm->shouldReceive('getData')
-            ->andReturn($entryMock);
+            ->andReturn($newEntryMock);
 
         $this->form->shouldReceive('buildFormForSection')
             ->twice()
             ->andReturn($mockedForm);
 
         $this->createSection->shouldReceive('save')
-            ->with($entryMock)
+            ->with($newEntryMock)
             ->twice()
             ->andReturn(true);
 
@@ -549,6 +586,30 @@ class RestControllerTest extends TestCase
         $mockedForm->shouldReceive('getName')->andReturn('name of form');
         $mockedForm->shouldReceive('getIterator')->andReturn(new \ArrayIterator([$mockedForm]));
         $mockedForm->shouldReceive('submit')->with('foo', false);
+
+        $originalEntryMock = Mockery::mock(CommonSectionInterface::class);
+        $iteratorMock = Mockery::mock(\ArrayIterator::class);
+        $iteratorMock->shouldReceive('current')
+            ->twice()
+            ->andReturn($originalEntryMock);
+
+        $this->readSection->shouldReceive('read')
+            ->twice()
+            ->with(
+                Mockery::on(
+                    function (ReadOptions $readOptions) {
+                        $this->assertSame('sexy', (string) $readOptions->getSection()[0]);
+                        if ($readOptions->getId()) {
+                            $this->assertSame(9, $readOptions->getId()->toInt());
+                        } elseif ($readOptions->getSlug()) {
+                            $this->assertSame('snail', (string) $readOptions->getSlug());
+                        }
+
+                        return true;
+                    }
+                )
+            )
+            ->andReturn($iteratorMock);
 
         $error = Mockery::mock(FormError::class)->makePartial();
         $error->shouldReceive('getMessage')->andReturn('you are wrong!');
