@@ -385,6 +385,10 @@ class RestControllerTest extends TestCase
             ->with('fields', ['id'])
             ->andReturn('');
 
+        $mockRequest->shouldReceive('get')
+            ->with('depth', 20)
+            ->andReturn(20);
+
         $mockRequest->headers = Mockery::mock(HeaderCollection::class);
         $mockRequest->headers->shouldReceive('get')
             ->with('Origin')
