@@ -62,3 +62,6 @@ form[recipeType]: vegan
 
 ## PUT, DELETE and OPTIONS requests
 See [src/config/routing/api.yml](src/config/routing/api.yml)
+
+# Depth control for GET requests
+Nex to ?fields=id,field you can add &depth=3 to control the level of depth in which data is returned.
