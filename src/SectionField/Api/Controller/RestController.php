@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Tardigrades\Entity\FieldInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
+use Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy;
 use Tardigrades\SectionField\Api\Serializer\FieldsExclusionStrategy;
 use Tardigrades\SectionField\Event\SectionEntryUpdated;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
@@ -617,6 +618,8 @@ class RestController implements RestControllerInterface
     private function getContext(Request $request): SerializationContext
     {
         $fields = $request->get('fields', ['id']);
+        $depth = $request->get('depth', 20);
+        $depth = is_numeric($depth) ? (int) $depth : 20;
 
         if (is_string($fields)) {
             $fields = explode(',', $fields);
@@ -624,6 +627,7 @@ class RestController implements RestControllerInterface
 
         $context = new SerializationContext();
         $context->addExclusionStrategy(new FieldsExclusionStrategy($fields));
+        $context->addExclusionStrategy(new DepthExclusionStrategy($depth));
 
         return $context;
     }
