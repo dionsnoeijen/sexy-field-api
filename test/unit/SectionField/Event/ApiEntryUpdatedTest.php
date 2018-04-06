@@ -9,15 +9,15 @@ use PHPUnit\Framework\TestCase;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 
 /**
- * @coversDefaultClass Tardigrades\SectionField\Event\SectionEntryUpdated
+ * @coversDefaultClass Tardigrades\SectionField\Event\ApiEntryUpdated
  * @covers ::__construct
  */
-final class SectionEntryUpdatedTest extends TestCase
+final class ApiEntryUpdatedTest extends TestCase
 {
     use MockeryPHPUnitIntegration;
 
-    /** @var SectionEntryUpdated */
-    private $sectionEntryUpdated;
+    /** @var ApiEntryUpdated */
+    private $apiEntryUpdated;
 
     /** @var CommonSectionInterface */
     private $originalEntry;
@@ -29,7 +29,7 @@ final class SectionEntryUpdatedTest extends TestCase
     {
         $this->originalEntry = Mockery::mock(CommonSectionInterface::class);
         $this->newEntry = Mockery::mock(CommonSectionInterface::class);
-        $this->sectionEntryUpdated = new sectionEntryUpdated($this->originalEntry, $this->newEntry);
+        $this->apiEntryUpdated = new ApiEntryUpdated($this->originalEntry, $this->newEntry);
     }
 
     /**
@@ -38,7 +38,7 @@ final class SectionEntryUpdatedTest extends TestCase
      */
     public function it_should_return_the_original_entry()
     {
-        $result = $this->sectionEntryUpdated->getOriginalEntry();
+        $result = $this->apiEntryUpdated->getOriginalEntry();
 
         $this->assertEquals($this->originalEntry, $result);
     }
@@ -49,7 +49,7 @@ final class SectionEntryUpdatedTest extends TestCase
      */
     public function it_should_return_the_new_entry()
     {
-        $result = $this->sectionEntryUpdated->getNewEntry();
+        $result = $this->apiEntryUpdated->getNewEntry();
 
         $this->assertEquals($this->newEntry, $result);
     }

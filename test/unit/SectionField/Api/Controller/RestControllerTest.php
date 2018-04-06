@@ -17,7 +17,9 @@ use Tardigrades\Entity\Field;
 use Tardigrades\Entity\FieldType;
 use Tardigrades\Entity\SectionInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
-use Tardigrades\SectionField\Event\SectionEntryUpdated;
+use Tardigrades\SectionField\Event\ApiCreateEntry;
+use Tardigrades\SectionField\Event\ApiEntryCreated;
+use Tardigrades\SectionField\Event\ApiEntryUpdated;
 use Tardigrades\SectionField\Form\FormInterface;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
@@ -415,7 +417,8 @@ class RestControllerTest extends TestCase
     {
         $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
 
-        $this->requestStack->shouldReceive('getCurrentRequest')
+        $this->requestStack
+            ->shouldReceive('getCurrentRequest')
             ->once()
             ->andReturn($request);
 
@@ -433,6 +436,20 @@ class RestControllerTest extends TestCase
         $this->form->shouldReceive('buildFormForSection')
             ->with('sexy', $this->requestStack, false, false)
             ->andReturn($mockedForm);
+
+        $this->dispatcher->shouldReceive('dispatch')
+            ->once()
+            ->withArgs([
+                ApiCreateEntry::NAME,
+                Mockery::type(ApiCreateEntry::class)
+            ]);
+
+        $this->dispatcher->shouldReceive('dispatch')
+            ->once()
+            ->withArgs([
+                ApiEntryCreated::NAME,
+                Mockery::type(ApiEntryCreated::class)
+            ]);
 
         $mockedRequest = Mockery::mock(Request::class)->makePartial();
         $mockedRequest->shouldReceive('get')->with('form')
@@ -466,6 +483,13 @@ class RestControllerTest extends TestCase
             ->once()
             ->andReturn($request);
 
+        $this->dispatcher->shouldReceive('dispatch')
+            ->once()
+            ->withArgs([
+                ApiCreateEntry::NAME,
+                Mockery::type(ApiCreateEntry::class)
+            ]);
+
         $entryMock = Mockery::mock(CommonSectionInterface::class);
 
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
@@ -495,7 +519,7 @@ class RestControllerTest extends TestCase
 
         $response = $this->controller->createEntry('sexy');
         $this->assertSame(
-            '{"code":500,"exception":"Something went wrong"}',
+            '{"message":"Something went wrong"}',
             $response->getContent()
         );
     }
@@ -519,6 +543,13 @@ class RestControllerTest extends TestCase
         $error->shouldReceive('getMessage')->andReturn('you are wrong!');
         $mockedForm->shouldReceive('getErrors')
             ->andReturn([$error]);
+
+        $this->dispatcher->shouldReceive('dispatch')
+            ->once()
+            ->withArgs([
+                ApiCreateEntry::NAME,
+                Mockery::type(ApiCreateEntry::class)
+            ]);
 
         $this->form->shouldReceive('buildFormForSection')
             ->andReturn($mockedForm);
@@ -590,7 +621,7 @@ class RestControllerTest extends TestCase
 
         $this->dispatcher->shouldReceive('dispatch')
             ->twice()
-            ->withArgs([SectionEntryUpdated::NAME, Mockery::type(SectionEntryUpdated::class)]);
+            ->withArgs([ApiEntryUpdated::NAME, Mockery::type(ApiEntryUpdated::class)]);
 
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
         $mockedForm->shouldReceive('submit')->twice();
