@@ -745,6 +745,7 @@ class RestController implements RestControllerInterface
             $update = [];
             $update[$newHandle] = $fieldInfo[array_keys($fieldInfo)[0]];
             $update[$newHandle]['handle'] = $newHandle;
+            $update[$newHandle]['originalHandle'] = $oldHandle;
             return $update;
         }
 
