@@ -17,15 +17,15 @@ use Symfony\Component\EventDispatcher\Event;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 
 /**
- * Class SectionEntryUpdated
+ * Class ApiEntryUpdated
  *
- * Dispatched after updated section is saved.
+ * Dispatched after updated entry is saved.
  *
  * @package Tardigrades\SectionField\Event
  */
-class SectionEntryUpdated extends Event
+class ApiEntryUpdated extends Event
 {
-    const NAME = 'section.entry.updated';
+    const NAME = 'api.entry.updated';
 
     /** @var CommonSectionInterface */
     protected $originalEntry;
@@ -33,8 +33,10 @@ class SectionEntryUpdated extends Event
     /** @var CommonSectionInterface */
     protected $newEntry;
 
-    public function __construct(CommonSectionInterface $originalEntry, CommonSectionInterface $newEntry)
-    {
+    public function __construct(
+        CommonSectionInterface $originalEntry,
+        CommonSectionInterface $newEntry
+    ) {
         $this->originalEntry = $originalEntry;
         $this->newEntry = $newEntry;
     }

@@ -15,7 +15,9 @@ use Tardigrades\Entity\FieldInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy;
 use Tardigrades\SectionField\Api\Serializer\FieldsExclusionStrategy;
-use Tardigrades\SectionField\Event\SectionEntryUpdated;
+use Tardigrades\SectionField\Event\ApiCreateEntry;
+use Tardigrades\SectionField\Event\ApiEntryCreated;
+use Tardigrades\SectionField\Event\ApiEntryUpdated;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 use Tardigrades\SectionField\Service\CreateSectionInterface;
 use Tardigrades\SectionField\Service\DeleteSectionInterface;
@@ -271,7 +273,7 @@ class RestController implements RestControllerInterface
                 ReadOptions::SECTION => $sectionHandle,
                 ReadOptions::FIELD => [ $fieldHandle => $fieldValue ],
                 ReadOptions::OFFSET => $offset,
-                ReadOptions::LIMIT => $limit,
+                ReadOptions::LIMIT => (int) $limit,
                 ReadOptions::ORDER_BY => [ $orderBy => $sort ]
             ]));
             $serializer = SerializerBuilder::create()->build();
@@ -355,6 +357,11 @@ class RestController implements RestControllerInterface
     {
         $request = $this->requestStack->getCurrentRequest();
 
+        $this->dispatcher->dispatch(
+            ApiCreateEntry::NAME,
+            new ApiCreateEntry($request)
+        );
+
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, POST');
         if (!empty($optionsResponse)) {
             return $optionsResponse;
@@ -374,6 +381,12 @@ class RestController implements RestControllerInterface
 
             if ($form->isValid()) {
                 $response = $this->save($form);
+
+                $this->dispatcher->dispatch(
+                    ApiEntryCreated::NAME,
+                    new ApiEntryCreated($request, $response, $form->getData())
+                );
+
             } else {
                 $response['errors'] = $this->getFormErrors($form);
                 $response['code'] = JsonResponse::HTTP_BAD_REQUEST;
@@ -434,8 +447,8 @@ class RestController implements RestControllerInterface
                 $response = $this->save($form);
 
                 $this->dispatcher->dispatch(
-                    SectionEntryUpdated::NAME,
-                    new SectionEntryUpdated($originalEntry, $newEntry)
+                    ApiEntryUpdated::NAME,
+                    new ApiEntryUpdated($originalEntry, $newEntry)
                 );
             } else {
                 $response['errors'] = $this->getFormErrors($form);
@@ -499,8 +512,8 @@ class RestController implements RestControllerInterface
                 $response = $this->save($form);
 
                 $this->dispatcher->dispatch(
-                    SectionEntryUpdated::NAME,
-                    new SectionEntryUpdated($originalEntry, $newEntry)
+                    ApiEntryUpdated::NAME,
+                    new ApiEntryUpdated($originalEntry, $newEntry)
                 );
             } else {
                 $response['errors'] = $this->getFormErrors($form);
