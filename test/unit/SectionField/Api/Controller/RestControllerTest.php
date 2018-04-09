@@ -28,10 +28,12 @@ use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 use Tardigrades\SectionField\Service\CreateSectionInterface;
 use Tardigrades\SectionField\Service\DeleteSectionInterface;
+use Tardigrades\SectionField\Service\EntryNotFoundException;
 use Tardigrades\SectionField\Service\ReadOptions;
 use Tardigrades\SectionField\Service\ReadSectionInterface;
 use Tardigrades\SectionField\Service\SectionManagerInterface;
 use Mockery;
+use Tardigrades\SectionField\Service\SectionNotFoundException;
 use Tardigrades\SectionField\ValueObject\Handle;
 use Tardigrades\SectionField\ValueObject\Name;
 use Tardigrades\SectionField\ValueObject\SectionConfig;
@@ -206,11 +208,201 @@ class RestControllerTest extends TestCase
 
         $expectedResponse = new JsonResponse($expectedFieldInfo, 200, [
             'Access-Control-Allow-Origin' => 'iamtheorigin.com',
-            'Access-Control-Allow-Credentials' => 'true'
+            'Access-Control-Allow-Credentials' => true
         ]);
 
         $response = $this->controller->getSectionInfo('sexyHandle');
         $this->assertEquals($expectedResponse, $response);
+    }
+
+    /**
+     * @test
+     * @covers ::__construct
+     * @covers ::getSectionInfo
+     */
+    public function it_does_not_find_sections()
+    {
+        $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
+
+        $this->requestStack->shouldReceive('getCurrentRequest')
+            ->once()
+            ->andReturn($request);
+
+        $this->sectionManager->shouldReceive('readByHandle')
+            ->once()
+            ->andThrow(SectionNotFoundException::class);
+
+        $expectedResponse = new JsonResponse(['message' => 'Section not found'], 404, [
+            'Access-Control-Allow-Origin' => 'iamtheorigin.com',
+            'Access-Control-Allow-Credentials' => true
+        ]);
+
+        $response = $this->controller->getSectionInfo('foo');
+        $this->assertEquals($expectedResponse, $response);
+    }
+
+    /**
+     * @test
+     * @covers ::__construct
+     * @covers ::getSectionInfo
+     */
+    public function it_fails_finding_sections_for_another_reason()
+    {
+        $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
+
+        $this->requestStack->shouldReceive('getCurrentRequest')
+            ->once()
+            ->andReturn($request);
+
+        $this->sectionManager->shouldReceive('readByHandle')
+            ->once()
+            ->andThrow(\Exception::class, "Uh-oh");
+
+        $expectedResponse = new JsonResponse(['message' => 'Uh-oh'], 400, [
+            'Access-Control-Allow-Origin' => 'iamtheorigin.com',
+            'Access-Control-Allow-Credentials' => true
+        ]);
+
+        $response = $this->controller->getSectionInfo('foo');
+        $this->assertEquals($expectedResponse, $response);
+    }
+
+    /**
+     * @test
+     * @covers ::__construct
+     * @covers ::getEntryById
+     * @covers ::getEntryBySlug
+     * @covers ::getEntriesByFieldValue
+     * @covers ::getEntries
+     * @covers ::deleteEntryById
+     * @covers ::deleteEntryBySlug
+     * @covers ::updateEntryById
+     * @covers ::updateEntryBySlug
+     */
+    public function it_does_not_find_entries()
+    {
+        $testCases = [
+            // method name,  arguments,     GET query, expect dispatch, expect build form
+            ['getEntryById', ['foo', '10'], [],        false,           false],
+            ['getEntryBySlug', ['foo', 'bar'], [], false, false],
+            ['getEntriesByFieldValue', ['foo', 'bar'], ['value' => 23], false, false],
+            ['getEntries', ['foo'], [], false, false],
+            ['deleteEntryById', ['foo', 12], [], true, false],
+            ['deleteEntryBySlug', ['foo', 'bar'], [], true, false],
+            ['updateEntryById', ['foo', 13], [], true, true],
+            ['updateEntryBySlug', ['foo', 'bar'], [], true, true]
+        ];
+        foreach ($testCases as [$method, $args, $query, $expectDispatch, $expectBuildForm]) {
+            $request = new Request($query, [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
+
+            $this->requestStack->shouldReceive('getCurrentRequest')
+                ->andReturn($request);
+
+            $this->readSection->shouldReceive('read')
+                ->once()
+                ->andThrow(EntryNotFoundException::class);
+
+            $expectedResponse = new JsonResponse(['message' => 'Entry not found'], 404, [
+                'Access-Control-Allow-Origin' => 'iamtheorigin.com',
+                'Access-Control-Allow-Credentials' => true
+            ]);
+
+            if ($expectDispatch) {
+                $this->dispatcher->shouldReceive('dispatch')->once();
+            }
+            if ($expectBuildForm) {
+                $this->form->shouldReceive('buildFormForSection')->once();
+            }
+
+            $response = $this->controller->$method(...$args);
+            $this->assertEquals($expectedResponse, $response);
+        }
+    }
+
+    /**
+     * @test
+     * @covers ::__construct
+     * @covers ::getEntryById
+     * @covers ::getEntryBySlug
+     * @covers ::getEntriesByFieldValue
+     * @covers ::getEntries
+     * @covers ::deleteEntryBySlug
+     * @covers ::deleteEntryById
+     */
+    public function it_fails_getting_entries_while_reading()
+    {
+        $testCases = [
+            // method name,  arguments,     GET query, expect dispatch
+            ['getEntryById', ['foo', '10'], [],        false],
+            ['getEntryBySlug', ['foo', 'bar'], [], false],
+            ['getEntriesByFieldValue', ['foo', 'bar'], ['value' => 23], false],
+            ['getEntries', ['foo'], [], false],
+            ['deleteEntryBySlug', ['foo', 'bar'], [], true],
+            ['deleteEntryById', ['foo', 247], [], true]
+        ];
+        foreach ($testCases as [$method, $args, $query, $expectDispatch]) {
+            $request = new Request($query, [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
+
+            $this->requestStack->shouldReceive('getCurrentRequest')
+                ->once()
+                ->andReturn($request);
+
+            $this->readSection->shouldReceive('read')
+                ->once()
+                ->andThrow(\Exception::class, "Something exceptional happened");
+
+
+            $expectedResponse = new JsonResponse(['message' => "Something exceptional happened"], 400, [
+                'Access-Control-Allow-Origin' => 'iamtheorigin.com',
+                'Access-Control-Allow-Credentials' => true
+            ]);
+
+            if ($expectDispatch) {
+                $this->dispatcher->shouldReceive('dispatch')->once();
+            }
+
+            $response = $this->controller->$method(...$args);
+            $this->assertEquals($expectedResponse, $response);
+        }
+    }
+
+    /**
+     * @test
+     * @covers ::__construct
+     * @covers ::createEntry
+     * @covers ::updateEntryById
+     * @covers ::updateEntryBySlug
+     */
+    public function it_fails_getting_entries_while_building_a_form()
+    {
+        $testCases = [
+            // method name,  arguments,     GET query, expect dispatch
+            ['createEntry', ['foo'], ['baz' => 'bat'], true],
+            ['updateEntryById', ['foo', 14], [], true],
+            ['updateEntryBySlug', ['foo', 'bar'], [], true]
+        ];
+        foreach ($testCases as [$method, $args, $query, $expectDispatch]) {
+            $request = new Request($query, [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
+
+            $this->requestStack->shouldReceive('getCurrentRequest')
+                ->andReturn($request);
+
+            $this->form->shouldReceive('buildFormForSection')
+                ->once()
+                ->andThrow(\Exception::class, "Something exceptional happened");
+
+            $expectedResponse = new JsonResponse(['message' => "Something exceptional happened"], 400, [
+                'Access-Control-Allow-Origin' => 'iamtheorigin.com',
+                'Access-Control-Allow-Credentials' => true
+            ]);
+
+            if ($expectDispatch) {
+                $this->dispatcher->shouldReceive('dispatch')->once();
+            }
+
+            $response = $this->controller->$method(...$args);
+            $this->assertEquals($expectedResponse, $response);
+        }
     }
 
     /**
@@ -322,7 +514,7 @@ class RestControllerTest extends TestCase
             200,
             [
                 'Access-Control-Allow-Origin' => 'iamtheorigin.com',
-                'Access-Control-Allow-Credentials' => 'true'
+                'Access-Control-Allow-Credentials' => true
             ]
         );
 
@@ -389,10 +581,10 @@ class RestControllerTest extends TestCase
 
         $readOptions = ReadOptions::fromArray([
             ReadOptions::SECTION => $sectionHandle,
-            ReadOptions::FIELD => [ $fieldHandle => $fieldValue ],
+            ReadOptions::FIELD => [$fieldHandle => $fieldValue],
             ReadOptions::OFFSET => $offset,
             ReadOptions::LIMIT => $limit,
-            ReadOptions::ORDER_BY => [ $orderBy => $sort ]
+            ReadOptions::ORDER_BY => [$orderBy => $sort]
         ]);
 
         $this->readSection->shouldReceive('read')
@@ -540,6 +732,13 @@ class RestControllerTest extends TestCase
                 Mockery::type(ApiCreateEntry::class)
             ]);
 
+        $this->dispatcher->shouldReceive('dispatch')
+            ->once()
+            ->withArgs([
+                ApiEntryCreated::NAME,
+                Mockery::type(ApiEntryCreated::class)
+            ]);
+
         $entryMock = Mockery::mock(CommonSectionInterface::class);
 
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
@@ -562,14 +761,14 @@ class RestControllerTest extends TestCase
         $this->createSection->shouldReceive('save')
             ->with($entryMock)
             ->once()
-            ->andThrow(\Exception::class, "Something went wrong");
+            ->andThrow(\Exception::class, "Something woeful occurred");
 
         $this->requestStack->shouldReceive('getCurrentRequest')
             ->andReturn($mockedRequest);
 
         $response = $this->controller->createEntry('sexy');
         $this->assertSame(
-            '{"message":"Something went wrong"}',
+            '{"code":500,"exception":"Something woeful occurred"}',
             $response->getContent()
         );
     }
@@ -656,11 +855,11 @@ class RestControllerTest extends TestCase
             ->with(
                 Mockery::on(
                     function (ReadOptions $readOptions) {
-                        $this->assertSame('sexy', (string) $readOptions->getSection()[0]);
+                        $this->assertSame('sexy', (string)$readOptions->getSection()[0]);
                         if ($readOptions->getId()) {
                             $this->assertSame(9, $readOptions->getId()->toInt());
                         } elseif ($readOptions->getSlug()) {
-                            $this->assertSame('snail', (string) $readOptions->getSlug());
+                            $this->assertSame('snail', (string)$readOptions->getSlug());
                         }
 
                         return true;
@@ -733,11 +932,11 @@ class RestControllerTest extends TestCase
             ->with(
                 Mockery::on(
                     function (ReadOptions $readOptions) {
-                        $this->assertSame('sexy', (string) $readOptions->getSection()[0]);
+                        $this->assertSame('sexy', (string)$readOptions->getSection()[0]);
                         if ($readOptions->getId()) {
                             $this->assertSame(9, $readOptions->getId()->toInt());
                         } elseif ($readOptions->getSlug()) {
-                            $this->assertSame('snail', (string) $readOptions->getSlug());
+                            $this->assertSame('snail', (string)$readOptions->getSlug());
                         }
 
                         return true;
@@ -979,7 +1178,7 @@ class RestControllerTest extends TestCase
 
         foreach ($fields as $field) {
             $fieldInfo = [
-                (string) $field->getHandle() => $field->getConfig()->toArray()['field']
+                (string)$field->getHandle() => $field->getConfig()->toArray()['field']
             ];
 
             $fieldInfos[] = $fieldInfo;
