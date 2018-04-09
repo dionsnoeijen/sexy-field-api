@@ -90,6 +90,50 @@ class RestControllerTest extends TestCase
      * @test
      * @covers ::__construct
      * @covers ::getSectionInfo
+     * @covers ::getEntryById
+     * @covers ::getEntryBySlug
+     * @covers ::getEntriesByFieldValue
+     * @covers ::getEntries
+     * @covers ::createEntry
+     * @covers ::updateEntryById
+     * @covers ::updateEntryBySlug
+     * @covers ::deleteEntryById
+     * @covers ::deleteEntryBySlug
+     */
+    public function it_returns_options_listings()
+    {
+        $testCases = [
+            // method name,    arguments,      allowed HTTP methods
+            ['getSectionInfo', ['foo', "0"], 'OPTIONS, GET'],
+            ['getEntryById', ['foo', "0"], 'OPTIONS, GET'],
+            ['getEntryBySlug', ['foo', 'bar'], 'OPTIONS, GET'],
+            ['getEntriesByFieldValue', ['foo', 'bar'], 'OPTIONS, GET'],
+            ['getEntries', ['foo'], 'OPTIONS, GET'],
+            ['createEntry', ['foo'], 'OPTIONS, POST'],
+            ['updateEntryById', ['foo', 0], 'OPTIONS, PUT'],
+            ['updateEntryBySlug', ['foo', 'bar'], 'OPTIONS, PUT'],
+            ['deleteEntryById', ['foo', 0], 'OPTIONS, DELETE'],
+            ['deleteEntryBySlug', ['foo', 'bar'], 'OPTIONS, DELETE']
+        ];
+        foreach ($testCases as [$method, $args, $allowMethods]) {
+            $request = Mockery::mock(Request::class);
+            $request->shouldReceive('getMethod')
+                ->andReturn('options');
+            $response = new JsonResponse([], JsonResponse::HTTP_OK, [
+                'Access-Control-Allow-Methods' => $allowMethods,
+                'Access-Control-Allow-Credentials' => true
+            ]);
+            $this->requestStack->shouldReceive('getCurrentRequest')
+                ->once()
+                ->andReturn($request);
+            $this->assertEquals($this->controller->$method(...$args), $response);
+        }
+    }
+
+    /**
+     * @test
+     * @covers ::__construct
+     * @covers ::getSectionInfo
      */
     public function it_gets_section_info_of_a_section_without_relationships()
     {
