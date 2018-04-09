@@ -83,7 +83,8 @@ class RestController implements RestControllerInterface
         SectionManagerInterface $sectionManager,
         RequestStack $requestStack,
         EventDispatcherInterface $dispatcher
-    ) {
+    )
+    {
         $this->readSection = $readSection;
         $this->createSection = $createSection;
         $this->deleteSection = $deleteSection;
@@ -112,7 +113,8 @@ class RestController implements RestControllerInterface
     public function getSectionInfo(
         string $sectionHandle,
         string $id = null
-    ): JsonResponse {
+    ): JsonResponse
+    {
 
         $request = $this->requestStack->getCurrentRequest();
 
@@ -136,7 +138,7 @@ class RestController implements RestControllerInterface
                 $fieldInfo = [(string)$field->getHandle() => $field->getConfig()->toArray()['field']];
 
                 if ((string)$field->getFieldType()->getFullyQualifiedClassName() === Relationship::class) {
-                    $fieldInfo = $this->getRelationshipsTo($request, $field, $fieldInfo, $sectionHandle, (int) $id);
+                    $fieldInfo = $this->getRelationshipsTo($request, $field, $fieldInfo, $sectionHandle, (int)$id);
                 }
 
                 $fieldInfo = $this->matchFormFieldsWithConfig($fieldProperties, $fieldInfo);
@@ -271,10 +273,10 @@ class RestController implements RestControllerInterface
         try {
             $entries = $this->readSection->read(ReadOptions::fromArray([
                 ReadOptions::SECTION => $sectionHandle,
-                ReadOptions::FIELD => [ $fieldHandle => $fieldValue ],
+                ReadOptions::FIELD => [$fieldHandle => $fieldValue],
                 ReadOptions::OFFSET => $offset,
-                ReadOptions::LIMIT => (int) $limit,
-                ReadOptions::ORDER_BY => [ $orderBy => $sort ]
+                ReadOptions::LIMIT => (int)$limit,
+                ReadOptions::ORDER_BY => [$orderBy => $sort]
             ]));
             $serializer = SerializerBuilder::create()->build();
             $result = [];
@@ -302,8 +304,8 @@ class RestController implements RestControllerInterface
      */
     public function getEntries(
         string $sectionHandle
-    ): JsonResponse {
-
+    ): JsonResponse
+    {
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
@@ -321,7 +323,7 @@ class RestController implements RestControllerInterface
                 ReadOptions::SECTION => $sectionHandle,
                 ReadOptions::OFFSET => $offset,
                 ReadOptions::LIMIT => $limit,
-                ReadOptions::ORDER_BY => [ $orderBy => $sort ]
+                ReadOptions::ORDER_BY => [$orderBy => $sort]
             ]));
             $serializer = SerializerBuilder::create()->build();
 
@@ -381,12 +383,10 @@ class RestController implements RestControllerInterface
 
             if ($form->isValid()) {
                 $response = $this->save($form);
-
                 $this->dispatcher->dispatch(
                     ApiEntryCreated::NAME,
                     new ApiEntryCreated($request, $response, $form->getData())
                 );
-
             } else {
                 $response['errors'] = $this->getFormErrors($form);
                 $response['code'] = JsonResponse::HTTP_BAD_REQUEST;
@@ -549,7 +549,7 @@ class RestController implements RestControllerInterface
 
         $readOptions = ReadOptions::fromArray([
             ReadOptions::SECTION => $sectionHandle,
-            ReadOptions::ID => (int) $id
+            ReadOptions::ID => (int)$id
         ]);
 
         try {
@@ -632,7 +632,7 @@ class RestController implements RestControllerInterface
     {
         $fields = $request->get('fields', ['id']);
         $depth = $request->get('depth', 20);
-        $depth = is_numeric($depth) ? (int) $depth : 20;
+        $depth = is_numeric($depth) ? (int)$depth : 20;
 
         if (is_string($fields)) {
             $fields = explode(',', $fields);
@@ -733,12 +733,21 @@ class RestController implements RestControllerInterface
     {
         $newHandle = null;
         $oldHandle = array_keys($fieldInfo)[0];
-        $newHandle = !empty($fieldInfo[$oldHandle]['as']) ?
-            $this->matchesWithInArray($fieldInfo[$oldHandle]['as'], $entityProperties) : null;
 
-        if (is_null($newHandle)) {
-            $newHandle = !empty($fieldInfo[$oldHandle]['to']) ?
-                $this->matchesWithInArray($fieldInfo[$oldHandle]['to'], $entityProperties) : null;
+        // In case of a faux field, we just want to keep the originally defined handle
+        $useOriginalHandle = false;
+        try {
+            $useOriginalHandle = $fieldInfo[$oldHandle]['generator']['entity']['ignore'];
+        } catch (\Exception $exception) {
+        }
+
+        if (!$useOriginalHandle) {
+            $newHandle = !empty($fieldInfo[$oldHandle]['as']) ?
+                $this->matchesWithInArray($fieldInfo[$oldHandle]['as'], $entityProperties) : null;
+            if (is_null($newHandle)) {
+                $newHandle = !empty($fieldInfo[$oldHandle]['to']) ?
+                    $this->matchesWithInArray($fieldInfo[$oldHandle]['to'], $entityProperties) : null;
+            }
         }
 
         if (!is_null($newHandle)) {
@@ -816,30 +825,76 @@ class RestController implements RestControllerInterface
         array $fieldInfo,
         string $sectionHandle,
         int $id = null
-    ): ?array {
+    ): ?array
+    {
 
-        $fieldHandle = (string) $field->getHandle();
+        $fieldHandle = (string)$field->getHandle();
         $options = $this->getOptions($request);
 
         if (!empty($fieldInfo[$fieldHandle]['to'])) {
             try {
-                $to = $this->readSection->read(
-                    ReadOptions::fromArray([
-                        ReadOptions::SECTION => $fieldInfo[$fieldHandle]['to'],
-                        ReadOptions::LIMIT => !empty($options[$fieldHandle]['limit']) ?
-                            (int) $options[$fieldHandle]['limit'] : self::DEFAULT_RELATIONSHIPS_LIMIT,
-                        ReadOptions::OFFSET => !empty($options[$fieldHandle]['offset']) ?
-                            $options[$fieldHandle]['offset'] : self::DEFAULT_RELATIONSHIPS_OFFSET
-                    ])
-                );
 
+                $sexyFieldInstructions =
+                    !empty($fieldInfo[$fieldHandle]['form']['sexy-field-instructions']['relationship']) ?
+                        $fieldInfo[$fieldHandle]['form']['sexy-field-instructions']['relationship'] : null;
+
+                $readOptions = [
+                    ReadOptions::SECTION => $fieldInfo[$fieldHandle]['to'],
+                    ReadOptions::LIMIT => !empty($options[$fieldHandle]['limit']) ?
+                        (int)$options[$fieldHandle]['limit'] :
+                        ((!empty($sexyFieldInstructions) && !empty($sexyFieldInstructions['limit'])) ?
+                            (int)$sexyFieldInstructions['limit'] :
+                            self::DEFAULT_RELATIONSHIPS_LIMIT),
+                    ReadOptions::OFFSET => !empty($options[$fieldHandle]['offset']) ?
+                        (int)$options[$fieldHandle]['offset'] :
+                        ((!empty($sexyFieldInstructions) && !empty($sexyFieldInstructions['offset'])) ?
+                            (int)$sexyFieldInstructions['offset'] :
+                            self::DEFAULT_RELATIONSHIPS_OFFSET)
+                ];
+
+                if (!empty($sexyFieldInstructions) &&
+                    !empty($sexyFieldInstructions['field']) &&
+                    !empty($sexyFieldInstructions['value'])
+                ) {
+                    $readOptions[ReadOptions::FIELD] = [$sexyFieldInstructions['field'] => $sexyFieldInstructions['value']];
+                }
+
+                $nameExpression = null;
+                if (!empty($sexyFieldInstructions) &&
+                    !empty($sexyFieldInstructions['name-expression'])
+                ) {
+                    $nameExpression = explode('|', $sexyFieldInstructions['name-expression']);
+                }
+
+                $to = $this->readSection->read(ReadOptions::fromArray($readOptions));
                 $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']] = [];
+
                 /** @var CommonSectionInterface $entry */
                 foreach ($to as $entry) {
+
+                    // Try to use the expression to get a name,
+                    // otherwise use default. Expression has a current
+                    // max depth of two like: ->getAccount()->getDisplayName()
+                    // defined as: getAccount|getDisplayName
+                    // In the future this type of functionality will be
+                    // moved to the getDefault() method for the entity generator
+                    // as well. But we need it here too for the fields that
+                    // are ignored by the entity generator.
+                    $name = $entry->getDefault();
+                    if (!empty($nameExpression)) {
+                        $find = $entry->{$nameExpression[0]}();
+                        if (!empty($nameExpression[1]) && !empty($find)) {
+                            $find = $find->{$nameExpression[1]}();
+                        }
+                        if (!empty($find)) {
+                            $name = $find;
+                        }
+                    }
+
                     $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']][] = [
                         'id' => $entry->getId(),
                         'slug' => (string) $entry->getSlug(),
-                        'name' => $entry->getDefault(),
+                        'name' => $name,
                         'created' => $entry->getCreated(),
                         'updated' => $entry->getUpdated(),
                         'selected' => false
