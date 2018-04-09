@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-declare (strict_types = 1);
+declare(strict_types=1);
 
 namespace Tardigrades\SectionField\Event;
 
@@ -18,15 +18,15 @@ use Symfony\Component\HttpFoundation\Request;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 
 /**
- * Class ApiEntryUpdated
+ * Class ApiEntryDeleted
  *
- * Dispatched after updated entry is saved.
+ * Dispatched after an entry is deleted.
  *
  * @package Tardigrades\SectionField\Event
  */
-class ApiEntryUpdated extends Event
+class ApiEntryDeleted extends Event
 {
-    const NAME = 'api.entry.updated';
+    const NAME = 'api.entry.deleted';
 
     /** @var Request */
     protected $request;
@@ -35,21 +35,13 @@ class ApiEntryUpdated extends Event
     protected $response;
 
     /** @var CommonSectionInterface */
-    protected $originalEntry;
+    protected $entry;
 
-    /** @var CommonSectionInterface */
-    protected $newEntry;
-
-    public function __construct(
-        Request $request,
-        array $response,
-        CommonSectionInterface $originalEntry,
-        CommonSectionInterface $newEntry
-    ) {
+    public function __construct(Request $request, array $response, CommonSectionInterface $entry)
+    {
         $this->request = $request;
         $this->response = $response;
-        $this->originalEntry = $originalEntry;
-        $this->newEntry = $newEntry;
+        $this->entry = $entry;
     }
 
     /** @return Request */
@@ -64,19 +56,9 @@ class ApiEntryUpdated extends Event
         return $this->response;
     }
 
-    /**
-     * The Section Entry Entity that was just persisted
-     */
-    public function getOriginalEntry(): CommonSectionInterface
+    /** @return CommonSectionInterface */
+    public function getEntry(): CommonSectionInterface
     {
-        return $this->originalEntry;
-    }
-
-    /**
-     * The Section Entry Entity that was just persisted
-     */
-    public function getNewEntry(): CommonSectionInterface
-    {
-        return $this->newEntry;
+        return $this->entry;
     }
 }

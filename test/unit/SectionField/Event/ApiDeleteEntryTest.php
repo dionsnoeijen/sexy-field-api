@@ -1,5 +1,5 @@
 <?php
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Tardigrades\SectionField\Event;
 
@@ -7,13 +7,13 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * @coversDefaultClass Tardigrades\SectionField\Event\ApiCreateEntry
+ * @coversDefaultClass Tardigrades\SectionField\Event\ApiDeleteEntry
  * @covers ::__construct
  */
-final class ApiCreateEntryTest extends TestCase
+final class ApiDeleteEntryTest extends TestCase
 {
-    /** @var ApiCreateEntry */
-    private $apiCreateEntry;
+    /** @var ApiDeleteEntry */
+    private $apiDeleteEntry;
 
     /** @var Request */
     private $request;
@@ -21,7 +21,7 @@ final class ApiCreateEntryTest extends TestCase
     public function setUp()
     {
         $this->request = new Request();
-        $this->apiCreateEntry = new ApiCreateEntry($this->request);
+        $this->apiDeleteEntry = new ApiDeleteEntry($this->request);
     }
 
     /**
@@ -30,8 +30,6 @@ final class ApiCreateEntryTest extends TestCase
      */
     public function it_should_return_the_request()
     {
-        $result = $this->apiCreateEntry->getRequest();
-
-        $this->assertSame($this->request, $result);
+        $this->assertSame($this->request, $this->apiDeleteEntry->getRequest());
     }
 }

@@ -18,8 +18,11 @@ use Tardigrades\Entity\FieldType;
 use Tardigrades\Entity\SectionInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Event\ApiCreateEntry;
+use Tardigrades\SectionField\Event\ApiDeleteEntry;
 use Tardigrades\SectionField\Event\ApiEntryCreated;
+use Tardigrades\SectionField\Event\ApiEntryDeleted;
 use Tardigrades\SectionField\Event\ApiEntryUpdated;
+use Tardigrades\SectionField\Event\ApiUpdateEntry;
 use Tardigrades\SectionField\Form\FormInterface;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
@@ -670,6 +673,10 @@ class RestControllerTest extends TestCase
             ->twice()
             ->withArgs([ApiEntryUpdated::NAME, Mockery::type(ApiEntryUpdated::class)]);
 
+        $this->dispatcher->shouldReceive('dispatch')
+            ->twice()
+            ->withArgs([ApiUpdateEntry::NAME, Mockery::type(ApiUpdateEntry::class)]);
+
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
         $mockedForm->shouldReceive('submit')->twice();
         $mockedForm->shouldReceive('getName')->twice();
@@ -767,6 +774,10 @@ class RestControllerTest extends TestCase
         $this->requestStack->shouldReceive('getCurrentRequest')
             ->andReturn($mockedRequest);
 
+        $this->dispatcher->shouldReceive('dispatch')
+            ->twice()
+            ->withArgs([ApiUpdateEntry::NAME, Mockery::type(ApiUpdateEntry::class)]);
+
         $response = $this->controller->updateEntryById('sexy', 9);
         $this->assertSame(400, $response->getStatusCode());
         $this->assertSame(
@@ -808,6 +819,14 @@ class RestControllerTest extends TestCase
             ->with($entryMock)
             ->andReturn(true);
 
+        $this->dispatcher->shouldReceive('dispatch')
+            ->twice()
+            ->withArgs([ApiEntryDeleted::NAME, Mockery::type(ApiEntryDeleted::class)]);
+
+        $this->dispatcher->shouldReceive('dispatch')
+            ->twice()
+            ->withArgs([ApiDeleteEntry::NAME, Mockery::type(ApiDeleteEntry::class)]);
+
         $response = $this->controller->deleteEntryById('notsexy', 1);
         $this->assertSame('{"success":true}', $response->getContent());
 
@@ -840,6 +859,14 @@ class RestControllerTest extends TestCase
             ->twice()
             ->with($entryMock)
             ->andReturn(false);
+
+        $this->dispatcher->shouldReceive('dispatch')
+            ->twice()
+            ->withArgs([ApiEntryDeleted::NAME, Mockery::type(ApiEntryDeleted::class)]);
+
+        $this->dispatcher->shouldReceive('dispatch')
+            ->twice()
+            ->withArgs([ApiDeleteEntry::NAME, Mockery::type(ApiDeleteEntry::class)]);
 
         $response = $this->controller->deleteEntryById('notsexy', 1);
         $this->assertSame('{"success":false}', $response->getContent());

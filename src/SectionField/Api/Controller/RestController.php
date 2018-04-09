@@ -16,8 +16,11 @@ use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy;
 use Tardigrades\SectionField\Api\Serializer\FieldsExclusionStrategy;
 use Tardigrades\SectionField\Event\ApiCreateEntry;
+use Tardigrades\SectionField\Event\ApiDeleteEntry;
 use Tardigrades\SectionField\Event\ApiEntryCreated;
+use Tardigrades\SectionField\Event\ApiEntryDeleted;
 use Tardigrades\SectionField\Event\ApiEntryUpdated;
+use Tardigrades\SectionField\Event\ApiUpdateEntry;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 use Tardigrades\SectionField\Service\CreateSectionInterface;
 use Tardigrades\SectionField\Service\DeleteSectionInterface;
@@ -83,8 +86,7 @@ class RestController implements RestControllerInterface
         SectionManagerInterface $sectionManager,
         RequestStack $requestStack,
         EventDispatcherInterface $dispatcher
-    )
-    {
+    ) {
         $this->readSection = $readSection;
         $this->createSection = $createSection;
         $this->deleteSection = $deleteSection;
@@ -113,8 +115,7 @@ class RestController implements RestControllerInterface
     public function getSectionInfo(
         string $sectionHandle,
         string $id = null
-    ): JsonResponse
-    {
+    ): JsonResponse {
 
         $request = $this->requestStack->getCurrentRequest();
 
@@ -295,8 +296,7 @@ class RestController implements RestControllerInterface
      */
     public function getEntries(
         string $sectionHandle
-    ): JsonResponse
-    {
+    ): JsonResponse {
 
         $request = $this->requestStack->getCurrentRequest();
 
@@ -378,7 +378,6 @@ class RestController implements RestControllerInterface
                     ApiEntryCreated::NAME,
                     new ApiEntryCreated($request, $response, $form->getData())
                 );
-
             } else {
                 $response['errors'] = $this->getFormErrors($form);
                 $response['code'] = JsonResponse::HTTP_BAD_REQUEST;
@@ -412,6 +411,11 @@ class RestController implements RestControllerInterface
             return $optionsResponse;
         }
 
+        $this->dispatcher->dispatch(
+            ApiUpdateEntry::NAME,
+            new ApiUpdateEntry($request)
+        );
+
         try {
             $response = [];
             $this->putToPost();
@@ -440,7 +444,7 @@ class RestController implements RestControllerInterface
 
                 $this->dispatcher->dispatch(
                     ApiEntryUpdated::NAME,
-                    new ApiEntryUpdated($originalEntry, $newEntry)
+                    new ApiEntryUpdated($request, $response, $originalEntry, $newEntry)
                 );
             } else {
                 $response['errors'] = $this->getFormErrors($form);
@@ -477,6 +481,11 @@ class RestController implements RestControllerInterface
             return $optionsResponse;
         }
 
+        $this->dispatcher->dispatch(
+            ApiUpdateEntry::NAME,
+            new ApiUpdateEntry($request)
+        );
+
         try {
             $response = [];
             $this->putToPost();
@@ -505,7 +514,7 @@ class RestController implements RestControllerInterface
 
                 $this->dispatcher->dispatch(
                     ApiEntryUpdated::NAME,
-                    new ApiEntryUpdated($originalEntry, $newEntry)
+                    new ApiEntryUpdated($request, $response, $originalEntry, $newEntry)
                 );
             } else {
                 $response['errors'] = $this->getFormErrors($form);
@@ -539,6 +548,11 @@ class RestController implements RestControllerInterface
             return $optionsResponse;
         }
 
+        $this->dispatcher->dispatch(
+            ApiDeleteEntry::NAME,
+            new ApiDeleteEntry($request)
+        );
+
         $readOptions = ReadOptions::fromArray([
             ReadOptions::SECTION => $sectionHandle,
             ReadOptions::ID => (int)$id
@@ -547,9 +561,15 @@ class RestController implements RestControllerInterface
         try {
             $entry = $this->readSection->read($readOptions)->current();
             $success = $this->deleteSection->delete($entry);
+            $response = ['success' => $success];
+
+            $this->dispatcher->dispatch(
+                ApiEntryDeleted::NAME,
+                new ApiEntryDeleted($request, $response, $entry)
+            );
 
             return new JsonResponse(
-                ['success' => $success],
+                $response,
                 $success ? JsonResponse::HTTP_OK : JsonResponse::HTTP_NOT_FOUND,
                 $this->getDefaultResponseHeaders($request)
             );
@@ -575,14 +595,26 @@ class RestController implements RestControllerInterface
             return $optionsResponse;
         }
 
+        $this->dispatcher->dispatch(
+            ApiDeleteEntry::NAME,
+            new ApiDeleteEntry($request)
+        );
+
         try {
             $entry = $this->readSection->read(ReadOptions::fromArray([
                 ReadOptions::SECTION => $sectionHandle,
                 ReadOptions::SLUG => $slug
             ]))->current();
             $success = $this->deleteSection->delete($entry);
+            $response = ['success' => $success];
+
+            $this->dispatcher->dispatch(
+                ApiEntryDeleted::NAME,
+                new ApiEntryDeleted($request, $response, $entry)
+            );
+
             return new JsonResponse(
-                ['success' => $success],
+                $response,
                 $success ? JsonResponse::HTTP_OK : JsonResponse::HTTP_NOT_FOUND,
                 $this->getDefaultResponseHeaders($request)
             );
@@ -805,8 +837,7 @@ class RestController implements RestControllerInterface
         array $fieldInfo,
         string $sectionHandle,
         int $id = null
-    ): ?array
-    {
+    ): ?array {
 
         $fieldHandle = (string)$field->getHandle();
         $options = $this->getOptions($request);
@@ -875,9 +906,7 @@ class RestController implements RestControllerInterface
         string $fieldHandle,
         array $fieldInfo,
         int $id
-    ): array
-    {
-
+    ): array {
         /** @var CommonSectionInterface $editing */
         $editing = $this->readSection->read(
             ReadOptions::fromArray([
