@@ -29,12 +29,6 @@ class DepthExclusionStrategy implements ExclusionStrategyInterface
 
     private function isTooDeep(Context $navigatorContext): bool
     {
-        $depth = $navigatorContext->getDepth();
-
-        if ($depth > $this->depth) {
-            return true;
-        }
-
-        return false;
+        return $navigatorContext->getDepth() > $this->depth;
     }
 }

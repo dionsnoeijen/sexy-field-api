@@ -291,6 +291,7 @@ class RestControllerTest extends TestCase
      * @covers ::__construct
      * @covers ::getEntryById
      * @covers ::getEntryBySlug
+     * @covers \Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy
      */
     public function it_should_get_entry_by_id()
     {
@@ -314,6 +315,7 @@ class RestControllerTest extends TestCase
      * @test
      * @covers ::__construct
      * @covers ::getEntriesByFieldValue
+     * @covers \Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy
      */
     public function it_should_get_entries_by_field_value()
     {
@@ -359,6 +361,7 @@ class RestControllerTest extends TestCase
      * @test
      * @covers ::__construct
      * @covers ::getEntries
+     * @covers \Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy
      */
     public function it_should_get_the_entries()
     {
