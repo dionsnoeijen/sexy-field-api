@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Tardigrades\Entity\FieldInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
+use Tardigrades\Helper\FullyQualifiedClassNameConverter;
 use Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy;
 use Tardigrades\SectionField\Api\Serializer\FieldsExclusionStrategy;
 use Tardigrades\SectionField\Event\ApiCreateEntry;
@@ -262,22 +263,28 @@ class RestController implements RestControllerInterface
             return $optionsResponse;
         }
 
-        // Theoretically you could have many results on a field value, so add some control over the results with limit,
-        // offset and also sorting
+        // Theoretically you could have many results on a field value,
+        // so add some control over the results with limit, offset and also sorting.
         $fieldValue = $request->get('value');
+        if (strpos($fieldValue, ',') !== false) {
+            $fieldValue = explode(',', $fieldValue);
+        }
         $offset = $request->get('offset', 0);
         $limit = $request->get('limit', 100);
         $orderBy = $request->get('orderBy', 'created');
         $sort = $request->get('sort', 'DESC');
 
         try {
-            $entries = $this->readSection->read(ReadOptions::fromArray([
+            $readOptions = [
                 ReadOptions::SECTION => $sectionHandle,
-                ReadOptions::FIELD => [$fieldHandle => $fieldValue],
-                ReadOptions::OFFSET => $offset,
-                ReadOptions::LIMIT => (int)$limit,
-                ReadOptions::ORDER_BY => [$orderBy => $sort]
-            ]));
+                ReadOptions::FIELD => [
+                    $fieldHandle => $fieldValue
+                ],
+                ReadOptions::OFFSET => (int) $offset,
+                ReadOptions::LIMIT => (int) $limit,
+                ReadOptions::ORDER_BY => [ $orderBy => strtolower($sort) ]
+            ];
+            $entries = $this->readSection->read(ReadOptions::fromArray($readOptions));
             $serializer = SerializerBuilder::create()->build();
             $result = [];
             foreach ($entries as $entry) {
@@ -291,7 +298,9 @@ class RestController implements RestControllerInterface
                 ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
             } else {
                 return new JsonResponse([
-                    'message' => 'Something went wrong'
+                    'message' => 'Something went wrong ' .
+                        $exception->getMessage() . ' ' .
+                        $exception->getTraceAsString()
                 ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
             }
         }
@@ -323,7 +332,7 @@ class RestController implements RestControllerInterface
                 ReadOptions::SECTION => $sectionHandle,
                 ReadOptions::OFFSET => $offset,
                 ReadOptions::LIMIT => $limit,
-                ReadOptions::ORDER_BY => [$orderBy => $sort]
+                ReadOptions::ORDER_BY => [$orderBy => strtolower($sort)]
             ]));
             $serializer = SerializerBuilder::create()->build();
 
@@ -856,6 +865,9 @@ class RestController implements RestControllerInterface
                     !empty($sexyFieldInstructions['field']) &&
                     !empty($sexyFieldInstructions['value'])
                 ) {
+                    if (strpos(',', $sexyFieldInstructions['value'])) {
+                        $sexyFieldInstructions['value'] = explode(',', $sexyFieldInstructions['value']);
+                    }
                     $readOptions[ReadOptions::FIELD] = [$sexyFieldInstructions['field'] => $sexyFieldInstructions['value']];
                 }
 
@@ -878,8 +890,7 @@ class RestController implements RestControllerInterface
                     // defined as: getAccount|getDisplayName
                     // In the future this type of functionality will be
                     // moved to the getDefault() method for the entity generator
-                    // as well. But we need it here too for the fields that
-                    // are ignored by the entity generator.
+                    // as well.
                     $name = $entry->getDefault();
                     if (!empty($nameExpression)) {
                         $find = $entry->{$nameExpression[0]}();

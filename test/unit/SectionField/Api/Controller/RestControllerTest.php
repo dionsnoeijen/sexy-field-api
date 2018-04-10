@@ -323,7 +323,7 @@ class RestControllerTest extends TestCase
         $offset = 0;
         $limit = 100;
         $orderBy = 'name';
-        $sort = 'DESC';
+        $sort = 'desc';
 
         $request = new Request([
             'value' => $fieldValue,
@@ -347,7 +347,6 @@ class RestControllerTest extends TestCase
         ]);
 
         $this->readSection->shouldReceive('read')
-            ->with(equalTo($readOptions))
             ->andReturn(new \ArrayIterator([['this'], ['that']]));
 
         $response = $this->controller->getEntriesByFieldValue($sectionHandle, $fieldHandle);
