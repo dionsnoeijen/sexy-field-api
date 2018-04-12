@@ -86,8 +86,7 @@ class RestController implements RestControllerInterface
         SectionManagerInterface $sectionManager,
         RequestStack $requestStack,
         EventDispatcherInterface $dispatcher
-    )
-    {
+    ) {
         $this->readSection = $readSection;
         $this->createSection = $createSection;
         $this->deleteSection = $deleteSection;
@@ -116,8 +115,7 @@ class RestController implements RestControllerInterface
     public function getSectionInfo(
         string $sectionHandle,
         string $id = null
-    ): JsonResponse
-    {
+    ): JsonResponse {
 
         $request = $this->requestStack->getCurrentRequest();
 
@@ -158,7 +156,7 @@ class RestController implements RestControllerInterface
                 $this->getDefaultResponseHeaders($request)
             );
         } catch (\Exception $exception) {
-            return $this->ErrorResponse($request, $exception);
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -188,7 +186,7 @@ class RestController implements RestControllerInterface
 
             return new JsonResponse($content, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
         } catch (\Exception $exception) {
-            return $this->ErrorResponse($request, $exception);
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -218,7 +216,7 @@ class RestController implements RestControllerInterface
 
             return new JsonResponse($content, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
         } catch (\Exception $exception) {
-            return $this->ErrorResponse($request, $exception);
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -269,7 +267,7 @@ class RestController implements RestControllerInterface
             }
             return new JsonResponse($result, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
         } catch (\Exception $exception) {
-            return $this->ErrorResponse($request, $exception);
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -280,8 +278,7 @@ class RestController implements RestControllerInterface
      */
     public function getEntries(
         string $sectionHandle
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
@@ -314,7 +311,7 @@ class RestController implements RestControllerInterface
                 $this->getDefaultResponseHeaders($request)
             );
         } catch (\Exception $exception) {
-            return $this->ErrorResponse($request, $exception);
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -366,7 +363,7 @@ class RestController implements RestControllerInterface
                 $this->getDefaultResponseHeaders($request)
             );
         } catch (\Exception $exception) {
-            return $this->ErrorResponse($request, $exception);
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -432,7 +429,7 @@ class RestController implements RestControllerInterface
                 $this->getDefaultResponseHeaders($request)
             );
         } catch (\Exception $exception) {
-            return $this->ErrorResponse($request, $exception);
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -500,7 +497,7 @@ class RestController implements RestControllerInterface
                 $this->getDefaultResponseHeaders($request)
             );
         } catch (\Exception $exception) {
-            return $this->ErrorResponse($request, $exception);
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -545,7 +542,7 @@ class RestController implements RestControllerInterface
                 $this->getDefaultResponseHeaders($request)
             );
         } catch (\Exception $exception) {
-            return $this->ErrorResponse($request, $exception);
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -588,7 +585,7 @@ class RestController implements RestControllerInterface
                 $this->getDefaultResponseHeaders($request)
             );
         } catch (\Exception $exception) {
-            return $this->ErrorResponse($request, $exception);
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -809,8 +806,7 @@ class RestController implements RestControllerInterface
         array $fieldInfo,
         string $sectionHandle,
         int $id = null
-    ): ?array
-    {
+    ): ?array {
 
         $fieldHandle = (string)$field->getHandle();
         $options = $this->getOptions($request);
@@ -842,7 +838,9 @@ class RestController implements RestControllerInterface
                     if (strpos(',', $sexyFieldInstructions['value']) !== false) {
                         $sexyFieldInstructions['value'] = explode(',', $sexyFieldInstructions['value']);
                     }
-                    $readOptions[ReadOptions::FIELD] = [$sexyFieldInstructions['field'] => $sexyFieldInstructions['value']];
+                    $readOptions[ReadOptions::FIELD] = [
+                        $sexyFieldInstructions['field'] => $sexyFieldInstructions['value']
+                    ];
                 }
 
                 $nameExpression = null;
@@ -857,7 +855,6 @@ class RestController implements RestControllerInterface
 
                 /** @var CommonSectionInterface $entry */
                 foreach ($to as $entry) {
-
                     // Try to use the expression to get a name,
                     // otherwise use default. Expression has a current
                     // max depth of two like: ->getAccount()->getDisplayName()
@@ -982,7 +979,7 @@ class RestController implements RestControllerInterface
      * @param \Exception $exception
      * @return JsonResponse
      */
-    private function ErrorResponse(Request $request, \Exception $exception): JsonResponse
+    private function errorResponse(Request $request, \Exception $exception): JsonResponse
     {
         if ($exception instanceof EntryNotFoundException || $exception instanceof SectionNotFoundException) {
             $statusCode = JsonResponse::HTTP_NOT_FOUND;
