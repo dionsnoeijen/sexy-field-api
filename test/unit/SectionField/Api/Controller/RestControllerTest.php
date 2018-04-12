@@ -528,6 +528,97 @@ class RestControllerTest extends TestCase
     /**
      * @test
      * @covers ::__construct
+     * @covers ::getSectionInfo
+     * @runInSeparateProcess
+     */
+    public function it_fails_getting_section_info_of_a_section_with_relationships()
+    {
+        $sectionName = 'Even more sexy';
+        $sectionHandle = 'evenMoreSexy';
+        $section = Mockery::mock(SectionInterface::class);
+
+        $expectedFieldInfo = [
+            'name' => $sectionName,
+            'handle' => $sectionHandle
+        ];
+
+        $request = new Request([
+            'options' => 'someRelationshipFieldHandle|limit:100|offset:0'
+        ], [], [], [], [], [
+            'HTTP_ORIGIN' => 'iamtheorigin.com'
+        ]);
+
+        $entryMock = Mockery::mock(CommonSectionInterface::class);
+        $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
+        $mockedForm->shouldReceive('getData')
+            ->once()
+            ->andReturn($entryMock);
+
+        $this->form->shouldReceive('buildFormForSection')
+            ->once()
+            ->andReturn($mockedForm);
+
+        $this->sectionManager->shouldReceive('readByHandle')
+            ->once()
+            ->andReturn($section);
+
+        $section->shouldReceive('getName')
+            ->once()
+            ->andReturn(Name::fromString($sectionName));
+
+        $section->shouldReceive('getHandle')
+            ->once()
+            ->andReturn(Handle::fromString($sectionHandle));
+
+        $section->shouldReceive('getFields')
+            ->once()
+            ->andReturn($this->givenASetOfFieldsForASection(true));
+
+        $sectionConfig = SectionConfig::fromArray([
+            'section' => [
+                'name' => 'Some section',
+                'handle' => 'Some handle',
+                'fields' => [
+                    'someHandle',
+                    'someOtherHandle',
+                    'someRelationshipFieldHandle'
+                ],
+                'default' => 'default',
+                'namespace' => 'NameSpace'
+            ]
+        ]);
+        $section->shouldReceive('getConfig')
+            ->once()
+            ->andReturn($sectionConfig);
+
+        $this->requestStack->shouldReceive('getCurrentRequest')
+            ->once()
+            ->andReturn($request);
+
+        $expectedFieldInfo['fields'] = $this->givenASetOfFieldInfo(true);
+        $expectedFieldInfo['fields'][2]['someRelationshipFieldHandle']['whatever'] = ['error' => 'Entry not found'];
+
+        $expectedFieldInfo = array_merge($expectedFieldInfo, $sectionConfig->toArray());
+
+        $expectedResponse = new JsonResponse(
+            $expectedFieldInfo,
+            200,
+            [
+                'Access-Control-Allow-Origin' => 'iamtheorigin.com',
+                'Access-Control-Allow-Credentials' => true
+            ]
+        );
+
+        $this->readSection->shouldReceive('read')->andThrow(EntryNotFoundException::class);
+
+        $response = $this->controller->getSectionInfo('sexyHandle');
+
+        $this->assertEquals($expectedResponse, $response);
+    }
+
+    /**
+     * @test
+     * @covers ::__construct
      * @covers ::getEntryById
      * @covers ::getEntryBySlug
      * @covers \Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy
@@ -561,6 +652,43 @@ class RestControllerTest extends TestCase
         $sectionHandle = 'rockets';
         $fieldHandle = 'uuid';
         $fieldValue = '719d72d7-4f0c-420b-993f-969af9ad34c1';
+        $offset = 0;
+        $limit = 100;
+        $orderBy = 'name';
+        $sort = 'desc';
+
+        $request = new Request([
+            'value' => $fieldValue,
+            'offset' => $offset,
+            'limit' => $limit,
+            'orderBy' => $orderBy,
+            'sort' => $sort,
+            'fields' => ['id']
+        ]);
+
+        $this->requestStack->shouldReceive('getCurrentRequest')
+            ->once()
+            ->andReturn($request);
+
+        $this->readSection->shouldReceive('read')
+            ->andReturn(new \ArrayIterator([['this'], ['that']]));
+
+        $response = $this->controller->getEntriesByFieldValue($sectionHandle, $fieldHandle);
+
+        $this->assertSame('[["this"],["that"]]', $response->getContent());
+    }
+
+    /**
+     * @test
+     * @covers ::__construct
+     * @covers ::getEntriesByFieldValue
+     * @covers \Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy
+     */
+    public function it_should_get_entries_by_multiple_field_values()
+    {
+        $sectionHandle = 'rockets';
+        $fieldHandle = 'uuid';
+        $fieldValue = '719d72d7-4f0c-420b-993f-969af9ad34c1,9d716145-eef6-442c-acea-93acf3990b6d';
         $offset = 0;
         $limit = 100;
         $orderBy = 'name';
