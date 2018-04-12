@@ -839,7 +839,7 @@ class RestController implements RestControllerInterface
                     !empty($sexyFieldInstructions['field']) &&
                     !empty($sexyFieldInstructions['value'])
                 ) {
-                    if (strpos(',', $sexyFieldInstructions['value'])) {
+                    if (strpos(',', $sexyFieldInstructions['value']) !== false) {
                         $sexyFieldInstructions['value'] = explode(',', $sexyFieldInstructions['value']);
                     }
                     $readOptions[ReadOptions::FIELD] = [$sexyFieldInstructions['field'] => $sexyFieldInstructions['value']];
