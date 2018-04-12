@@ -13,9 +13,6 @@ declare(strict_types=1);
 
 namespace Tardigrades\SectionField\Event;
 
-use Symfony\Component\EventDispatcher\Event;
-use Symfony\Component\HttpFoundation\Request;
-
 /**
  * Class ApiUpdateEntry
  *
@@ -23,22 +20,7 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * @package Tardigrades\SectionField\Event
  */
-class ApiUpdateEntry extends Event
+class ApiUpdateEntry extends ApiBeforeEntryEvent
 {
     const NAME = 'api.update.entry';
-
-    /** @var Request */
-    protected $request;
-
-    /** @param Request $request */
-    public function __construct(Request $request)
-    {
-        $this->request = $request;
-    }
-
-    /** @return Request */
-    public function getRequest(): Request
-    {
-        return $this->request;
-    }
 }

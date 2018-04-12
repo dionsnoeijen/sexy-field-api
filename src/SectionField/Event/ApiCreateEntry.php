@@ -13,9 +13,6 @@ declare (strict_types = 1);
 
 namespace Tardigrades\SectionField\Event;
 
-use Symfony\Component\EventDispatcher\Event;
-use Symfony\Component\HttpFoundation\Request;
-
 /**
  * Class ApiBeforeCreateEntry
  *
@@ -24,25 +21,7 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * @package Tardigrades\SectionField\Event
  */
-class ApiCreateEntry extends Event
+class ApiCreateEntry extends ApiBeforeEntryEvent
 {
     const NAME = 'api.create.entry';
-
-    /** @var Request */
-    protected $request;
-
-    /**
-     * ApiBeforeCreateEntry constructor.
-     * @param Request $request
-     */
-    public function __construct(Request $request)
-    {
-        $this->request = $request;
-    }
-
-    /** @return Request */
-    public function getRequest(): Request
-    {
-        return $this->request;
-    }
 }

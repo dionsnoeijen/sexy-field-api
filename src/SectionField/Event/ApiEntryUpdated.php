@@ -13,7 +13,6 @@ declare (strict_types = 1);
 
 namespace Tardigrades\SectionField\Event;
 
-use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\HttpFoundation\Request;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 
@@ -24,21 +23,12 @@ use Tardigrades\SectionField\Generator\CommonSectionInterface;
  *
  * @package Tardigrades\SectionField\Event
  */
-class ApiEntryUpdated extends Event
+class ApiEntryUpdated extends ApiAfterEntryEvent
 {
     const NAME = 'api.entry.updated';
 
-    /** @var Request */
-    protected $request;
-
-    /** @var array */
-    protected $response;
-
     /** @var CommonSectionInterface */
     protected $originalEntry;
-
-    /** @var CommonSectionInterface */
-    protected $newEntry;
 
     public function __construct(
         Request $request,
@@ -46,26 +36,12 @@ class ApiEntryUpdated extends Event
         CommonSectionInterface $originalEntry,
         CommonSectionInterface $newEntry
     ) {
-        $this->request = $request;
-        $this->response = $response;
+        parent::__construct($request, $response, $newEntry);
         $this->originalEntry = $originalEntry;
-        $this->newEntry = $newEntry;
-    }
-
-    /** @return Request */
-    public function getRequest(): Request
-    {
-        return $this->request;
-    }
-
-    /** @return array */
-    public function getResponse(): array
-    {
-        return $this->response;
     }
 
     /**
-     * The Section Entry Entity that was just persisted
+     * The Section Entry Entity that was replaced
      */
     public function getOriginalEntry(): CommonSectionInterface
     {
@@ -73,10 +49,10 @@ class ApiEntryUpdated extends Event
     }
 
     /**
-     * The Section Entry Entity that was just persisted
+     * The new Section Entry Entity
      */
     public function getNewEntry(): CommonSectionInterface
     {
-        return $this->newEntry;
+        return $this->entry;
     }
 }
