@@ -157,14 +157,8 @@ class RestController implements RestControllerInterface
                 JsonResponse::HTTP_OK,
                 $this->getDefaultResponseHeaders($request)
             );
-        } catch (EntryNotFoundException | SectionNotFoundException $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
         } catch (\Exception $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            return $this->ErrorResponse($request, $exception);
         }
     }
 
@@ -193,14 +187,8 @@ class RestController implements RestControllerInterface
             $content = $serializer->toArray($entry, $this->getContext($request));
 
             return new JsonResponse($content, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
-        } catch (EntryNotFoundException $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
         } catch (\Exception $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            return $this->ErrorResponse($request, $exception);
         }
     }
 
@@ -229,14 +217,8 @@ class RestController implements RestControllerInterface
             $content = $serializer->toArray($entry, $this->getContext($request));
 
             return new JsonResponse($content, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
-        } catch (EntryNotFoundException $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
         } catch (\Exception $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            return $this->ErrorResponse($request, $exception);
         }
     }
 
@@ -286,14 +268,8 @@ class RestController implements RestControllerInterface
                 $result[] = $serializer->toArray($entry, $this->getContext($request));
             }
             return new JsonResponse($result, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
-        } catch (EntryNotFoundException $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
         } catch (\Exception $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            return $this->ErrorResponse($request, $exception);
         }
     }
 
@@ -337,14 +313,8 @@ class RestController implements RestControllerInterface
                 JsonResponse::HTTP_OK,
                 $this->getDefaultResponseHeaders($request)
             );
-        } catch (EntryNotFoundException $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
         } catch (\Exception $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            return $this->ErrorResponse($request, $exception);
         }
     }
 
@@ -396,9 +366,7 @@ class RestController implements RestControllerInterface
                 $this->getDefaultResponseHeaders($request)
             );
         } catch (\Exception $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            return $this->ErrorResponse($request, $exception);
         }
     }
 
@@ -463,14 +431,8 @@ class RestController implements RestControllerInterface
                 $response['code'],
                 $this->getDefaultResponseHeaders($request)
             );
-        } catch (EntryNotFoundException $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
         } catch (\Exception $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            return $this->ErrorResponse($request, $exception);
         }
     }
 
@@ -537,14 +499,8 @@ class RestController implements RestControllerInterface
                 $response['code'],
                 $this->getDefaultResponseHeaders($request)
             );
-        } catch (EntryNotFoundException $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
         } catch (\Exception $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            return $this->ErrorResponse($request, $exception);
         }
     }
 
@@ -588,14 +544,8 @@ class RestController implements RestControllerInterface
                 $success ? JsonResponse::HTTP_OK : JsonResponse::HTTP_NOT_FOUND,
                 $this->getDefaultResponseHeaders($request)
             );
-        } catch (EntryNotFoundException $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
         } catch (\Exception $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            return $this->ErrorResponse($request, $exception);
         }
     }
 
@@ -637,14 +587,8 @@ class RestController implements RestControllerInterface
                 $success ? JsonResponse::HTTP_OK : JsonResponse::HTTP_NOT_FOUND,
                 $this->getDefaultResponseHeaders($request)
             );
-        } catch (EntryNotFoundException $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
         } catch (\Exception $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            return $this->ErrorResponse($request, $exception);
         }
     }
 
@@ -1030,5 +974,23 @@ class RestController implements RestControllerInterface
         }
 
         return $result;
+    }
+
+    /**
+     * Build a JSON response to return when an exception occurs.
+     * @param Request $request
+     * @param \Exception $exception
+     * @return JsonResponse
+     */
+    private function ErrorResponse(Request $request, \Exception $exception): JsonResponse
+    {
+        if ($exception instanceof EntryNotFoundException || $exception instanceof SectionNotFoundException) {
+            $statusCode = JsonResponse::HTTP_NOT_FOUND;
+        } else {
+            $statusCode = JsonResponse::HTTP_BAD_REQUEST;
+        }
+        return new JsonResponse([
+            'message' => $exception->getMessage()
+        ], $statusCode, $this->getDefaultResponseHeaders($request));
     }
 }
