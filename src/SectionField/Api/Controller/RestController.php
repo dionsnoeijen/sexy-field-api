@@ -843,7 +843,7 @@ class RestController implements RestControllerInterface
                     ];
                 }
 
-                $nameExpression = null;
+                $nameExpression = [];
                 if (!empty($sexyFieldInstructions) &&
                     !empty($sexyFieldInstructions['name-expression'])
                 ) {
@@ -856,19 +856,21 @@ class RestController implements RestControllerInterface
                 /** @var CommonSectionInterface $entry */
                 foreach ($to as $entry) {
                     // Try to use the expression to get a name,
-                    // otherwise use default. Expression has a current
-                    // max depth of two like: ->getAccount()->getDisplayName()
+                    // otherwise use default. Expression can be
+                    // used like: ->getAccount()->getDisplayName()
                     // defined as: getAccount|getDisplayName
                     // In the future this type of functionality will be
                     // moved to the getDefault() method for the entity generator
                     // as well.
                     $name = $entry->getDefault();
-                    if (!empty($nameExpression)) {
-                        $find = $entry->{$nameExpression[0]}();
-                        if (!empty($nameExpression[1]) && !empty($find)) {
-                            $find = $find->{$nameExpression[1]}();
+                    if ($nameExpression) {
+                        $find = $entry;
+                        foreach ($nameExpression as $method) {
+                            if ($find) {
+                                $find = $find->$method();
+                            }
                         }
-                        if (!empty($find)) {
+                        if ($find) {
                             $name = $find;
                         }
                     }

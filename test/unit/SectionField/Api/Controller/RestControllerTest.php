@@ -429,6 +429,7 @@ class RestControllerTest extends TestCase
         ]);
 
         $entryMock = Mockery::mock(CommonSectionInterface::class);
+
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
         $mockedForm->shouldReceive('getData')
             ->once()
@@ -464,7 +465,8 @@ class RestControllerTest extends TestCase
                     'someRelationshipFieldHandle'
                 ],
                 'default' => 'default',
-                'namespace' => 'NameSpace'
+                'namespace' => 'NameSpace',
+                'sexy-field-instructions' => ['relationship' => 'getName']
             ]
         ]);
         $section->shouldReceive('getConfig')
@@ -480,6 +482,20 @@ class RestControllerTest extends TestCase
 
         foreach ($formattedRecords as $formattedRecord) {
             $section = Mockery::mock(CommonSectionInterface::class);
+            $otherSection = Mockery::mock(CommonSectionInterface::class);
+            $yetAnotherSection = Mockery::mock(CommonSectionInterface::class);
+
+            $section->shouldReceive('getFoo')
+                ->once()
+                ->andReturn($otherSection);
+
+            $otherSection->shouldReceive('getBar')
+                ->once()
+                ->andReturn($yetAnotherSection);
+
+            $yetAnotherSection->shouldReceive('getName')
+                ->once()
+                ->andReturn($formattedRecord['name']);
 
             $section->shouldReceive('getId')
                 ->once()
@@ -1243,7 +1259,14 @@ class RestControllerTest extends TestCase
                         'field' => [
                             'name' => 'Relatie veld',
                             'handle' => 'someRelationshipFieldHandle',
-                            'to' => 'whatever'
+                            'to' => 'whatever',
+                            'form' => [
+                                'sexy-field-instructions' => [
+                                    'relationship' => [
+                                        'name-expression' => 'getFoo|getBar|getName'
+                                    ]
+                                ]
+                            ]
                         ]
                     ])
                     ->setHandle('someRelationshipFieldHandle')
