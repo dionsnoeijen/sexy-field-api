@@ -122,7 +122,7 @@ class RestController implements RestControllerInterface
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
-        if (!empty($optionsResponse)) {
+        if ($optionsResponse) {
             return $optionsResponse;
         }
 
@@ -173,7 +173,7 @@ class RestController implements RestControllerInterface
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
-        if (!empty($optionsResponse)) {
+        if ($optionsResponse) {
             return $optionsResponse;
         }
 
@@ -203,7 +203,7 @@ class RestController implements RestControllerInterface
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
-        if (!empty($optionsResponse)) {
+        if ($optionsResponse) {
             return $optionsResponse;
         }
 
@@ -236,7 +236,7 @@ class RestController implements RestControllerInterface
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
-        if (!empty($optionsResponse)) {
+        if ($optionsResponse) {
             return $optionsResponse;
         }
 
@@ -285,7 +285,7 @@ class RestController implements RestControllerInterface
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
-        if (!empty($optionsResponse)) {
+        if ($optionsResponse) {
             return $optionsResponse;
         }
 
@@ -328,7 +328,7 @@ class RestController implements RestControllerInterface
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, POST');
-        if (!empty($optionsResponse)) {
+        if ($optionsResponse) {
             return $optionsResponse;
         }
 
@@ -382,7 +382,7 @@ class RestController implements RestControllerInterface
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, PUT');
-        if (!empty($optionsResponse)) {
+        if ($optionsResponse) {
             return $optionsResponse;
         }
 
@@ -450,7 +450,7 @@ class RestController implements RestControllerInterface
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, PUT');
-        if (!empty($optionsResponse)) {
+        if ($optionsResponse) {
             return $optionsResponse;
         }
 
@@ -515,7 +515,7 @@ class RestController implements RestControllerInterface
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, DELETE');
-        if (!empty($optionsResponse)) {
+        if ($optionsResponse) {
             return $optionsResponse;
         }
 
@@ -560,7 +560,7 @@ class RestController implements RestControllerInterface
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, DELETE');
-        if (!empty($optionsResponse)) {
+        if ($optionsResponse) {
             return $optionsResponse;
         }
 
@@ -779,7 +779,7 @@ class RestController implements RestControllerInterface
     private function getOptions(Request $request): ?array
     {
         $requestOptions = $request->get('options');
-        if (!empty($requestOptions)) {
+        if (!is_null($requestOptions)) {
             $requestOptions = explode('|', $requestOptions);
             $options = [];
             $fieldHandle = array_shift($requestOptions);
@@ -906,7 +906,7 @@ class RestController implements RestControllerInterface
     {
         $origin = $request->headers->get('Origin');
         return [
-            'Access-Control-Allow-Origin' => !empty($origin) ? $origin : '*',
+            'Access-Control-Allow-Origin' => $origin ?: '*',
             'Access-Control-Allow-Credentials' => true
         ];
     }
