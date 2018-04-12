@@ -558,9 +558,7 @@ class RestControllerTest extends TestCase
             'handle' => $sectionHandle
         ];
 
-        $request = new Request([
-            'options' => 'someRelationshipFieldHandle|limit:100|offset:0'
-        ], [], [], [], [], [
+        $request = new Request([], [], [], [], [], [
             'HTTP_ORIGIN' => 'iamtheorigin.com'
         ]);
 
@@ -1263,7 +1261,11 @@ class RestControllerTest extends TestCase
                             'form' => [
                                 'sexy-field-instructions' => [
                                     'relationship' => [
-                                        'name-expression' => 'getFoo|getBar|getName'
+                                        'name-expression' => 'getFoo|getBar|getName',
+                                        'limit' => 75,
+                                        'offset' => 10,
+                                        'field' => 'foo',
+                                        'value' => 'bar,baz'
                                     ]
                                 ]
                             ]
