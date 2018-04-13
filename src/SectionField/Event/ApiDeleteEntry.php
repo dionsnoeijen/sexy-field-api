@@ -9,19 +9,18 @@
  * file that was distributed with this source code.
  */
 
-declare (strict_types = 1);
+declare(strict_types=1);
 
 namespace Tardigrades\SectionField\Event;
 
 /**
- * Class ApiBeforeCreateEntry
+ * Class ApiDeleteEntry
  *
- * Dispatched before new entry (record) is created
- * or even the form is evaluated
+ * Dispatched with the request before an entry is deleted or the form is evaluated.
  *
  * @package Tardigrades\SectionField\Event
  */
-class ApiCreateEntry extends ApiBeforeEntryEvent
+class ApiDeleteEntry extends ApiBeforeEntryEvent
 {
-    const NAME = 'api.create.entry';
+    const NAME = 'api.delete.entry';
 }

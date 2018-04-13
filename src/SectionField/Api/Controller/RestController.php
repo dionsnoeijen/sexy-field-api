@@ -13,12 +13,14 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Tardigrades\Entity\FieldInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
-use Tardigrades\Helper\FullyQualifiedClassNameConverter;
 use Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy;
 use Tardigrades\SectionField\Api\Serializer\FieldsExclusionStrategy;
 use Tardigrades\SectionField\Event\ApiCreateEntry;
+use Tardigrades\SectionField\Event\ApiDeleteEntry;
 use Tardigrades\SectionField\Event\ApiEntryCreated;
+use Tardigrades\SectionField\Event\ApiEntryDeleted;
 use Tardigrades\SectionField\Event\ApiEntryUpdated;
+use Tardigrades\SectionField\Event\ApiUpdateEntry;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 use Tardigrades\SectionField\Service\CreateSectionInterface;
 use Tardigrades\SectionField\Service\DeleteSectionInterface;
@@ -84,8 +86,7 @@ class RestController implements RestControllerInterface
         SectionManagerInterface $sectionManager,
         RequestStack $requestStack,
         EventDispatcherInterface $dispatcher
-    )
-    {
+    ) {
         $this->readSection = $readSection;
         $this->createSection = $createSection;
         $this->deleteSection = $deleteSection;
@@ -114,13 +115,12 @@ class RestController implements RestControllerInterface
     public function getSectionInfo(
         string $sectionHandle,
         string $id = null
-    ): JsonResponse
-    {
+    ): JsonResponse {
 
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
-        if (!empty($optionsResponse)) {
+        if ($optionsResponse) {
             return $optionsResponse;
         }
 
@@ -156,16 +156,7 @@ class RestController implements RestControllerInterface
                 $this->getDefaultResponseHeaders($request)
             );
         } catch (\Exception $exception) {
-            if ($exception instanceof EntryNotFoundException ||
-                $exception instanceof SectionNotFoundException) {
-                return new JsonResponse([
-                    'message' => $exception->getMessage()
-                ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
-            } else {
-                return new JsonResponse([
-                    'message' => 'Something went wrong'
-                ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
-            }
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -180,7 +171,7 @@ class RestController implements RestControllerInterface
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
-        if (!empty($optionsResponse)) {
+        if ($optionsResponse) {
             return $optionsResponse;
         }
 
@@ -195,15 +186,7 @@ class RestController implements RestControllerInterface
 
             return new JsonResponse($content, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
         } catch (\Exception $exception) {
-            if ($exception instanceof EntryNotFoundException) {
-                return new JsonResponse([
-                    'message' => $exception->getMessage()
-                ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
-            } else {
-                return new JsonResponse([
-                    'message' => 'Something went wrong'
-                ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
-            }
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -218,7 +201,7 @@ class RestController implements RestControllerInterface
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
-        if (!empty($optionsResponse)) {
+        if ($optionsResponse) {
             return $optionsResponse;
         }
 
@@ -233,15 +216,7 @@ class RestController implements RestControllerInterface
 
             return new JsonResponse($content, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
         } catch (\Exception $exception) {
-            if ($exception instanceof EntryNotFoundException) {
-                return new JsonResponse([
-                    'message' => $exception->getMessage()
-                ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
-            } else {
-                return new JsonResponse([
-                    'message' => 'Something went wrong'
-                ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
-            }
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -259,13 +234,13 @@ class RestController implements RestControllerInterface
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
-        if (!empty($optionsResponse)) {
+        if ($optionsResponse) {
             return $optionsResponse;
         }
 
         // Theoretically you could have many results on a field value,
         // so add some control over the results with limit, offset and also sorting.
-        $fieldValue = $request->get('value');
+        $fieldValue = (string)$request->get('value');
         if (strpos($fieldValue, ',') !== false) {
             $fieldValue = explode(',', $fieldValue);
         }
@@ -292,17 +267,7 @@ class RestController implements RestControllerInterface
             }
             return new JsonResponse($result, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
         } catch (\Exception $exception) {
-            if ($exception instanceof EntryNotFoundException) {
-                return new JsonResponse([
-                    'message' => $exception->getMessage()
-                ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
-            } else {
-                return new JsonResponse([
-                    'message' => 'Something went wrong ' .
-                        $exception->getMessage() . ' ' .
-                        $exception->getTraceAsString()
-                ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
-            }
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -313,12 +278,11 @@ class RestController implements RestControllerInterface
      */
     public function getEntries(
         string $sectionHandle
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
-        if (!empty($optionsResponse)) {
+        if ($optionsResponse) {
             return $optionsResponse;
         }
 
@@ -347,15 +311,7 @@ class RestController implements RestControllerInterface
                 $this->getDefaultResponseHeaders($request)
             );
         } catch (\Exception $exception) {
-            if ($exception instanceof EntryNotFoundException) {
-                return new JsonResponse([
-                    'message' => $exception->getMessage()
-                ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
-            } else {
-                return new JsonResponse([
-                    'message' => 'Something went wrong'
-                ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
-            }
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -368,15 +324,15 @@ class RestController implements RestControllerInterface
     {
         $request = $this->requestStack->getCurrentRequest();
 
+        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, POST');
+        if ($optionsResponse) {
+            return $optionsResponse;
+        }
+
         $this->dispatcher->dispatch(
             ApiCreateEntry::NAME,
             new ApiCreateEntry($request)
         );
-
-        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, POST');
-        if (!empty($optionsResponse)) {
-            return $optionsResponse;
-        }
 
         try {
             $response = [];
@@ -407,9 +363,7 @@ class RestController implements RestControllerInterface
                 $this->getDefaultResponseHeaders($request)
             );
         } catch (\Exception $exception) {
-            return new JsonResponse([
-                'message' => 'Something went wrong'
-            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -425,9 +379,14 @@ class RestController implements RestControllerInterface
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, PUT');
-        if (!empty($optionsResponse)) {
+        if ($optionsResponse) {
             return $optionsResponse;
         }
+
+        $this->dispatcher->dispatch(
+            ApiUpdateEntry::NAME,
+            new ApiUpdateEntry($request)
+        );
 
         try {
             $response = [];
@@ -457,7 +416,7 @@ class RestController implements RestControllerInterface
 
                 $this->dispatcher->dispatch(
                     ApiEntryUpdated::NAME,
-                    new ApiEntryUpdated($originalEntry, $newEntry)
+                    new ApiEntryUpdated($request, $response, $originalEntry, $newEntry)
                 );
             } else {
                 $response['errors'] = $this->getFormErrors($form);
@@ -470,9 +429,7 @@ class RestController implements RestControllerInterface
                 $this->getDefaultResponseHeaders($request)
             );
         } catch (\Exception $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -490,9 +447,14 @@ class RestController implements RestControllerInterface
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, PUT');
-        if (!empty($optionsResponse)) {
+        if ($optionsResponse) {
             return $optionsResponse;
         }
+
+        $this->dispatcher->dispatch(
+            ApiUpdateEntry::NAME,
+            new ApiUpdateEntry($request)
+        );
 
         try {
             $response = [];
@@ -522,7 +484,7 @@ class RestController implements RestControllerInterface
 
                 $this->dispatcher->dispatch(
                     ApiEntryUpdated::NAME,
-                    new ApiEntryUpdated($originalEntry, $newEntry)
+                    new ApiEntryUpdated($request, $response, $originalEntry, $newEntry)
                 );
             } else {
                 $response['errors'] = $this->getFormErrors($form);
@@ -535,9 +497,7 @@ class RestController implements RestControllerInterface
                 $this->getDefaultResponseHeaders($request)
             );
         } catch (\Exception $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -552,9 +512,14 @@ class RestController implements RestControllerInterface
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, DELETE');
-        if (!empty($optionsResponse)) {
+        if ($optionsResponse) {
             return $optionsResponse;
         }
+
+        $this->dispatcher->dispatch(
+            ApiDeleteEntry::NAME,
+            new ApiDeleteEntry($request)
+        );
 
         $readOptions = ReadOptions::fromArray([
             ReadOptions::SECTION => $sectionHandle,
@@ -564,16 +529,20 @@ class RestController implements RestControllerInterface
         try {
             $entry = $this->readSection->read($readOptions)->current();
             $success = $this->deleteSection->delete($entry);
+            $response = ['success' => $success];
+
+            $this->dispatcher->dispatch(
+                ApiEntryDeleted::NAME,
+                new ApiEntryDeleted($request, $response, $entry)
+            );
 
             return new JsonResponse(
-                ['success' => $success],
+                $response,
                 $success ? JsonResponse::HTTP_OK : JsonResponse::HTTP_NOT_FOUND,
                 $this->getDefaultResponseHeaders($request)
             );
         } catch (\Exception $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -588,9 +557,14 @@ class RestController implements RestControllerInterface
         $request = $this->requestStack->getCurrentRequest();
 
         $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, DELETE');
-        if (!empty($optionsResponse)) {
+        if ($optionsResponse) {
             return $optionsResponse;
         }
+
+        $this->dispatcher->dispatch(
+            ApiDeleteEntry::NAME,
+            new ApiDeleteEntry($request)
+        );
 
         try {
             $entry = $this->readSection->read(ReadOptions::fromArray([
@@ -598,21 +572,20 @@ class RestController implements RestControllerInterface
                 ReadOptions::SLUG => $slug
             ]))->current();
             $success = $this->deleteSection->delete($entry);
+            $response = ['success' => $success];
+
+            $this->dispatcher->dispatch(
+                ApiEntryDeleted::NAME,
+                new ApiEntryDeleted($request, $response, $entry)
+            );
+
             return new JsonResponse(
-                ['success' => $success],
+                $response,
                 $success ? JsonResponse::HTTP_OK : JsonResponse::HTTP_NOT_FOUND,
                 $this->getDefaultResponseHeaders($request)
             );
         } catch (\Exception $exception) {
-            if ($exception instanceof EntryNotFoundException) {
-                return new JsonResponse([
-                    'message' => $exception->getMessage()
-                ], JsonResponse::HTTP_NOT_FOUND, $this->getDefaultResponseHeaders($request));
-            } else {
-                return new JsonResponse([
-                    'message' => $exception->getMessage()
-                ], JsonResponse::HTTP_BAD_REQUEST, $this->getDefaultResponseHeaders($request));
-            }
+            return $this->errorResponse($request, $exception);
         }
     }
 
@@ -624,13 +597,12 @@ class RestController implements RestControllerInterface
      * @param string $allowMethods
      * @return null|JsonResponse
      */
-    private function preFlightOptions(Request $request, string $allowMethods = null): ?JsonResponse
+    private function preFlightOptions(Request $request, string $allowMethods = 'OPTIONS'): ?JsonResponse
     {
         if (strtolower($request->getMethod()) === self::OPTIONS_CALL) {
             return new JsonResponse([], JsonResponse::HTTP_OK, [
-                'Access-Control-Allow-Methods' => !empty($allowMethods) ?
-                    $allowMethods : 'OPTIONS',
-                'Access-Control-Allow-Credentials' => 'true'
+                'Access-Control-Allow-Methods' => $allowMethods,
+                'Access-Control-Allow-Credentials' => true
             ]);
         }
 
@@ -670,7 +642,7 @@ class RestController implements RestControllerInterface
             $response['code'] = JsonResponse::HTTP_OK;
         } catch (\Exception $exception) {
             $response['code'] = JsonResponse::HTTP_INTERNAL_SERVER_ERROR;
-            $response['exception'] = 'Something went wrong';
+            $response['exception'] = $exception->getMessage();
         }
 
         return $response;
@@ -804,7 +776,7 @@ class RestController implements RestControllerInterface
     private function getOptions(Request $request): ?array
     {
         $requestOptions = $request->get('options');
-        if (!empty($requestOptions)) {
+        if (!is_null($requestOptions)) {
             $requestOptions = explode('|', $requestOptions);
             $options = [];
             $fieldHandle = array_shift($requestOptions);
@@ -834,15 +806,13 @@ class RestController implements RestControllerInterface
         array $fieldInfo,
         string $sectionHandle,
         int $id = null
-    ): ?array
-    {
+    ): ?array {
 
         $fieldHandle = (string)$field->getHandle();
         $options = $this->getOptions($request);
 
         if (!empty($fieldInfo[$fieldHandle]['to'])) {
             try {
-
                 $sexyFieldInstructions =
                     !empty($fieldInfo[$fieldHandle]['form']['sexy-field-instructions']['relationship']) ?
                         $fieldInfo[$fieldHandle]['form']['sexy-field-instructions']['relationship'] : null;
@@ -865,13 +835,15 @@ class RestController implements RestControllerInterface
                     !empty($sexyFieldInstructions['field']) &&
                     !empty($sexyFieldInstructions['value'])
                 ) {
-                    if (strpos(',', $sexyFieldInstructions['value'])) {
+                    if (strpos($sexyFieldInstructions['value'], ',') !== false) {
                         $sexyFieldInstructions['value'] = explode(',', $sexyFieldInstructions['value']);
                     }
-                    $readOptions[ReadOptions::FIELD] = [$sexyFieldInstructions['field'] => $sexyFieldInstructions['value']];
+                    $readOptions[ReadOptions::FIELD] = [
+                        $sexyFieldInstructions['field'] => $sexyFieldInstructions['value']
+                    ];
                 }
 
-                $nameExpression = null;
+                $nameExpression = [];
                 if (!empty($sexyFieldInstructions) &&
                     !empty($sexyFieldInstructions['name-expression'])
                 ) {
@@ -883,21 +855,22 @@ class RestController implements RestControllerInterface
 
                 /** @var CommonSectionInterface $entry */
                 foreach ($to as $entry) {
-
                     // Try to use the expression to get a name,
-                    // otherwise use default. Expression has a current
-                    // max depth of two like: ->getAccount()->getDisplayName()
+                    // otherwise use default. Expression can be
+                    // used like: ->getAccount()->getDisplayName()
                     // defined as: getAccount|getDisplayName
                     // In the future this type of functionality will be
                     // moved to the getDefault() method for the entity generator
                     // as well.
                     $name = $entry->getDefault();
-                    if (!empty($nameExpression)) {
-                        $find = $entry->{$nameExpression[0]}();
-                        if (!empty($nameExpression[1]) && !empty($find)) {
-                            $find = $find->{$nameExpression[1]}();
+                    if ($nameExpression) {
+                        $find = $entry;
+                        foreach ($nameExpression as $method) {
+                            if ($find) {
+                                $find = $find->$method();
+                            }
                         }
-                        if (!empty($find)) {
+                        if ($find) {
                             $name = $find;
                         }
                     }
@@ -932,8 +905,8 @@ class RestController implements RestControllerInterface
     {
         $origin = $request->headers->get('Origin');
         return [
-            'Access-Control-Allow-Origin' => !empty($origin) ? $origin : '*',
-            'Access-Control-Allow-Credentials' => 'true'
+            'Access-Control-Allow-Origin' => $origin ?: '*',
+            'Access-Control-Allow-Credentials' => true
         ];
     }
 
@@ -952,12 +925,11 @@ class RestController implements RestControllerInterface
         array $fieldInfo,
         int $id
     ): array {
-
         /** @var CommonSectionInterface $editing */
         $editing = $this->readSection->read(
             ReadOptions::fromArray([
                 ReadOptions::SECTION => $sectionHandle,
-                ReadOptions::ID => (int) $id
+                ReadOptions::ID => (int)$id
             ])
         )->current();
 
@@ -1001,5 +973,23 @@ class RestController implements RestControllerInterface
         }
 
         return $result;
+    }
+
+    /**
+     * Build a JSON response to return when an exception occurs.
+     * @param Request $request
+     * @param \Exception $exception
+     * @return JsonResponse
+     */
+    private function errorResponse(Request $request, \Exception $exception): JsonResponse
+    {
+        if ($exception instanceof EntryNotFoundException || $exception instanceof SectionNotFoundException) {
+            $statusCode = JsonResponse::HTTP_NOT_FOUND;
+        } else {
+            $statusCode = JsonResponse::HTTP_BAD_REQUEST;
+        }
+        return new JsonResponse([
+            'message' => $exception->getMessage()
+        ], $statusCode, $this->getDefaultResponseHeaders($request));
     }
 }
