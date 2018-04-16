@@ -15,6 +15,7 @@ use Tardigrades\Entity\FieldInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy;
 use Tardigrades\SectionField\Api\Serializer\FieldsExclusionStrategy;
+use Tardigrades\SectionField\Event\ApiBeforeEntrySavedAfterValidated;
 use Tardigrades\SectionField\Event\ApiCreateEntry;
 use Tardigrades\SectionField\Event\ApiDeleteEntry;
 use Tardigrades\SectionField\Event\ApiEntryCreated;
@@ -129,17 +130,17 @@ class RestController implements RestControllerInterface
 
             $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
 
-            $response['name'] = (string)$section->getName();
-            $response['handle'] = (string)$section->getHandle();
+            $response['name'] = (string) $section->getName();
+            $response['handle'] = (string) $section->getHandle();
 
             $fieldProperties = $this->getEntityProperties($sectionHandle);
 
             /** @var FieldInterface $field */
             foreach ($section->getFields() as $field) {
-                $fieldInfo = [(string)$field->getHandle() => $field->getConfig()->toArray()['field']];
+                $fieldInfo = [(string) $field->getHandle() => $field->getConfig()->toArray()['field']];
 
-                if ((string)$field->getFieldType()->getFullyQualifiedClassName() === Relationship::class) {
-                    $fieldInfo = $this->getRelationshipsTo($request, $field, $fieldInfo, $sectionHandle, (int)$id);
+                if ((string) $field->getFieldType()->getFullyQualifiedClassName() === Relationship::class) {
+                    $fieldInfo = $this->getRelationshipsTo($request, $field, $fieldInfo, $sectionHandle, (int) $id);
                 }
 
                 $fieldInfo = $this->matchFormFieldsWithConfig($fieldProperties, $fieldInfo);
@@ -295,8 +296,8 @@ class RestController implements RestControllerInterface
             $entries = $this->readSection->read(ReadOptions::fromArray([
                 ReadOptions::SECTION => $sectionHandle,
                 ReadOptions::OFFSET => $offset,
-                ReadOptions::LIMIT => $limit,
-                ReadOptions::ORDER_BY => [$orderBy => strtolower($sort)]
+                ReadOptions::LIMIT => (int) $limit,
+                ReadOptions::ORDER_BY => [ $orderBy => strtolower($sort) ]
             ]));
             $serializer = SerializerBuilder::create()->build();
 
@@ -347,6 +348,10 @@ class RestController implements RestControllerInterface
             $form->submit($request->get($form->getName()));
 
             if ($form->isValid()) {
+                $this->dispatcher->dispatch(
+                    ApiBeforeEntrySavedAfterValidated::NAME,
+                    new ApiBeforeEntrySavedAfterValidated($request, $response, $form->getData())
+                );
                 $response = $this->save($form);
                 $this->dispatcher->dispatch(
                     ApiEntryCreated::NAME,
@@ -808,7 +813,7 @@ class RestController implements RestControllerInterface
         int $id = null
     ): ?array {
 
-        $fieldHandle = (string)$field->getHandle();
+        $fieldHandle = (string) $field->getHandle();
         $options = $this->getOptions($request);
 
         if (!empty($fieldInfo[$fieldHandle]['to'])) {
