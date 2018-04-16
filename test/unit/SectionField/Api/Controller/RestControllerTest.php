@@ -17,6 +17,7 @@ use Tardigrades\Entity\Field;
 use Tardigrades\Entity\FieldType;
 use Tardigrades\Entity\SectionInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
+use Tardigrades\SectionField\Event\ApiBeforeEntrySavedAfterValidated;
 use Tardigrades\SectionField\Event\ApiCreateEntry;
 use Tardigrades\SectionField\Event\ApiDeleteEntry;
 use Tardigrades\SectionField\Event\ApiEntryCreated;
@@ -822,6 +823,13 @@ class RestControllerTest extends TestCase
         $this->dispatcher->shouldReceive('dispatch')
             ->once()
             ->withArgs([
+                ApiBeforeEntrySavedAfterValidated::NAME,
+                Mockery::type(ApiBeforeEntrySavedAfterValidated::class)
+            ]);
+
+        $this->dispatcher->shouldReceive('dispatch')
+            ->once()
+            ->withArgs([
                 ApiEntryCreated::NAME,
                 Mockery::type(ApiEntryCreated::class)
             ]);
@@ -863,6 +871,13 @@ class RestControllerTest extends TestCase
             ->withArgs([
                 ApiCreateEntry::NAME,
                 Mockery::type(ApiCreateEntry::class)
+            ]);
+
+        $this->dispatcher->shouldReceive('dispatch')
+            ->once()
+            ->withArgs([
+                ApiBeforeEntrySavedAfterValidated::NAME,
+                Mockery::type(ApiBeforeEntrySavedAfterValidated::class)
             ]);
 
         $this->dispatcher->shouldReceive('dispatch')

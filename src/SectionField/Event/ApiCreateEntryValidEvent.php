@@ -18,13 +18,13 @@ use Symfony\Component\HttpFoundation\Request;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 
 /**
- * Class ApiAfterEntryEvent
+ * Class ApiBeforeEntryValidEvent
  *
- * Dispatched after an action on an entry, when the form has been found valid.
+ * Dispatched with a request when a form is valid but the form data is not yet saved
  *
  * @package Tardigrades\SectionField\Event
  */
-abstract class ApiAfterEntryEvent extends Event
+abstract class ApiCreateEntryValidEvent extends Event
 {
     const NAME = null;
 
@@ -37,11 +37,8 @@ abstract class ApiAfterEntryEvent extends Event
     /** @var CommonSectionInterface */
     protected $entry;
 
-    public function __construct(
-        Request $request,
-        array $response,
-        CommonSectionInterface $entry
-    ) {
+    public function __construct(Request $request,  array $response, CommonSectionInterface $entry)
+    {
         $this->request = $request;
         $this->response = $response;
         $this->entry = $entry;
