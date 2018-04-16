@@ -295,7 +295,7 @@ class RestController implements RestControllerInterface
         try {
             $entries = $this->readSection->read(ReadOptions::fromArray([
                 ReadOptions::SECTION => $sectionHandle,
-                ReadOptions::OFFSET => $offset,
+                ReadOptions::OFFSET => (int) $offset,
                 ReadOptions::LIMIT => (int) $limit,
                 ReadOptions::ORDER_BY => [ $orderBy => strtolower($sort) ]
             ]));
