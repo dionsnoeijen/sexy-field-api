@@ -127,7 +127,7 @@ class RestControllerTest extends TestCase
                 ->andReturn('options');
             $response = new JsonResponse([], JsonResponse::HTTP_OK, [
                 'Access-Control-Allow-Methods' => $allowMethods,
-                'Access-Control-Allow-Credentials' => true
+                'Access-Control-Allow-Credentials' => 'true'
             ]);
             $this->requestStack->shouldReceive('getCurrentRequest')
                 ->once()
@@ -209,7 +209,7 @@ class RestControllerTest extends TestCase
 
         $expectedResponse = new JsonResponse($expectedFieldInfo, 200, [
             'Access-Control-Allow-Origin' => 'iamtheorigin.com',
-            'Access-Control-Allow-Credentials' => true
+            'Access-Control-Allow-Credentials' => 'true'
         ]);
 
         $response = $this->controller->getSectionInfo('sexyHandle');
@@ -235,7 +235,7 @@ class RestControllerTest extends TestCase
 
         $expectedResponse = new JsonResponse(['message' => 'Section not found'], 404, [
             'Access-Control-Allow-Origin' => 'iamtheorigin.com',
-            'Access-Control-Allow-Credentials' => true
+            'Access-Control-Allow-Credentials' => 'true'
         ]);
 
         $response = $this->controller->getSectionInfo('foo');
@@ -261,7 +261,7 @@ class RestControllerTest extends TestCase
 
         $expectedResponse = new JsonResponse(['message' => 'Uh-oh'], 400, [
             'Access-Control-Allow-Origin' => 'iamtheorigin.com',
-            'Access-Control-Allow-Credentials' => true
+            'Access-Control-Allow-Credentials' => 'true'
         ]);
 
         $response = $this->controller->getSectionInfo('foo');
@@ -305,7 +305,7 @@ class RestControllerTest extends TestCase
 
             $expectedResponse = new JsonResponse(['message' => 'Entry not found'], 404, [
                 'Access-Control-Allow-Origin' => 'iamtheorigin.com',
-                'Access-Control-Allow-Credentials' => true
+                'Access-Control-Allow-Credentials' => 'true'
             ]);
 
             if ($expectDispatch) {
@@ -355,7 +355,7 @@ class RestControllerTest extends TestCase
 
             $expectedResponse = new JsonResponse(['message' => "Something exceptional happened"], 400, [
                 'Access-Control-Allow-Origin' => 'iamtheorigin.com',
-                'Access-Control-Allow-Credentials' => true
+                'Access-Control-Allow-Credentials' => 'true'
             ]);
 
             if ($expectDispatch) {
@@ -394,7 +394,7 @@ class RestControllerTest extends TestCase
 
             $expectedResponse = new JsonResponse(['message' => "Something exceptional happened"], 400, [
                 'Access-Control-Allow-Origin' => 'iamtheorigin.com',
-                'Access-Control-Allow-Credentials' => true
+                'Access-Control-Allow-Credentials' => 'true'
             ]);
 
             if ($expectDispatch) {
@@ -531,7 +531,7 @@ class RestControllerTest extends TestCase
             200,
             [
                 'Access-Control-Allow-Origin' => 'iamtheorigin.com',
-                'Access-Control-Allow-Credentials' => true
+                'Access-Control-Allow-Credentials' => 'true'
             ]
         );
 
@@ -620,7 +620,7 @@ class RestControllerTest extends TestCase
             200,
             [
                 'Access-Control-Allow-Origin' => 'iamtheorigin.com',
-                'Access-Control-Allow-Credentials' => true
+                'Access-Control-Allow-Credentials' => 'true'
             ]
         );
 
