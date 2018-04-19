@@ -21,7 +21,7 @@ final class ApiUpdateEntryTest extends TestCase
     public function setUp()
     {
         $this->request = new Request();
-        $this->apiUpdateEntry = new ApiUpdateEntry($this->request);
+        $this->apiUpdateEntry = new ApiUpdateEntry($this->request, 'someHandle');
     }
 
     /**

@@ -21,7 +21,7 @@ final class ApiDeleteEntryTest extends TestCase
     public function setUp()
     {
         $this->request = new Request();
-        $this->apiDeleteEntry = new ApiDeleteEntry($this->request);
+        $this->apiDeleteEntry = new ApiDeleteEntry($this->request, 'someHandle');
     }
 
     /**

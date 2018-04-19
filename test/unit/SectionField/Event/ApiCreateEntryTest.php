@@ -21,7 +21,7 @@ final class ApiCreateEntryTest extends TestCase
     public function setUp()
     {
         $this->request = new Request();
-        $this->apiCreateEntry = new ApiCreateEntry($this->request);
+        $this->apiCreateEntry = new ApiCreateEntry($this->request, 'someHandle');
     }
 
     /**
