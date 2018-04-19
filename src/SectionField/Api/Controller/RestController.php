@@ -332,7 +332,7 @@ class RestController implements RestControllerInterface
 
         $this->dispatcher->dispatch(
             ApiCreateEntry::NAME,
-            new ApiCreateEntry($request)
+            new ApiCreateEntry($request, $sectionHandle)
         );
 
         try {
@@ -390,7 +390,7 @@ class RestController implements RestControllerInterface
 
         $this->dispatcher->dispatch(
             ApiUpdateEntry::NAME,
-            new ApiUpdateEntry($request)
+            new ApiUpdateEntry($request, $sectionHandle)
         );
 
         try {
@@ -416,9 +416,7 @@ class RestController implements RestControllerInterface
 
             if ($form->isValid()) {
                 $newEntry = $form->getData();
-
                 $response = $this->save($form);
-
                 $this->dispatcher->dispatch(
                     ApiEntryUpdated::NAME,
                     new ApiEntryUpdated($request, $response, $originalEntry, $newEntry)
@@ -458,7 +456,7 @@ class RestController implements RestControllerInterface
 
         $this->dispatcher->dispatch(
             ApiUpdateEntry::NAME,
-            new ApiUpdateEntry($request)
+            new ApiUpdateEntry($request, $sectionHandle)
         );
 
         try {
@@ -523,7 +521,7 @@ class RestController implements RestControllerInterface
 
         $this->dispatcher->dispatch(
             ApiDeleteEntry::NAME,
-            new ApiDeleteEntry($request)
+            new ApiDeleteEntry($request, $sectionHandle)
         );
 
         $readOptions = ReadOptions::fromArray([
@@ -568,7 +566,7 @@ class RestController implements RestControllerInterface
 
         $this->dispatcher->dispatch(
             ApiDeleteEntry::NAME,
-            new ApiDeleteEntry($request)
+            new ApiDeleteEntry($request, $sectionHandle)
         );
 
         try {

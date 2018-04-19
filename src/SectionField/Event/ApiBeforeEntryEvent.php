@@ -30,13 +30,23 @@ abstract class ApiBeforeEntryEvent extends Event
     /** @var Request */
     protected $request;
 
-    public function __construct(Request $request)
+    /** @var string */
+    private $sectionHandle;
+
+    public function __construct(Request $request, string $sectionHandle)
     {
         $this->request = $request;
+
+        $this->sectionHandle = $sectionHandle;
     }
 
     public function getRequest(): Request
     {
         return $this->request;
+    }
+
+    public function getSectionHandle(): string
+    {
+        return $this->sectionHandle;
     }
 }
