@@ -18,10 +18,14 @@ final class ApiUpdateEntryTest extends TestCase
     /** @var Request */
     private $request;
 
+    /** @var string */
+    private $handle;
+
     public function setUp()
     {
         $this->request = new Request();
-        $this->apiUpdateEntry = new ApiUpdateEntry($this->request, 'someHandle');
+        $this->handle = 'someHandle';
+        $this->apiUpdateEntry = new ApiUpdateEntry($this->request, $this->handle);
     }
 
     /**
@@ -31,5 +35,14 @@ final class ApiUpdateEntryTest extends TestCase
     public function it_should_return_the_request()
     {
         $this->assertSame($this->request, $this->apiUpdateEntry->getRequest());
+    }
+
+    /**
+     * @test
+     * @covers ::getSectionHandle
+     */
+    public function it_should_return_the_handle()
+    {
+        $this->assertSame($this->handle, $this->apiUpdateEntry->getSectionHandle());
     }
 }

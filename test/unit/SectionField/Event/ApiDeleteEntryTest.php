@@ -18,10 +18,14 @@ final class ApiDeleteEntryTest extends TestCase
     /** @var Request */
     private $request;
 
+    /** @var string */
+    private $handle;
+
     public function setUp()
     {
+        $this->handle = 'someHandle';
         $this->request = new Request();
-        $this->apiDeleteEntry = new ApiDeleteEntry($this->request, 'someHandle');
+        $this->apiDeleteEntry = new ApiDeleteEntry($this->request, $this->handle);
     }
 
     /**
@@ -31,5 +35,14 @@ final class ApiDeleteEntryTest extends TestCase
     public function it_should_return_the_request()
     {
         $this->assertSame($this->request, $this->apiDeleteEntry->getRequest());
+    }
+
+    /**
+     * @test
+     * @covers ::getSectionHandle
+     */
+    public function it_should_return_the_handle()
+    {
+        $this->assertSame($this->handle, $this->apiDeleteEntry->getSectionHandle());
     }
 }
