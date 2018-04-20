@@ -9,6 +9,8 @@ use JMS\Serializer\Naming\SerializedNameAnnotationStrategy;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerBuilder;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormErrorIterator;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -758,6 +760,11 @@ class RestController implements RestControllerInterface
     private function getFormErrors(SymfonyFormInterface $form): array
     {
         $errors = [];
+
+        /**
+         * @var string $field
+         * @var FormError $formError
+         */
         foreach ($form->getErrors(true, true) as $field => $formError) {
             $errors[$field] = $formError->getMessage();
         }
@@ -823,6 +830,7 @@ class RestController implements RestControllerInterface
         try {
             $useOriginalHandle = $fieldInfo[$oldHandle]['generator']['entity']['ignore'];
         } catch (\Exception $exception) {
+            // Empty because the try merely exists as an advanced isset
         }
 
         if (!$useOriginalHandle) {
@@ -1059,6 +1067,7 @@ class RestController implements RestControllerInterface
                 }
             }
         } catch (\Exception $exception) {
+            // Empty because we can just return the fieldInfo the way it was if the above fails
         }
 
         return $fieldInfo;
