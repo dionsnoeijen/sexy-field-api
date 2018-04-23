@@ -11,6 +11,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\HeaderBag;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Tardigrades\Entity\Field;
@@ -1157,11 +1158,14 @@ class RestControllerTest extends TestCase
             ->andReturn($mockedForm);
 
         $mockedRequest = Mockery::mock(Request::class)->makePartial();
-        $mockedRequest->shouldReceive('get')->with('form')
+        $mockedRequest->request = Mockery::mock(ParameterBag::class)->makePartial();
+        $mockedRequest->request->shouldReceive('get')
+            ->with('form')
             ->andReturn(['no']);
+
         $mockedRequest->shouldReceive('getMethod')
             ->andReturn('not options');
-        $mockedRequest->shouldReceive('get')
+        $mockedRequest->request->shouldReceive('get')
             ->with('name of form')
             ->andReturn('foo');
 

@@ -10,7 +10,6 @@ use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerBuilder;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormError;
-use Symfony\Component\Form\FormErrorIterator;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -477,7 +476,7 @@ class RestController implements RestControllerInterface
                 ])
             )->current();
 
-            $form->submit($request->get($form->getName()), false);
+            $form->submit($request->request->get($form->getName()), false);
 
             $jsonResponse = new JsonResponse(
                 $responseData,
@@ -564,7 +563,7 @@ class RestController implements RestControllerInterface
                 ])
             )->current();
 
-            $form->submit($request->get($form->getName()), false);
+            $form->submit($request->request->get($form->getName()), false);
             $jsonResponse = new JsonResponse(
                 $responseData,
                 $responseData['code'],
