@@ -128,7 +128,7 @@ class RestControllerTest extends TestCase
                 ->andReturn('options');
             $response = new JsonResponse([], JsonResponse::HTTP_OK, [
                 'Access-Control-Allow-Methods' => $allowMethods,
-                'Access-Control-Allow-Credentials' => true
+                'Access-Control-Allow-Credentials' => 'true'
             ]);
             $this->requestStack->shouldReceive('getCurrentRequest')
                 ->once()

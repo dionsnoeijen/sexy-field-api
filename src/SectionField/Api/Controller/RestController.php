@@ -610,7 +610,7 @@ class RestController implements RestControllerInterface
         if (strtolower($request->getMethod()) === self::OPTIONS_CALL) {
             return new JsonResponse([], JsonResponse::HTTP_OK, [
                 'Access-Control-Allow-Methods' => $allowMethods,
-                'Access-Control-Allow-Credentials' => true
+                'Access-Control-Allow-Credentials' => 'true'
             ]);
         }
 
