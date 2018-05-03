@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare (strict_types=1);
 
 namespace Tardigrades\SectionField\Event;
 
@@ -11,18 +11,18 @@ use Symfony\Component\HttpFoundation\Request;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 
 /**
- * @coversDefaultClass Tardigrades\SectionField\Event\ApiEntryDeleted
+ * @coversDefaultClass Tardigrades\SectionField\Event\ApiEntryFetched
  * @covers ::__construct
  */
-final class ApiEntryDeletedTest extends TestCase
+final class ApiEntryFetchedTest extends TestCase
 {
     use MockeryPHPUnitIntegration;
 
-    /** @var ApiEntryDeleted */
-    private $apiEntryDeleted;
+    /** @var ApiEntryFetched */
+    private $apiEntryFetched;
 
     /** @var CommonSectionInterface */
-    private $entry;
+    private $newEntry;
 
     /** @var Request */
     private $request;
@@ -38,13 +38,13 @@ final class ApiEntryDeletedTest extends TestCase
         $this->request = new Request();
         $this->responseData = [];
         $this->jsonResponse = new JsonResponse();
-        $this->entry = Mockery::mock(CommonSectionInterface::class);
+        $this->newEntry = Mockery::mock(CommonSectionInterface::class);
 
-        $this->apiEntryDeleted = new ApiEntryDeleted(
+        $this->apiEntryFetched = new ApiEntryFetched(
             $this->request,
             $this->responseData,
             $this->jsonResponse,
-            $this->entry
+            $this->newEntry
         );
     }
 
@@ -54,7 +54,9 @@ final class ApiEntryDeletedTest extends TestCase
      */
     public function it_should_return_the_request()
     {
-        $this->assertSame($this->request, $this->apiEntryDeleted->getRequest());
+        $result = $this->apiEntryFetched->getRequest();
+
+        $this->assertEquals($this->request, $result);
     }
 
     /**
@@ -63,7 +65,9 @@ final class ApiEntryDeletedTest extends TestCase
      */
     public function it_should_return_the_response_data()
     {
-        $this->assertSame($this->responseData, $this->apiEntryDeleted->getResponseData());
+        $result = $this->apiEntryFetched->getResponseData();
+
+        $this->assertEquals($this->responseData, $result);
     }
 
     /**
@@ -72,15 +76,19 @@ final class ApiEntryDeletedTest extends TestCase
      */
     public function it_should_return_the_response()
     {
-        $this->assertSame($this->jsonResponse, $this->apiEntryDeleted->getResponse());
+        $result = $this->apiEntryFetched->getResponse();
+
+        $this->assertEquals($this->jsonResponse, $result);
     }
 
     /**
      * @test
      * @covers ::getEntry
      */
-    public function it_should_return_the_entry()
+    public function it_should_return_the_original_entry()
     {
-        $this->assertSame($this->entry, $this->apiEntryDeleted->getEntry());
+        $result = $this->apiEntryFetched->getEntry();
+
+        $this->assertEquals($this->newEntry, $result);
     }
 }

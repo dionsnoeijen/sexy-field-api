@@ -6,6 +6,7 @@ namespace Tardigrades\SectionField\Event;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 
@@ -27,17 +28,22 @@ final class ApiEntryCreatedTest extends TestCase
     private $request;
 
     /** @var array */
-    private $response;
+    private $responseData;
+
+    /** @var JsonResponse */
+    private $jsonResponse;
 
     public function setUp()
     {
         $this->request = new Request();
-        $this->response = [];
+        $this->responseData = [];
+        $this->jsonResponse = new JsonResponse();
         $this->newEntry = Mockery::mock(CommonSectionInterface::class);
 
         $this->apiEntryCreated = new ApiEntryCreated(
             $this->request,
-            $this->response,
+            $this->responseData,
+            $this->jsonResponse,
             $this->newEntry
         );
     }
@@ -55,13 +61,24 @@ final class ApiEntryCreatedTest extends TestCase
 
     /**
      * @test
+     * @covers ::getResponseData
+     */
+    public function it_should_return_the_response_data()
+    {
+        $result = $this->apiEntryCreated->getResponseData();
+
+        $this->assertEquals($this->responseData, $result);
+    }
+
+    /**
+     * @test
      * @covers ::getResponse
      */
     public function it_should_return_the_response()
     {
         $result = $this->apiEntryCreated->getResponse();
 
-        $this->assertEquals($this->response, $result);
+        $this->assertEquals($this->jsonResponse, $result);
     }
 
     /**

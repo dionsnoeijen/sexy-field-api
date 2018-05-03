@@ -16,16 +16,8 @@ namespace Tardigrades\SectionField\Event;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Tardigrades\SectionField\Generator\CommonSectionInterface;
 
-/**
- * Class ApiAfterEntryEvent
- *
- * Dispatched after an action on an entry, when the form has been found valid.
- *
- * @package Tardigrades\SectionField\Event
- */
-abstract class ApiAfterEntryEvent extends Event
+abstract class ApiAfterEntriesEvent extends Event
 {
     const NAME = null;
 
@@ -35,8 +27,8 @@ abstract class ApiAfterEntryEvent extends Event
     /** @var array */
     protected $responseData;
 
-    /** @var CommonSectionInterface */
-    protected $entry;
+    /** @var \ArrayIterator */
+    protected $entries;
 
     /** @var JsonResponse */
     private $response;
@@ -45,12 +37,12 @@ abstract class ApiAfterEntryEvent extends Event
         Request $request,
         array $responseData,
         JsonResponse $response,
-        CommonSectionInterface $entry
+        \ArrayIterator $entries
     ) {
         $this->request = $request;
         $this->response = $response;
         $this->responseData = $responseData;
-        $this->entry = $entry;
+        $this->entries = $entries;
     }
 
     public function getRequest(): Request
@@ -68,8 +60,8 @@ abstract class ApiAfterEntryEvent extends Event
         return $this->response;
     }
 
-    public function getEntry(): CommonSectionInterface
+    public function getEntries(): \ArrayIterator
     {
-        return $this->entry;
+        return $this->entries;
     }
 }
