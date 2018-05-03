@@ -130,13 +130,13 @@ class RestControllerTest extends TestCase
             $request = Mockery::mock(Request::class);
             $request->shouldReceive('getMethod')
                 ->andReturn('options');
+            $this->requestStack->shouldReceive('getCurrentRequest')
+                ->once()
+                ->andReturn($request);
             $response = new JsonResponse([], JsonResponse::HTTP_OK, [
                 'Access-Control-Allow-Methods' => $allowMethods,
                 'Access-Control-Allow-Credentials' => 'true'
             ]);
-            $this->requestStack->shouldReceive('getCurrentRequest')
-                ->once()
-                ->andReturn($request);
             $this->assertEquals($this->controller->$method(...$args), $response);
         }
     }
