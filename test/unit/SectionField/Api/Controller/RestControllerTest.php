@@ -133,7 +133,15 @@ class RestControllerTest extends TestCase
             $this->requestStack->shouldReceive('getCurrentRequest')
                 ->once()
                 ->andReturn($request);
+
+            $request->headers = Mockery::mock(HeaderCollection::class);
+            $request->headers->shouldReceive('get')
+                ->with('Origin')
+                ->once()
+                ->andReturn('someorigin.com');
+
             $response = new JsonResponse([], JsonResponse::HTTP_OK, [
+                'Access-Control-Allow-Origin' => 'someorigin.com',
                 'Access-Control-Allow-Methods' => $allowMethods,
                 'Access-Control-Allow-Credentials' => 'true'
             ]);
