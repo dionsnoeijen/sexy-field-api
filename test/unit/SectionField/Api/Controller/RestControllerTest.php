@@ -894,7 +894,7 @@ class RestControllerTest extends TestCase
 
         $response = $this->controller->createEntry('sexy');
         $this->assertSame(
-            '{"code":200,"success":true,"errors":false}',
+            '{"code":200,"success":true,"errors":false,"entry":[]}',
             $response->getContent()
         );
     }
@@ -1097,13 +1097,13 @@ class RestControllerTest extends TestCase
 
         $response = $this->controller->updateEntryById('sexy', 9);
         $this->assertSame(
-            '{"code":200,"success":true,"errors":false}',
+            '{"code":200,"success":true,"errors":false,"entry":[]}',
             $response->getContent()
         );
 
         $response = $this->controller->updateEntryBySlug('sexy', 'snail');
         $this->assertSame(
-            '{"code":200,"success":true,"errors":false}',
+            '{"code":200,"success":true,"errors":false,"entry":[]}',
             $response->getContent()
         );
     }

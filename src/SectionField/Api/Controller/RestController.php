@@ -417,7 +417,7 @@ class RestController implements RestControllerInterface
                     ApiBeforeEntrySavedAfterValidated::NAME,
                     new ApiBeforeEntrySavedAfterValidated($request, $responseData, $jsonResponse, $form->getData())
                 );
-                $responseData = $this->save($form, $jsonResponse);
+                $responseData = $this->save($form, $jsonResponse, $request);
                 $jsonResponse->setData($responseData);
                 $this->dispatcher->dispatch(
                     ApiEntryCreated::NAME,
@@ -496,7 +496,7 @@ class RestController implements RestControllerInterface
                         $newEntry
                     )
                 );
-                $responseData = $this->save($form, $jsonResponse);
+                $responseData = $this->save($form, $jsonResponse, $request);
                 $jsonResponse->setData($responseData);
                 $this->dispatcher->dispatch(
                     ApiEntryUpdated::NAME,
@@ -582,7 +582,8 @@ class RestController implements RestControllerInterface
                         $newEntry
                     )
                 );
-                $responseData = $this->save($form, $jsonResponse);
+
+                $responseData = $this->save($form, $jsonResponse, $request);
                 $jsonResponse->setData($responseData);
                 $this->dispatcher->dispatch(
                     ApiEntryUpdated::NAME,
@@ -730,11 +731,14 @@ class RestController implements RestControllerInterface
 
     /**
      * @param SymfonyFormInterface $form
+     * @param JsonResponse $jsonResponse
+     * @param Request $request
      * @return array
      */
-    private function save(SymfonyFormInterface $form, JsonResponse $jsonResponse): array
+    private function save(SymfonyFormInterface $form, JsonResponse $jsonResponse, Request $request): array
     {
         $responseData = [];
+
         $data = $form->getData();
 
         try {
@@ -742,6 +746,7 @@ class RestController implements RestControllerInterface
             $responseData['success'] = true;
             $responseData['errors'] = false;
             $responseData['code'] = JsonResponse::HTTP_OK;
+            $responseData['entry'] = $this->serializeToArray($request, $data);
         } catch (\Exception $exception) {
             $responseData['code'] = JsonResponse::HTTP_INTERNAL_SERVER_ERROR;
             $responseData['exception'] = $exception->getMessage();
@@ -811,12 +816,16 @@ class RestController implements RestControllerInterface
             null,
             false
         )->getData();
-        $reflect = new \ReflectionClass($form);
-        $properties = array_map(function ($data) {
-            return $data->name;
-        }, $reflect->getProperties());
+        try {
+            $reflect = new \ReflectionClass($form);
+            $properties = array_map(function ($data) {
+                return $data->name;
+            }, $reflect->getProperties());
 
-        return $properties;
+            return $properties;
+        } catch (\ReflectionException $exception) {
+            //
+        }
     }
 
     private function matchFormFieldsWithConfig(array $entityProperties, array $fieldInfo): array
@@ -965,13 +974,6 @@ class RestController implements RestControllerInterface
 
                 /** @var CommonSectionInterface $entry */
                 foreach ($to as $entry) {
-                    // Try to use the expression to get a name,
-                    // otherwise use default. Expression can be
-                    // used like: ->getAccount()->getDisplayName()
-                    // defined as: getAccount|getDisplayName
-                    // In the future this type of functionality will be
-                    // moved to the getDefault() method for the entity generator
-                    // as well.
                     $name = $entry->getDefault();
                     if ($nameExpression) {
                         $find = $entry;
