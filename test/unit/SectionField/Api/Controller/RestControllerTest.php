@@ -108,18 +108,19 @@ class RestControllerTest extends TestCase
      */
     public function it_returns_options_listings()
     {
+        $allowedMethods = 'OPTIONS, GET, POST, PUT, DELETE';
         $testCases = [
             // method name,    arguments,      allowed HTTP methods
-            ['getSectionInfo', ['foo', "0"], 'OPTIONS, GET'],
-            ['getEntryById', ['foo', "0"], 'OPTIONS, GET'],
-            ['getEntryBySlug', ['foo', 'bar'], 'OPTIONS, GET'],
-            ['getEntriesByFieldValue', ['foo', 'bar'], 'OPTIONS, GET'],
-            ['getEntries', ['foo'], 'OPTIONS, GET'],
-            ['createEntry', ['foo'], 'OPTIONS, POST'],
-            ['updateEntryById', ['foo', 0], 'OPTIONS, PUT'],
-            ['updateEntryBySlug', ['foo', 'bar'], 'OPTIONS, PUT'],
-            ['deleteEntryById', ['foo', 0], 'OPTIONS, DELETE'],
-            ['deleteEntryBySlug', ['foo', 'bar'], 'OPTIONS, DELETE']
+            ['getSectionInfo', ['foo', "0"], $allowedMethods],
+            ['getEntryById', ['foo', "0"], $allowedMethods],
+            ['getEntryBySlug', ['foo', 'bar'], $allowedMethods],
+            ['getEntriesByFieldValue', ['foo', 'bar'], $allowedMethods],
+            ['getEntries', ['foo'], $allowedMethods],
+            ['createEntry', ['foo'], $allowedMethods],
+            ['updateEntryById', ['foo', 0], $allowedMethods],
+            ['updateEntryBySlug', ['foo', 'bar'], $allowedMethods],
+            ['deleteEntryById', ['foo', 0], $allowedMethods],
+            ['deleteEntryBySlug', ['foo', 'bar'], $allowedMethods]
         ];
         foreach ($testCases as [$method, $args, $allowMethods]) {
             $request = Mockery::mock(Request::class);

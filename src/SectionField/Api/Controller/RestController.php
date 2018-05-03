@@ -69,6 +69,9 @@ class RestController implements RestControllerInterface
 
     const OPTIONS_CALL = 'options';
 
+    /** @var string */
+    const ALLOWED_HTTP_METHODS = 'OPTIONS, GET, POST, PUT, DELETE';
+
     /**
      * RestController constructor.
      * @param CreateSectionInterface $createSection
@@ -120,7 +123,7 @@ class RestController implements RestControllerInterface
 
         $request = $this->requestStack->getCurrentRequest();
 
-        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
+        $optionsResponse = $this->preFlightOptions($request, self::ALLOWED_HTTP_METHODS);
         if ($optionsResponse) {
             return $optionsResponse;
         }
@@ -171,7 +174,7 @@ class RestController implements RestControllerInterface
     {
         $request = $this->requestStack->getCurrentRequest();
 
-        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
+        $optionsResponse = $this->preFlightOptions($request, self::ALLOWED_HTTP_METHODS);
         if ($optionsResponse) {
             return $optionsResponse;
         }
@@ -201,7 +204,7 @@ class RestController implements RestControllerInterface
     {
         $request = $this->requestStack->getCurrentRequest();
 
-        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
+        $optionsResponse = $this->preFlightOptions($request, self::ALLOWED_HTTP_METHODS);
         if ($optionsResponse) {
             return $optionsResponse;
         }
@@ -234,7 +237,7 @@ class RestController implements RestControllerInterface
     {
         $request = $this->requestStack->getCurrentRequest();
 
-        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
+        $optionsResponse = $this->preFlightOptions($request, self::ALLOWED_HTTP_METHODS);
         if ($optionsResponse) {
             return $optionsResponse;
         }
@@ -282,7 +285,7 @@ class RestController implements RestControllerInterface
     ): JsonResponse {
         $request = $this->requestStack->getCurrentRequest();
 
-        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, GET');
+        $optionsResponse = $this->preFlightOptions($request, self::ALLOWED_HTTP_METHODS);
         if ($optionsResponse) {
             return $optionsResponse;
         }
@@ -325,7 +328,7 @@ class RestController implements RestControllerInterface
     {
         $request = $this->requestStack->getCurrentRequest();
 
-        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, POST');
+        $optionsResponse = $this->preFlightOptions($request, self::ALLOWED_HTTP_METHODS);
         if ($optionsResponse) {
             return $optionsResponse;
         }
@@ -383,7 +386,7 @@ class RestController implements RestControllerInterface
     {
         $request = $this->requestStack->getCurrentRequest();
 
-        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, PUT');
+        $optionsResponse = $this->preFlightOptions($request, self::ALLOWED_HTTP_METHODS);
         if ($optionsResponse) {
             return $optionsResponse;
         }
@@ -451,7 +454,7 @@ class RestController implements RestControllerInterface
     {
         $request = $this->requestStack->getCurrentRequest();
 
-        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, PUT');
+        $optionsResponse = $this->preFlightOptions($request, self::ALLOWED_HTTP_METHODS);
         if ($optionsResponse) {
             return $optionsResponse;
         }
@@ -516,7 +519,7 @@ class RestController implements RestControllerInterface
     {
         $request = $this->requestStack->getCurrentRequest();
 
-        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, DELETE');
+        $optionsResponse = $this->preFlightOptions($request, self::ALLOWED_HTTP_METHODS);
         if ($optionsResponse) {
             return $optionsResponse;
         }
@@ -561,7 +564,7 @@ class RestController implements RestControllerInterface
     {
         $request = $this->requestStack->getCurrentRequest();
 
-        $optionsResponse = $this->preFlightOptions($request, 'OPTIONS, DELETE');
+        $optionsResponse = $this->preFlightOptions($request, self::ALLOWED_HTTP_METHODS);
         if ($optionsResponse) {
             return $optionsResponse;
         }
