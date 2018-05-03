@@ -706,7 +706,9 @@ class RestController implements RestControllerInterface
     private function preFlightOptions(Request $request, string $allowMethods = 'OPTIONS'): ?JsonResponse
     {
         if (strtolower($request->getMethod()) === self::OPTIONS_CALL) {
+            $origin = $request->headers->get('Origin');
             return new JsonResponse([], JsonResponse::HTTP_OK, [
+                'Access-Control-Allow-Origin' => $origin ?: '*',
                 'Access-Control-Allow-Methods' => $allowMethods,
                 'Access-Control-Allow-Credentials' => 'true'
             ]);
