@@ -11,15 +11,18 @@ use Symfony\Component\HttpFoundation\Request;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 
 /**
- * @coversDefaultClass Tardigrades\SectionField\Event\ApiEntryUpdated
+ * @coversDefaultClass Tardigrades\SectionField\Event\ApiBeforeEntryUpdatedAfterValidated
  * @covers ::__construct
  */
-final class ApiEntryUpdatedTest extends TestCase
+final class ApiBeforeEntryUpdatedAfterValidatedTest extends TestCase
 {
     use MockeryPHPUnitIntegration;
 
-    /** @var ApiEntryUpdated */
-    private $apiEntryUpdated;
+    /** @var ApiBeforeEntryUpdatedAfterValidated */
+    private $apiBeforeEntryUpdatedAfterValidated;
+
+    /** @var CommonSectionInterface */
+    private $newEntry;
 
     /** @var Request */
     private $request;
@@ -27,23 +30,21 @@ final class ApiEntryUpdatedTest extends TestCase
     /** @var array */
     private $responseData;
 
-    /** @var CommonSectionInterface */
-    private $originalEntry;
-
-    /** @var CommonSectionInterface */
-    private $newEntry;
-
     /** @var JsonResponse */
     private $jsonResponse;
+
+    /** @var CommonSectionInterface */
+    private $originalEntry;
 
     public function setUp()
     {
         $this->request = new Request();
-        $this->responseData = ['foo' => 'bar'];
+        $this->responseData = [];
         $this->jsonResponse = new JsonResponse();
         $this->originalEntry = Mockery::mock(CommonSectionInterface::class);
         $this->newEntry = Mockery::mock(CommonSectionInterface::class);
-        $this->apiEntryUpdated = new ApiEntryUpdated(
+
+        $this->apiBeforeEntryUpdatedAfterValidated = new ApiBeforeEntryUpdatedAfterValidated(
             $this->request,
             $this->responseData,
             $this->jsonResponse,
@@ -58,7 +59,9 @@ final class ApiEntryUpdatedTest extends TestCase
      */
     public function it_should_return_the_request()
     {
-        $this->assertSame($this->request, $this->apiEntryUpdated->getRequest());
+        $result = $this->apiBeforeEntryUpdatedAfterValidated->getRequest();
+
+        $this->assertEquals($this->request, $result);
     }
 
     /**
@@ -67,7 +70,9 @@ final class ApiEntryUpdatedTest extends TestCase
      */
     public function it_should_return_the_response_data()
     {
-        $this->assertSame($this->responseData, $this->apiEntryUpdated->getResponseData());
+        $result = $this->apiBeforeEntryUpdatedAfterValidated->getResponseData();
+
+        $this->assertEquals($this->responseData, $result);
     }
 
     /**
@@ -76,18 +81,9 @@ final class ApiEntryUpdatedTest extends TestCase
      */
     public function it_should_return_the_response()
     {
-        $this->assertSame($this->jsonResponse, $this->apiEntryUpdated->getResponse());
-    }
+        $result = $this->apiBeforeEntryUpdatedAfterValidated->getResponse();
 
-    /**
-     * @test
-     * @covers ::getOriginalEntry
-     */
-    public function it_should_return_the_original_entry()
-    {
-        $result = $this->apiEntryUpdated->getOriginalEntry();
-
-        $this->assertSame($this->originalEntry, $result);
+        $this->assertEquals($this->jsonResponse, $result);
     }
 
     /**
@@ -96,8 +92,19 @@ final class ApiEntryUpdatedTest extends TestCase
      */
     public function it_should_return_the_new_entry()
     {
-        $result = $this->apiEntryUpdated->getNewEntry();
+        $result = $this->apiBeforeEntryUpdatedAfterValidated->getNewEntry();
 
-        $this->assertSame($this->newEntry, $result);
+        $this->assertEquals($this->newEntry, $result);
+    }
+
+    /**
+     * @test
+     * @covers ::getOriginalEntry
+     */
+    public function it_should_return_the_original_entry()
+    {
+        $result = $this->apiBeforeEntryUpdatedAfterValidated->getOriginalEntry();
+
+        $this->assertEquals($this->originalEntry, $result);
     }
 }

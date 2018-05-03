@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-declare (strict_types = 1);
+declare(strict_types=1);
 
 namespace Tardigrades\SectionField\Event;
 
@@ -17,19 +17,12 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 
-/**
- * Class ApiEntryUpdated
- *
- * Dispatched after updated entry is saved.
- *
- * @package Tardigrades\SectionField\Event
- */
-class ApiEntryUpdated extends ApiAfterEntryEvent
+class ApiBeforeEntryUpdatedAfterValidated extends ApiCreateEntryValidEvent
 {
-    const NAME = 'api.entry.updated';
+    const NAME = 'api.before.entry.updated.after.validated';
 
     /** @var CommonSectionInterface */
-    protected $originalEntry;
+    private $originalEntry;
 
     public function __construct(
         Request $request,
@@ -42,17 +35,11 @@ class ApiEntryUpdated extends ApiAfterEntryEvent
         $this->originalEntry = $originalEntry;
     }
 
-    /**
-     * The Section Entry Entity that was replaced
-     */
     public function getOriginalEntry(): CommonSectionInterface
     {
         return $this->originalEntry;
     }
 
-    /**
-     * The new Section Entry Entity
-     */
     public function getNewEntry(): CommonSectionInterface
     {
         return $this->entry;

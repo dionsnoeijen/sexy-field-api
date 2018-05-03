@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Tardigrades\SectionField\Event;
 
 use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 
@@ -32,14 +33,22 @@ abstract class ApiCreateEntryValidEvent extends Event
     protected $request;
 
     /** @var array */
+    protected $responseData;
+
+    /** @var JsonResponse */
     protected $response;
 
     /** @var CommonSectionInterface */
     protected $entry;
 
-    public function __construct(Request $request,  array $response, CommonSectionInterface $entry)
-    {
+    public function __construct(
+        Request $request,
+        array $responseData,
+        JsonResponse $response,
+        CommonSectionInterface $entry
+    ) {
         $this->request = $request;
+        $this->responseData = $responseData;
         $this->response = $response;
         $this->entry = $entry;
     }
@@ -49,7 +58,12 @@ abstract class ApiCreateEntryValidEvent extends Event
         return $this->request;
     }
 
-    public function getResponse(): array
+    public function getResponseData(): array
+    {
+        return $this->responseData;
+    }
+
+    public function getResponse(): JsonResponse
     {
         return $this->response;
     }
