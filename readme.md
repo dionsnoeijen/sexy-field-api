@@ -43,7 +43,6 @@ The fields `name`, `amount`, `unit` are properties of the ingredient.
 /v1/section/recipe/id/3?fields=id,title,description,recipeType,created,updated,ingredients,name,amount,unit
 ```
 
-
 ## POST requests
 For creating a new recipe, you would have to use a POST request to:
 
@@ -63,5 +62,5 @@ form[recipeType]: vegan
 ## PUT, DELETE and OPTIONS requests
 See [src/config/routing/api.yml](src/config/routing/api.yml)
 
-# Depth control for GET requests
+# Depth control for requests that return an entry
 Nex to ?fields=id,field you can add &depth=3 to control the level of depth in which data is returned.
