@@ -18,6 +18,7 @@ use Tardigrades\Entity\FieldInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy;
 use Tardigrades\SectionField\Api\Serializer\FieldsExclusionStrategy;
+use Tardigrades\SectionField\Api\Serializer\SerializeToArrayInterface;
 use Tardigrades\SectionField\Event\ApiBeforeEntrySavedAfterValidated;
 use Tardigrades\SectionField\Event\ApiBeforeEntryUpdatedAfterValidated;
 use Tardigrades\SectionField\Event\ApiCreateEntry;
@@ -70,6 +71,9 @@ class RestController implements RestControllerInterface
     /** @var EventDispatcherInterface */
     private $dispatcher;
 
+    /** @var SerializeToArrayInterface */
+    private $serialize;
+
     const DEFAULT_RELATIONSHIPS_LIMIT = 100;
     const DEFAULT_RELATIONSHIPS_OFFSET = 0;
 
@@ -87,6 +91,7 @@ class RestController implements RestControllerInterface
      * @param SectionManagerInterface $sectionManager
      * @param RequestStack $requestStack
      * @param EventDispatcherInterface $dispatcher
+     * @param SerializeToArrayInterface $serialize
      */
     public function __construct(
         CreateSectionInterface $createSection,
@@ -95,7 +100,8 @@ class RestController implements RestControllerInterface
         FormInterface $form,
         SectionManagerInterface $sectionManager,
         RequestStack $requestStack,
-        EventDispatcherInterface $dispatcher
+        EventDispatcherInterface $dispatcher,
+        SerializeToArrayInterface $serialize
     ) {
         $this->readSection = $readSection;
         $this->createSection = $createSection;
@@ -104,6 +110,7 @@ class RestController implements RestControllerInterface
         $this->sectionManager = $sectionManager;
         $this->requestStack = $requestStack;
         $this->dispatcher = $dispatcher;
+        $this->serialize = $serialize;
     }
 
     /**
@@ -173,7 +180,7 @@ class RestController implements RestControllerInterface
                     ReadOptions::ID => (int) $id
                 ]))->current();
 
-                $responseData['entry'] = $this->serializeToArray($request, $entry);
+                $responseData['entry'] = $this->serialize->toArray($request, $entry);
                 $jsonResponse->setData($responseData);
 
                 $this->dispatcher->dispatch(
@@ -209,7 +216,7 @@ class RestController implements RestControllerInterface
                 ReadOptions::ID => (int)$id
             ]))->current();
 
-            $responseData = $this->serializeToArray($request, $entry);
+            $responseData = $this->serialize->toArray($request, $entry);
             $jsonResponse = new JsonResponse($responseData, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
 
             $this->dispatcher->dispatch(
@@ -244,7 +251,7 @@ class RestController implements RestControllerInterface
                 ReadOptions::SLUG => $slug
             ]))->current();
 
-            $responseData = $this->serializeToArray($request, $entry);
+            $responseData = $this->serialize->toArray($request, $entry);
             $jsonResponse = new JsonResponse($responseData, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
 
             $this->dispatcher->dispatch(
@@ -303,7 +310,7 @@ class RestController implements RestControllerInterface
 
             /** @var CommonSectionInterface $entry */
             foreach ($entries as $entry) {
-                $responseData[] = $this->serializeToArray($request, $entry);
+                $responseData[] = $this->serialize->toArray($request, $entry);
             }
             $jsonResponse = new JsonResponse(
                 $responseData,
@@ -356,7 +363,7 @@ class RestController implements RestControllerInterface
 
             /** @var CommonSectionInterface $entry */
             foreach ($entries as $entry) {
-                $responseData[] = $this->serializeToArray($request, $entry);
+                $responseData[] = $this->serialize->toArray($request, $entry);
             }
             $jsonResponse = new JsonResponse(
                 $responseData,
@@ -717,23 +724,6 @@ class RestController implements RestControllerInterface
         return null;
     }
 
-    private function getContext(Request $request): SerializationContext
-    {
-        $fields = $request->get('fields', ['id']);
-        $depth = $request->get('depth', 20);
-        $depth = is_numeric($depth) ? (int)$depth : 20;
-
-        if (is_string($fields)) {
-            $fields = explode(',', $fields);
-        }
-
-        $context = new SerializationContext();
-        $context->addExclusionStrategy(new FieldsExclusionStrategy($fields));
-        $context->addExclusionStrategy(new DepthExclusionStrategy($depth));
-
-        return $context;
-    }
-
     /**
      * @param SymfonyFormInterface $form
      * @param JsonResponse $jsonResponse
@@ -751,7 +741,7 @@ class RestController implements RestControllerInterface
             $responseData['success'] = true;
             $responseData['errors'] = false;
             $responseData['code'] = JsonResponse::HTTP_OK;
-            $responseData['entry'] = $this->serializeToArray($request, $data);
+            $responseData['entry'] = $this->serialize->toArray($request, $data);
         } catch (\Exception $exception) {
             $responseData['code'] = JsonResponse::HTTP_INTERNAL_SERVER_ERROR;
             $responseData['exception'] = $exception->getMessage();
@@ -1116,27 +1106,5 @@ class RestController implements RestControllerInterface
         return new JsonResponse([
             'message' => $exception->getMessage()
         ], $statusCode, $this->getDefaultResponseHeaders($request));
-    }
-
-    /**
-     * This will serialize entities into a associative array, using keys as they are
-     * in the entity. (By default jms will use snake cased naming, it's reverted to
-     * camel case)
-     *
-     * @param Request $request
-     * @param CommonSectionInterface $entry
-     * @return array
-     */
-    private function serializeToArray(Request $request, CommonSectionInterface $entry): array
-    {
-        $serializer = SerializerBuilder::create()
-            ->setPropertyNamingStrategy(
-                new SerializedNameAnnotationStrategy(
-                    new IdenticalPropertyNamingStrategy()
-                )
-            )
-            ->build();
-
-        return $serializer->toArray($entry, $this->getContext($request));
     }
 }

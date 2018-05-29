@@ -18,6 +18,7 @@ use Tardigrades\Entity\Field;
 use Tardigrades\Entity\FieldType;
 use Tardigrades\Entity\SectionInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
+use Tardigrades\SectionField\Api\Serializer\SerializeToArrayInterface;
 use Tardigrades\SectionField\Event\ApiBeforeEntrySavedAfterValidated;
 use Tardigrades\SectionField\Event\ApiBeforeEntryUpdatedAfterValidated;
 use Tardigrades\SectionField\Event\ApiCreateEntry;
@@ -72,6 +73,9 @@ class RestControllerTest extends TestCase
     /** @var EventDispatcherInterface|Mockery\Mock */
     private $dispatcher;
 
+    /** @var SerializeToArrayInterface|Mockery\MockInterface */
+    private $serialize;
+
     /** @var  RestController */
     private $controller;
 
@@ -84,6 +88,7 @@ class RestControllerTest extends TestCase
         $this->form = Mockery::mock(FormInterface::class);
         $this->sectionManager = Mockery::mock(SectionManagerInterface::class);
         $this->dispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $this->serialize = Mockery::mock(SerializeToArrayInterface::class);
 
         $this->controller = new RestController(
             $this->createSection,
@@ -92,7 +97,8 @@ class RestControllerTest extends TestCase
             $this->form,
             $this->sectionManager,
             $this->requestStack,
-            $this->dispatcher
+            $this->dispatcher,
+            $this->serialize
         );
     }
 
@@ -655,6 +661,8 @@ class RestControllerTest extends TestCase
     {
         $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
 
+        $this->serialize->shouldReceive('toArray')->twice();
+
         $this->requestStack->shouldReceive('getCurrentRequest')
             ->andReturn($request);
 
@@ -671,6 +679,7 @@ class RestControllerTest extends TestCase
 
         $response = $this->controller->getEntryById('sexyHandle', '90000');
         $this->assertSame('[]', $response->getContent());
+
 
         $response = $this->controller->getEntryBySlug('sexyHandle', 'slug');
         $this->assertSame('[]', $response->getContent());
@@ -721,6 +730,8 @@ class RestControllerTest extends TestCase
                 Mockery::type(ApiEntriesFetched::class)
             ]);
 
+        $this->serialize->shouldReceive('toArray')->twice();
+
         $response = $this->controller->getEntriesByFieldValue($sectionHandle, $fieldHandle);
 
         $this->assertSame('[[],[]]', $response->getContent());
@@ -741,6 +752,8 @@ class RestControllerTest extends TestCase
         $limit = 100;
         $orderBy = 'name';
         $sort = 'desc';
+
+        $this->serialize->shouldReceive('toArray')->twice();
 
         $request = new Request([
             'value' => $fieldValue,
@@ -834,6 +847,8 @@ class RestControllerTest extends TestCase
                 ])
             );
 
+        $this->serialize->shouldReceive('toArray')->twice();
+
         $response = $this->controller->getEntries('sexy');
 
         $this->assertSame('[[],[]]', $response->getContent());
@@ -900,6 +915,8 @@ class RestControllerTest extends TestCase
 
         $this->requestStack->shouldReceive('getCurrentRequest')
             ->andReturn($mockedRequest);
+
+        $this->serialize->shouldReceive('toArray')->once();
 
         $response = $this->controller->createEntry('sexy');
         $this->assertSame(
@@ -1046,6 +1063,8 @@ class RestControllerTest extends TestCase
         $this->requestStack->shouldReceive('getCurrentRequest')
             ->times(4)
             ->andReturn($request);
+
+        $this->serialize->shouldReceive('toArray')->twice();
 
         $originalEntryMock = Mockery::mock(CommonSectionInterface::class);
         $iteratorMock = Mockery::mock(\ArrayIterator::class);

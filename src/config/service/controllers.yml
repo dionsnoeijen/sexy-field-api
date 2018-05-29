@@ -1,6 +1,11 @@
 services:
-  rest.controller:
-    class: Tardigrades\SectionField\Api\Controller\RestController
+  Tardigrades\SectionField\Api\Serializer\SerializeToArray:
+    public: false
+    arguments:
+      - '%kernel.cache_dir%'
+
+  Tardigrades\SectionField\Api\Controller\RestController:
+    public: false
     arguments:
       - '@section_field.create.section'
       - '@section_field.read.section'
@@ -9,3 +14,4 @@ services:
       - '@section_field.manager.doctrine.section_manager'
       - '@request_stack'
       - '@event_dispatcher'
+      - '@Tardigrades\SectionField\Api\Serializer\SerializeToArray'
