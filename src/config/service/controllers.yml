@@ -15,3 +15,5 @@ services:
       - '@request_stack'
       - '@event_dispatcher'
       - '@Tardigrades\SectionField\Api\Serializer\SerializeToArray'
+
+  rest.controller: '@Tardigrades\SectionField\Api\Controller\RestController'     
