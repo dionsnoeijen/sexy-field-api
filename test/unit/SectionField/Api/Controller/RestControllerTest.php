@@ -820,6 +820,10 @@ class RestControllerTest extends TestCase
             ->andReturn('');
 
         $mockRequest->shouldReceive('get')
+            ->with('fields', null)
+            ->andReturn(['id']);
+
+        $mockRequest->shouldReceive('get')
             ->with('depth', 20)
             ->andReturn(20);
 
@@ -905,7 +909,8 @@ class RestControllerTest extends TestCase
             ]);
 
         $mockedRequest = Mockery::mock(Request::class)->makePartial();
-        $mockedRequest->shouldReceive('get')->with('form')
+        $mockedRequest->shouldReceive('get')
+            ->with('form')
             ->andReturn(['no']);
 
         $this->createSection->shouldReceive('save')

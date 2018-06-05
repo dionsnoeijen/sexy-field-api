@@ -110,6 +110,7 @@ class RestController implements RestControllerInterface
         $this->sectionManager = $sectionManager;
         $this->requestStack = $requestStack;
         $this->dispatcher = $dispatcher;
+        $this->serialize = $serialize;
     }
 
     /**
@@ -351,6 +352,7 @@ class RestController implements RestControllerInterface
         $limit = $request->get('limit', 100);
         $orderBy = $request->get('orderBy', 'created');
         $sort = $request->get('sort', 'DESC');
+        $fields = $request->get('fields', null);
 
         try {
             $entries = $this->readSection->read(ReadOptions::fromArray([
@@ -358,7 +360,7 @@ class RestController implements RestControllerInterface
                 ReadOptions::OFFSET => (int) $offset,
                 ReadOptions::LIMIT => (int) $limit,
                 ReadOptions::ORDER_BY => [ $orderBy => strtolower($sort) ],
-                ReadOptions::FETCH_FIELDS => $request->get('fields', null)
+                ReadOptions::FETCH_FIELDS => $fields
             ]));
             $responseData = [];
             foreach ($entries as $entry) {
