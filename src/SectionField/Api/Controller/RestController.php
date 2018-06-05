@@ -110,7 +110,6 @@ class RestController implements RestControllerInterface
         $this->sectionManager = $sectionManager;
         $this->requestStack = $requestStack;
         $this->dispatcher = $dispatcher;
-        $this->serialize = $serialize;
     }
 
     /**
