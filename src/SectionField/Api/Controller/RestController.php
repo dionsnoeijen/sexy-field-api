@@ -50,29 +50,31 @@ use Tardigrades\SectionField\ValueObject\SectionFormOptions;
 class RestController implements RestControllerInterface
 {
     /** @var ReadSectionInterface */
-    private $readSection;
+    protected $readSection;
 
     /** @var CreateSectionInterface */
-    private $createSection;
+    protected $createSection;
 
     /** @var DeleteSectionInterface */
-    private $deleteSection;
+    protected $deleteSection;
 
     /** @var FormInterface */
-    private $form;
+    protected $form;
 
     /** @var SectionManagerInterface */
-    private $sectionManager;
+    protected $sectionManager;
 
     /** @var RequestStack */
-    private $requestStack;
+    protected $requestStack;
 
     /** @var EventDispatcherInterface */
-    private $dispatcher;
+    protected $dispatcher;
+
+    /** @var SerializeToArrayInterface */
+    protected $serialize;
 
     const DEFAULT_RELATIONSHIPS_LIMIT = 100;
     const DEFAULT_RELATIONSHIPS_OFFSET = 0;
-
     const OPTIONS_CALL = 'options';
 
     /** @var string */
@@ -87,6 +89,7 @@ class RestController implements RestControllerInterface
      * @param SectionManagerInterface $sectionManager
      * @param RequestStack $requestStack
      * @param EventDispatcherInterface $dispatcher
+     * @param SerializeToArrayInterface $serialize
      */
     public function __construct(
         CreateSectionInterface $createSection,
@@ -95,7 +98,8 @@ class RestController implements RestControllerInterface
         FormInterface $form,
         SectionManagerInterface $sectionManager,
         RequestStack $requestStack,
-        EventDispatcherInterface $dispatcher
+        EventDispatcherInterface $dispatcher,
+        SerializeToArrayInterface $serialize
     ) {
         $this->readSection = $readSection;
         $this->createSection = $createSection;
@@ -104,88 +108,7 @@ class RestController implements RestControllerInterface
         $this->sectionManager = $sectionManager;
         $this->requestStack = $requestStack;
         $this->dispatcher = $dispatcher;
-    }
-
-    /**
-     * GET information about the section so you can build
-     * awesome forms in your spa, or whatever you need it for.
-     *
-     * You can add options for relationships like this:
-     *
-     * ?options=someRelationshipFieldHandle|limit:100|offset:0
-     *
-     * The limit and offset defaults to:
-     * limit: 100
-     * offset: 0
-     *
-     * @param string $sectionHandle
-     * @param string $id
-     * @return JsonResponse
-     */
-    public function getSectionInfo(
-        string $sectionHandle,
-        string $id = null
-    ): JsonResponse {
-
-        $request = $this->requestStack->getCurrentRequest();
-
-        $optionsResponse = $this->preFlightOptions($request, self::ALLOWED_HTTP_METHODS);
-        if ($optionsResponse) {
-            return $optionsResponse;
-        }
-
-        try {
-            $responseData = [];
-
-            $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
-
-            $responseData['name'] = (string) $section->getName();
-            $responseData['handle'] = (string) $section->getHandle();
-
-            $fieldProperties = $this->getEntityProperties($sectionHandle);
-
-            /** @var FieldInterface $field */
-            foreach ($section->getFields() as $field) {
-                $fieldInfo = [(string) $field->getHandle() => $field->getConfig()->toArray()['field']];
-
-                if ((string) $field->getFieldType()->getFullyQualifiedClassName() === Relationship::class) {
-                    $fieldInfo = $this->getRelationshipsTo($request, $field, $fieldInfo, $sectionHandle, (int) $id);
-                }
-
-                $fieldInfo = $this->matchFormFieldsWithConfig($fieldProperties, $fieldInfo);
-
-                $responseData['fields'][] = $fieldInfo;
-            }
-
-
-            $responseData = array_merge($responseData, $section->getConfig()->toArray());
-            $responseData['fields'] = $this->orderFields($responseData);
-
-            $jsonResponse = new JsonResponse(
-                $responseData,
-                JsonResponse::HTTP_OK,
-                $this->getDefaultResponseHeaders($request)
-            );
-
-            if (!is_null($id)) {
-                $entry = $this->readSection->read(ReadOptions::fromArray([
-                    ReadOptions::SECTION => $sectionHandle,
-                    ReadOptions::ID => (int) $id
-                ]))->current();
-
-                $responseData['entry'] = $this->serializeToArray($request, $entry);
-                $jsonResponse->setData($responseData);
-
-                $this->dispatcher->dispatch(
-                    ApiEntryFetched::NAME,
-                    new ApiEntryFetched($request, $responseData, $jsonResponse, $entry)
-                );
-            }
-
-            return $jsonResponse;
-        } catch (\Exception $exception) {
-            return $this->errorResponse($request, $exception);
-        }
+        $this->serialize = $serialize;
     }
 
     /**
@@ -209,7 +132,7 @@ class RestController implements RestControllerInterface
                 ReadOptions::ID => (int)$id
             ]))->current();
 
-            $responseData = $this->serializeToArray($request, $entry);
+            $responseData = $this->serialize->toArray($request, $entry);
             $jsonResponse = new JsonResponse($responseData, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
 
             $this->dispatcher->dispatch(
@@ -244,7 +167,7 @@ class RestController implements RestControllerInterface
                 ReadOptions::SLUG => $slug
             ]))->current();
 
-            $responseData = $this->serializeToArray($request, $entry);
+            $responseData = $this->serialize->toArray($request, $entry);
             $jsonResponse = new JsonResponse($responseData, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
 
             $this->dispatcher->dispatch(
@@ -291,19 +214,20 @@ class RestController implements RestControllerInterface
         try {
             $readOptions = [
                 ReadOptions::SECTION => $sectionHandle,
-                ReadOptions::FIELD => [
-                    $fieldHandle => $fieldValue
-                ],
+                ReadOptions::FIELD => [ $fieldHandle => $fieldValue ],
                 ReadOptions::OFFSET => (int) $offset,
                 ReadOptions::LIMIT => (int) $limit,
-                ReadOptions::ORDER_BY => [ $orderBy => strtolower($sort) ]
+                ReadOptions::ORDER_BY => [ $orderBy => strtolower($sort) ],
+                ReadOptions::FETCH_FIELDS => $request->get('fields', null)
             ];
             $entries = $this->readSection->read(ReadOptions::fromArray($readOptions));
             $responseData = [];
-
-            /** @var CommonSectionInterface $entry */
             foreach ($entries as $entry) {
-                $responseData[] = $this->serializeToArray($request, $entry);
+                if ($entry instanceof CommonSectionInterface) {
+                    $responseData[] = $this->serialize->toArray($request, $entry);
+                } else {
+                    $responseData[] = $entry;
+                }
             }
             $jsonResponse = new JsonResponse(
                 $responseData,
@@ -344,19 +268,23 @@ class RestController implements RestControllerInterface
         $limit = $request->get('limit', 100);
         $orderBy = $request->get('orderBy', 'created');
         $sort = $request->get('sort', 'DESC');
+        $fields = $request->get('fields', null);
 
         try {
             $entries = $this->readSection->read(ReadOptions::fromArray([
                 ReadOptions::SECTION => $sectionHandle,
                 ReadOptions::OFFSET => (int) $offset,
                 ReadOptions::LIMIT => (int) $limit,
-                ReadOptions::ORDER_BY => [ $orderBy => strtolower($sort) ]
+                ReadOptions::ORDER_BY => [ $orderBy => strtolower($sort) ],
+                ReadOptions::FETCH_FIELDS => $fields
             ]));
             $responseData = [];
-
-            /** @var CommonSectionInterface $entry */
             foreach ($entries as $entry) {
-                $responseData[] = $this->serializeToArray($request, $entry);
+                if ($entry instanceof CommonSectionInterface) {
+                    $responseData[] = $this->serialize->toArray($request, $entry);
+                } else {
+                    $responseData[] = $entry;
+                }
             }
             $jsonResponse = new JsonResponse(
                 $responseData,
@@ -703,7 +631,7 @@ class RestController implements RestControllerInterface
      * @param string $allowMethods
      * @return null|JsonResponse
      */
-    private function preFlightOptions(Request $request, string $allowMethods = 'OPTIONS'): ?JsonResponse
+    protected function preFlightOptions(Request $request, string $allowMethods = 'OPTIONS'): ?JsonResponse
     {
         if (strtolower($request->getMethod()) === self::OPTIONS_CALL) {
             $origin = $request->headers->get('Origin');
@@ -715,23 +643,6 @@ class RestController implements RestControllerInterface
         }
 
         return null;
-    }
-
-    private function getContext(Request $request): SerializationContext
-    {
-        $fields = $request->get('fields', ['id']);
-        $depth = $request->get('depth', 20);
-        $depth = is_numeric($depth) ? (int)$depth : 20;
-
-        if (is_string($fields)) {
-            $fields = explode(',', $fields);
-        }
-
-        $context = new SerializationContext();
-        $context->addExclusionStrategy(new FieldsExclusionStrategy($fields));
-        $context->addExclusionStrategy(new DepthExclusionStrategy($depth));
-
-        return $context;
     }
 
     /**
@@ -751,7 +662,7 @@ class RestController implements RestControllerInterface
             $responseData['success'] = true;
             $responseData['errors'] = false;
             $responseData['code'] = JsonResponse::HTTP_OK;
-            $responseData['entry'] = $this->serializeToArray($request, $data);
+            $responseData['entry'] = $this->serialize->toArray($request, $data);
         } catch (\Exception $exception) {
             $responseData['code'] = JsonResponse::HTTP_INTERNAL_SERVER_ERROR;
             $responseData['exception'] = $exception->getMessage();
@@ -766,7 +677,7 @@ class RestController implements RestControllerInterface
      * @param SymfonyFormInterface $form
      * @return array
      */
-    private function getFormErrors(SymfonyFormInterface $form): array
+    protected function getFormErrors(SymfonyFormInterface $form): array
     {
         $errors = [];
 
@@ -794,7 +705,7 @@ class RestController implements RestControllerInterface
      * Symfony doesn't know how to handle put.
      * Transform put data to POST.
      */
-    private function putToPost(): void
+    protected function putToPost(): void
     {
         $request = $this->requestStack->getCurrentRequest();
         $put = $request->getContent();
@@ -804,221 +715,11 @@ class RestController implements RestControllerInterface
     }
 
     /**
-     * This is tricky, the form requires the properties from the entity
-     * as their name="form[entityProperty]" but this doesn't
-     * reflect what is configured because of pluralizing and/or relationship
-     * fields that would not use the configured handle but the "to" or "as"
-     * field. Find a better solution for this problem.
-     *
-     * @param string $sectionHandle
-     * @return array
-     */
-    private function getEntityProperties(string $sectionHandle): array
-    {
-        $form = $this->form->buildFormForSection(
-            $sectionHandle,
-            $this->requestStack,
-            null,
-            false
-        )->getData();
-        try {
-            $reflect = new \ReflectionClass($form);
-            $properties = array_map(function ($data) {
-                return $data->name;
-            }, $reflect->getProperties());
-
-            return $properties;
-        } catch (\ReflectionException $exception) {
-            //
-        }
-    }
-
-    private function matchFormFieldsWithConfig(array $entityProperties, array $fieldInfo): array
-    {
-        $newHandle = null;
-        $oldHandle = array_keys($fieldInfo)[0];
-
-        // In case of a faux field, we just want to keep the originally defined handle
-        $useOriginalHandle = false;
-        try {
-            $useOriginalHandle = $fieldInfo[$oldHandle]['generator']['entity']['ignore'];
-        } catch (\Exception $exception) {
-            // Empty because the try merely exists as an advanced isset
-        }
-
-        if (!$useOriginalHandle) {
-            $newHandle = !empty($fieldInfo[$oldHandle]['as']) ?
-                $this->matchesWithInArray($fieldInfo[$oldHandle]['as'], $entityProperties) : null;
-            if (is_null($newHandle)) {
-                $newHandle = !empty($fieldInfo[$oldHandle]['to']) ?
-                    $this->matchesWithInArray($fieldInfo[$oldHandle]['to'], $entityProperties) : null;
-            }
-        }
-
-        if (!is_null($newHandle)) {
-            $update = [];
-            $update[$newHandle] = $fieldInfo[array_keys($fieldInfo)[0]];
-            $update[$newHandle]['handle'] = $newHandle;
-            $update[$newHandle]['originalHandle'] = $oldHandle;
-            return $update;
-        }
-
-        return $fieldInfo;
-    }
-
-    private function matchesWithInArray(string $needle, array $search): ?string
-    {
-        $match = [];
-        foreach ($search as $key => $value) {
-            similar_text($needle, $value, $percent);
-            $match[$key] = $percent;
-        }
-
-        $highestValue = max($match);
-        if ($highestValue > 80 && $highestValue < 100) {
-            $keyHighest = array_keys($match, $highestValue)[0];
-            return $search[$keyHighest];
-        }
-
-        return null;
-    }
-
-    /**
-     * This is gets the potential parameters from the section info request.
-     *
-     * It will transform this:
-     * ?options=someRelationshipFieldHandle|limit:100|offset:0
-     *
-     * Into this:
-     * ['someRelationshipFieldHandle'] => [
-     *    'limit' => 100,
-     *    'offset' => 0
-     * ]
-     * @param Request $request
-     * @return array|null
-     */
-    private function getOptions(Request $request): ?array
-    {
-        $requestOptions = $request->get('options');
-        if (!is_null($requestOptions)) {
-            $requestOptions = explode('|', $requestOptions);
-            $options = [];
-            $fieldHandle = array_shift($requestOptions);
-            $options[$fieldHandle] = [];
-            foreach ($requestOptions as $option) {
-                $keyValue = explode(':', $option);
-                $options[$fieldHandle][$keyValue[0]] = $keyValue[1];
-            }
-            return $options;
-        }
-        return null;
-    }
-
-    /**
-     * Get entries to populate a relationships field
-     *
-     * @param FieldInterface $field
-     * @param Request $request
-     * @param array $fieldInfo
-     * @param string $sectionHandle
-     * @param int|null $id
-     * @return array|null
-     */
-    private function getRelationshipsTo(
-        Request $request,
-        FieldInterface $field,
-        array $fieldInfo,
-        string $sectionHandle,
-        int $id = null
-    ): ?array {
-
-        $fieldHandle = (string) $field->getHandle();
-        $options = $this->getOptions($request);
-
-        if (!empty($fieldInfo[$fieldHandle]['to'])) {
-            try {
-                $sexyFieldInstructions =
-                    !empty($fieldInfo[$fieldHandle]['form']['sexy-field-instructions']['relationship']) ?
-                        $fieldInfo[$fieldHandle]['form']['sexy-field-instructions']['relationship'] : null;
-
-                $readOptions = [
-                    ReadOptions::SECTION => $fieldInfo[$fieldHandle]['to'],
-                    ReadOptions::LIMIT => !empty($options[$fieldHandle]['limit']) ?
-                        (int)$options[$fieldHandle]['limit'] :
-                        ((!empty($sexyFieldInstructions) && !empty($sexyFieldInstructions['limit'])) ?
-                            (int)$sexyFieldInstructions['limit'] :
-                            self::DEFAULT_RELATIONSHIPS_LIMIT),
-                    ReadOptions::OFFSET => !empty($options[$fieldHandle]['offset']) ?
-                        (int)$options[$fieldHandle]['offset'] :
-                        ((!empty($sexyFieldInstructions) && !empty($sexyFieldInstructions['offset'])) ?
-                            (int)$sexyFieldInstructions['offset'] :
-                            self::DEFAULT_RELATIONSHIPS_OFFSET)
-                ];
-
-                if (!empty($sexyFieldInstructions) &&
-                    !empty($sexyFieldInstructions['field']) &&
-                    !empty($sexyFieldInstructions['value'])
-                ) {
-                    if (strpos((string) $sexyFieldInstructions['value'], ',') !== false) {
-                        $sexyFieldInstructions['value'] = explode(',', $sexyFieldInstructions['value']);
-                    }
-                    $readOptions[ReadOptions::FIELD] = [
-                        $sexyFieldInstructions['field'] => $sexyFieldInstructions['value']
-                    ];
-                }
-
-                $nameExpression = [];
-                if (!empty($sexyFieldInstructions) &&
-                    !empty($sexyFieldInstructions['name-expression'])
-                ) {
-                    $nameExpression = explode('|', $sexyFieldInstructions['name-expression']);
-                }
-
-                $to = $this->readSection->read(ReadOptions::fromArray($readOptions));
-                $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']] = [];
-
-                /** @var CommonSectionInterface $entry */
-                foreach ($to as $entry) {
-                    $name = $entry->getDefault();
-                    if ($nameExpression) {
-                        $find = $entry;
-                        foreach ($nameExpression as $method) {
-                            if ($find) {
-                                $find = $find->$method();
-                            }
-                        }
-                        if ($find) {
-                            $name = $find;
-                        }
-                    }
-
-                    $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']][] = [
-                        'id' => $entry->getId(),
-                        'slug' => (string) $entry->getSlug(),
-                        'name' => $name,
-                        'created' => $entry->getCreated(),
-                        'updated' => $entry->getUpdated(),
-                        'selected' => false
-                    ];
-                }
-            } catch (EntryNotFoundException $exception) {
-                $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']]['error'] = $exception->getMessage();
-            }
-
-            if (!empty($id)) {
-                $fieldInfo = $this->setSelectedRelationshipsTo($sectionHandle, $fieldHandle, $fieldInfo, $id);
-            }
-        }
-
-        return $fieldInfo;
-    }
-
-    /**
      * @todo: Make sure the allow headers are configurable.
      * @param $request
      * @return array
      */
-    private function getDefaultResponseHeaders($request): array
+    protected function getDefaultResponseHeaders($request): array
     {
         $origin = $request->headers->get('Origin');
         return [
@@ -1028,85 +729,12 @@ class RestController implements RestControllerInterface
     }
 
     /**
-     * If editing an entry with relationships, mark related as true
-     *
-     * @param string $sectionHandle
-     * @param string $fieldHandle
-     * @param array $fieldInfo
-     * @param int $id
-     * @return array
-     */
-    private function setSelectedRelationshipsTo(
-        string $sectionHandle,
-        string $fieldHandle,
-        array $fieldInfo,
-        int $id
-    ): array {
-        /** @var CommonSectionInterface $editing */
-        $editing = $this->readSection->read(
-            ReadOptions::fromArray([
-                ReadOptions::SECTION => $sectionHandle,
-                ReadOptions::ID => (int)$id
-            ])
-        )->current();
-
-        try {
-
-            $method = !empty($fieldInfo[$fieldHandle]['as']) ?
-                $fieldInfo[$fieldHandle]['as'] :
-                $fieldInfo[$fieldHandle]['to'];
-
-            $relationshipsEntityMethod = 'get' . ucfirst(Inflector::pluralize($method));
-            if ($fieldInfo['kind'] !== Relationship::MANY_TO_ONE &&
-                $fieldInfo['kind'] !== Relationship::ONE_TO_ONE) {
-                $relationshipsEntityMethod = 'get' . ucfirst($method);
-            }
-
-            $related = $editing->{$relationshipsEntityMethod}();
-            $relatedIds = [];
-            foreach ($related as $relation) {
-                $relatedIds[] = $relation->getId();
-            }
-            foreach ($fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']] as &$relatable) {
-                if (!empty($relatable['id']) && in_array($relatable['id'], $relatedIds)) {
-                    $relatable['selected'] = true;
-                }
-            }
-        } catch (\Exception $exception) {
-            // Empty because we can just return the fieldInfo the way it was if the above fails
-        }
-
-        return $fieldInfo;
-    }
-
-    private function orderFields($fields): array
-    {
-        $originalFields = $fields['fields'];
-        $desiredFieldsOrder = $fields['section']['fields'];
-        $originalFieldsOrder = [];
-        $result = [];
-
-        foreach ($originalFields as $field) {
-            $handle = array_keys($field)[0];
-            $handle = !empty($field[$handle]['originalHandle']) ? $field[$handle]['originalHandle'] : $handle;
-            $originalFieldsOrder[] = $handle;
-        }
-
-        foreach ($desiredFieldsOrder as $handle) {
-            $fieldIndex = array_search($handle, $originalFieldsOrder);
-            $result[] = $originalFields[$fieldIndex];
-        }
-
-        return $result;
-    }
-
-    /**
      * Build a JSON response to return when an exception occurs.
      * @param Request $request
      * @param \Exception $exception
      * @return JsonResponse
      */
-    private function errorResponse(Request $request, \Exception $exception): JsonResponse
+    protected function errorResponse(Request $request, \Exception $exception): JsonResponse
     {
         if ($exception instanceof EntryNotFoundException || $exception instanceof SectionNotFoundException) {
             $statusCode = JsonResponse::HTTP_NOT_FOUND;
@@ -1116,27 +744,5 @@ class RestController implements RestControllerInterface
         return new JsonResponse([
             'message' => $exception->getMessage()
         ], $statusCode, $this->getDefaultResponseHeaders($request));
-    }
-
-    /**
-     * This will serialize entities into a associative array, using keys as they are
-     * in the entity. (By default jms will use snake cased naming, it's reverted to
-     * camel case)
-     *
-     * @param Request $request
-     * @param CommonSectionInterface $entry
-     * @return array
-     */
-    private function serializeToArray(Request $request, CommonSectionInterface $entry): array
-    {
-        $serializer = SerializerBuilder::create()
-            ->setPropertyNamingStrategy(
-                new SerializedNameAnnotationStrategy(
-                    new IdenticalPropertyNamingStrategy()
-                )
-            )
-            ->build();
-
-        return $serializer->toArray($entry, $this->getContext($request));
     }
 }
