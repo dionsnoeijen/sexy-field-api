@@ -18,6 +18,7 @@ use Tardigrades\Entity\FieldInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy;
 use Tardigrades\SectionField\Api\Serializer\FieldsExclusionStrategy;
+use Tardigrades\SectionField\Api\Serializer\SerializeToArrayInterface;
 use Tardigrades\SectionField\Event\ApiBeforeEntrySavedAfterValidated;
 use Tardigrades\SectionField\Event\ApiBeforeEntryUpdatedAfterValidated;
 use Tardigrades\SectionField\Event\ApiCreateEntry;
