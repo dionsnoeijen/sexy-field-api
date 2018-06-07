@@ -298,19 +298,20 @@ class RestController implements RestControllerInterface
         try {
             $readOptions = [
                 ReadOptions::SECTION => $sectionHandle,
-                ReadOptions::FIELD => [
-                    $fieldHandle => $fieldValue
-                ],
+                ReadOptions::FIELD => [ $fieldHandle => $fieldValue ],
                 ReadOptions::OFFSET => (int) $offset,
                 ReadOptions::LIMIT => (int) $limit,
-                ReadOptions::ORDER_BY => [ $orderBy => strtolower($sort) ]
+                ReadOptions::ORDER_BY => [ $orderBy => strtolower($sort) ],
+                ReadOptions::FETCH_FIELDS => $request->get('fields', null)
             ];
             $entries = $this->readSection->read(ReadOptions::fromArray($readOptions));
             $responseData = [];
-
-            /** @var CommonSectionInterface $entry */
             foreach ($entries as $entry) {
-                $responseData[] = $this->serialize->toArray($request, $entry);
+                if ($entry instanceof CommonSectionInterface) {
+                    $responseData[] = $this->serialize->toArray($request, $entry);
+                } else {
+                    $responseData[] = $entry;
+                }
             }
             $jsonResponse = new JsonResponse(
                 $responseData,
@@ -351,19 +352,23 @@ class RestController implements RestControllerInterface
         $limit = $request->get('limit', 100);
         $orderBy = $request->get('orderBy', 'created');
         $sort = $request->get('sort', 'DESC');
+        $fields = $request->get('fields', null);
 
         try {
             $entries = $this->readSection->read(ReadOptions::fromArray([
                 ReadOptions::SECTION => $sectionHandle,
                 ReadOptions::OFFSET => (int) $offset,
                 ReadOptions::LIMIT => (int) $limit,
-                ReadOptions::ORDER_BY => [ $orderBy => strtolower($sort) ]
+                ReadOptions::ORDER_BY => [ $orderBy => strtolower($sort) ],
+                ReadOptions::FETCH_FIELDS => $fields
             ]));
             $responseData = [];
-
-            /** @var CommonSectionInterface $entry */
             foreach ($entries as $entry) {
-                $responseData[] = $this->serialize->toArray($request, $entry);
+                if ($entry instanceof CommonSectionInterface) {
+                    $responseData[] = $this->serialize->toArray($request, $entry);
+                } else {
+                    $responseData[] = $entry;
+                }
             }
             $jsonResponse = new JsonResponse(
                 $responseData,

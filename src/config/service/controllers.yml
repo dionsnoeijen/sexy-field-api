@@ -16,4 +16,4 @@ services:
       - '@event_dispatcher'
       - '@Tardigrades\SectionField\Api\Serializer\SerializeToArray'
 
-  rest.controller: '@Tardigrades\SectionField\Api\Controller\RestController'     
+  rest.controller: '@Tardigrades\SectionField\Api\Controller\RestController'
