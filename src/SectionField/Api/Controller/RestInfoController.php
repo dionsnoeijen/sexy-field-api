@@ -261,6 +261,20 @@ class RestInfoController extends RestController implements RestControllerInterfa
                     ];
                 }
 
+                // You can add limitations for the relationship through get options
+                if (!empty($options) &&
+                    !empty($options[$fieldHandle]) &&
+                    !empty($options[$fieldHandle]['join']) &&
+                    !empty($options[$fieldHandle]['value'])
+                ) {
+                    if (strpos((string) $options[$fieldHandle]['value'], ',') !== false) {
+                        $options[$fieldHandle]['value'] = explode(',', $options[$fieldHandle]['value']);
+                    }
+                    $readOptions[ReadOptions::JOIN] = [
+                        $options[$fieldHandle]['join'] => $options[$fieldHandle]['value']
+                    ];
+                }
+
                 // You can have a different name for elements through config
                 $nameExpression = [];
                 if (!empty($sexyFieldInstructions) &&
