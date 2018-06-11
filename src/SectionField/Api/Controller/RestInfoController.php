@@ -212,10 +212,10 @@ class RestInfoController extends RestController implements RestControllerInterfa
     ): ?array {
 
         $fieldHandle = (string) $field->getHandle();
-        $options = $this->getOptions($request);
 
         if (!empty($fieldInfo[$fieldHandle]['to'])) {
             try {
+                $options = $this->getOptions($request);
                 $sexyFieldInstructions =
                     !empty($fieldInfo[$fieldHandle]['form']['sexy-field-instructions']['relationship']) ?
                         $fieldInfo[$fieldHandle]['form']['sexy-field-instructions']['relationship'] : null;
@@ -234,6 +234,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
                             self::DEFAULT_RELATIONSHIPS_OFFSET)
                 ];
 
+                // You can add limitations for the relationship through config
                 if (!empty($sexyFieldInstructions) &&
                     !empty($sexyFieldInstructions['field']) &&
                     !empty($sexyFieldInstructions['value'])
@@ -246,6 +247,21 @@ class RestInfoController extends RestController implements RestControllerInterfa
                     ];
                 }
 
+                // You can add limitations for the relationship through get options
+                if (!empty($options) &&
+                    !empty($options[$fieldHandle]) &&
+                    !empty($options[$fieldHandle]['field']) &&
+                    !empty($options[$fieldHandle]['value'])
+                ) {
+                    if (strpos((string) $options[$fieldHandle]['value'], ',') !== false) {
+                        $options[$fieldHandle]['value'] = explode(',', $options[$fieldHandle]['value']);
+                    }
+                    $readOptions[ReadOptions::FIELD] = [
+                        $options[$fieldHandle]['field'] => $options[$fieldHandle]['value']
+                    ];
+                }
+
+                // You can have a different name for elements through config
                 $nameExpression = [];
                 if (!empty($sexyFieldInstructions) &&
                     !empty($sexyFieldInstructions['name-expression'])
@@ -416,17 +432,23 @@ class RestInfoController extends RestController implements RestControllerInterfa
     private function getOptions(Request $request): ?array
     {
         $requestOptions = $request->get('options');
-        if (!is_null($requestOptions)) {
-            $requestOptions = explode('|', $requestOptions);
-            $options = [];
-            $fieldHandle = array_shift($requestOptions);
+
+        if (is_null($requestOptions)) {
+            return null;
+        }
+
+        $requestOptions = explode(',', $requestOptions);
+        $options = [];
+        foreach ($requestOptions as $requestOption) {
+            $requestOption = explode('|', $requestOption);
+            $fieldHandle = array_shift($requestOption);
             $options[$fieldHandle] = [];
-            foreach ($requestOptions as $option) {
+            foreach ($requestOption as $option) {
                 $keyValue = explode(':', $option);
                 $options[$fieldHandle][$keyValue[0]] = $keyValue[1];
             }
-            return $options;
         }
-        return null;
+
+        return $options;
     }
 }
