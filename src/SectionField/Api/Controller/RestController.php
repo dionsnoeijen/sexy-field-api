@@ -3,21 +3,12 @@ declare (strict_types=1);
 
 namespace Tardigrades\SectionField\Api\Controller;
 
-use Doctrine\Common\Util\Inflector;
-use JMS\Serializer\Naming\IdenticalPropertyNamingStrategy;
-use JMS\Serializer\Naming\SerializedNameAnnotationStrategy;
-use JMS\Serializer\SerializationContext;
-use JMS\Serializer\SerializerBuilder;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
-use Tardigrades\Entity\FieldInterface;
-use Tardigrades\FieldType\Relationship\Relationship;
-use Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy;
-use Tardigrades\SectionField\Api\Serializer\FieldsExclusionStrategy;
 use Tardigrades\SectionField\Api\Serializer\SerializeToArrayInterface;
 use Tardigrades\SectionField\Event\ApiBeforeEntrySavedAfterValidated;
 use Tardigrades\SectionField\Event\ApiBeforeEntryUpdatedAfterValidated;
@@ -38,7 +29,6 @@ use Tardigrades\SectionField\Service\ReadSectionInterface;
 use Tardigrades\SectionField\Service\SectionManagerInterface;
 use Tardigrades\SectionField\Service\ReadOptions;
 use Tardigrades\SectionField\Service\SectionNotFoundException;
-use Tardigrades\SectionField\ValueObject\Handle;
 use Tardigrades\SectionField\ValueObject\SectionFormOptions;
 
 /**
@@ -408,7 +398,7 @@ class RestController implements RestControllerInterface
                 ])
             )->current();
 
-            $form->submit($request->request->get($form->getName()), false);
+            $form->submit($request->get($form->getName()), false);
 
             $jsonResponse = new JsonResponse(
                 $responseData,
@@ -495,7 +485,7 @@ class RestController implements RestControllerInterface
                 ])
             )->current();
 
-            $form->submit($request->request->get($form->getName()), false);
+            $form->submit($request->get($form->getName()), false);
             $jsonResponse = new JsonResponse(
                 $responseData,
                 $responseData['code'],

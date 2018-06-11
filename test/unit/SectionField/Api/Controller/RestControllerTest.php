@@ -46,7 +46,9 @@ use Tardigrades\SectionField\ValueObject\SectionConfig;
 
 /**
  * @coversDefaultClass Tardigrades\SectionField\Api\Controller\RestController
+ *
  * @covers ::<private>
+ * @covers ::<protected>
  */
 class RestControllerTest extends TestCase
 {
@@ -76,7 +78,7 @@ class RestControllerTest extends TestCase
     /** @var SerializeToArrayInterface|Mockery\MockInterface */
     private $serialize;
 
-    /** @var  RestController */
+    /** @var RestController */
     private $controller;
 
     public function setUp()
@@ -105,7 +107,6 @@ class RestControllerTest extends TestCase
     /**
      * @test
      * @covers ::__construct
-     * @covers ::getSectionInfo
      * @covers ::getEntryById
      * @covers ::getEntryBySlug
      * @covers ::getEntriesByFieldValue
@@ -121,7 +122,6 @@ class RestControllerTest extends TestCase
         $allowedMethods = 'OPTIONS, GET, POST, PUT, DELETE';
         $testCases = [
             // method name,    arguments,      allowed HTTP methods
-            ['getSectionInfo', ['foo', "0"], $allowedMethods],
             ['getEntryById', ['foo', "0"], $allowedMethods],
             ['getEntryBySlug', ['foo', 'bar'], $allowedMethods],
             ['getEntriesByFieldValue', ['foo', 'bar'], $allowedMethods],
@@ -153,138 +153,6 @@ class RestControllerTest extends TestCase
             ]);
             $this->assertEquals($this->controller->$method(...$args), $response);
         }
-    }
-
-    /**
-     * @test
-     * @covers ::__construct
-     * @covers ::getSectionInfo
-     */
-    public function it_gets_section_info_of_a_section_without_relationships()
-    {
-        $sectionName = 'Sexy';
-        $sectionHandle = 'sexyHandle';
-        $section = Mockery::mock(SectionInterface::class);
-        $expectedFieldInfo = [
-            'name' => $sectionName,
-            'handle' => $sectionHandle
-        ];
-
-        $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
-
-        $this->requestStack->shouldReceive('getCurrentRequest')
-            ->once()
-            ->andReturn($request);
-
-        $entryMock = Mockery::mock(CommonSectionInterface::class);
-
-        $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
-        $mockedForm->shouldReceive('getData')
-            ->once()
-            ->andReturn($entryMock);
-
-        $this->form->shouldReceive('buildFormForSection')
-            ->once()
-            ->with($sectionHandle, $this->requestStack, null, false)
-            ->andReturn($mockedForm);
-
-        $this->sectionManager->shouldReceive('readByHandle')
-            ->once()
-            ->andReturn($section);
-
-        $section->shouldReceive('getName')
-            ->once()
-            ->andReturn(Name::fromString($sectionName));
-
-        $section->shouldReceive('getHandle')
-            ->once()
-            ->andReturn(Handle::fromString($sectionHandle));
-
-        $section->shouldReceive('getFields')
-            ->once()
-            ->andReturn($this->givenASetOfFieldsForASection());
-
-        $fields = $this->givenASetOfFieldInfo();
-
-        $sectionConfig = SectionConfig::fromArray([
-            'section' => [
-                'name' => 'Some section',
-                'handle' => 'Some handle',
-                'fields' => [
-                    'someHandle',
-                    'someOtherHandle'
-                ],
-                'default' => 'default',
-                'namespace' => 'NameSpace'
-            ]
-        ]);
-        $section->shouldReceive('getConfig')
-            ->once()
-            ->andReturn($sectionConfig);
-
-        $expectedFieldInfo['fields'] = $fields;
-
-        $expectedFieldInfo = array_merge($expectedFieldInfo, $sectionConfig->toArray());
-
-        $expectedResponse = new JsonResponse($expectedFieldInfo, 200, [
-            'Access-Control-Allow-Origin' => 'iamtheorigin.com',
-            'Access-Control-Allow-Credentials' => 'true'
-        ]);
-
-        $response = $this->controller->getSectionInfo('sexyHandle');
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    /**
-     * @test
-     * @covers ::__construct
-     * @covers ::getSectionInfo
-     */
-    public function it_does_not_find_sections()
-    {
-        $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
-
-        $this->requestStack->shouldReceive('getCurrentRequest')
-            ->once()
-            ->andReturn($request);
-
-        $this->sectionManager->shouldReceive('readByHandle')
-            ->once()
-            ->andThrow(SectionNotFoundException::class);
-
-        $expectedResponse = new JsonResponse(['message' => 'Section not found'], 404, [
-            'Access-Control-Allow-Origin' => 'iamtheorigin.com',
-            'Access-Control-Allow-Credentials' => 'true'
-        ]);
-
-        $response = $this->controller->getSectionInfo('foo');
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    /**
-     * @test
-     * @covers ::__construct
-     * @covers ::getSectionInfo
-     */
-    public function it_fails_finding_sections_for_another_reason()
-    {
-        $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
-
-        $this->requestStack->shouldReceive('getCurrentRequest')
-            ->once()
-            ->andReturn($request);
-
-        $this->sectionManager->shouldReceive('readByHandle')
-            ->once()
-            ->andThrow(\Exception::class, "Uh-oh");
-
-        $expectedResponse = new JsonResponse(['message' => 'Uh-oh'], 400, [
-            'Access-Control-Allow-Origin' => 'iamtheorigin.com',
-            'Access-Control-Allow-Credentials' => 'true'
-        ]);
-
-        $response = $this->controller->getSectionInfo('foo');
-        $this->assertEquals($expectedResponse, $response);
     }
 
     /**
@@ -423,231 +291,6 @@ class RestControllerTest extends TestCase
             $response = $this->controller->$method(...$args);
             $this->assertEquals($expectedResponse, $response);
         }
-    }
-
-    /**
-     * @test
-     * @covers ::__construct
-     * @covers ::getSectionInfo
-     * @runInSeparateProcess
-     */
-    public function it_gets_section_info_of_a_section_with_relationships()
-    {
-        $sectionName = 'Even more sexy';
-        $sectionHandle = 'evenMoreSexy';
-        $section = Mockery::mock(SectionInterface::class);
-
-        $expectedFieldInfo = [
-            'name' => $sectionName,
-            'handle' => $sectionHandle
-        ];
-
-        $request = new Request([
-            'options' => 'someRelationshipFieldHandle|limit:100|offset:0'
-        ], [], [], [], [], [
-            'HTTP_ORIGIN' => 'iamtheorigin.com'
-        ]);
-
-        $entryMock = Mockery::mock(CommonSectionInterface::class);
-
-        $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
-        $mockedForm->shouldReceive('getData')
-            ->once()
-            ->andReturn($entryMock);
-
-        $this->form->shouldReceive('buildFormForSection')
-            ->once()
-            ->andReturn($mockedForm);
-
-        $this->sectionManager->shouldReceive('readByHandle')
-            ->once()
-            ->andReturn($section);
-
-        $section->shouldReceive('getName')
-            ->once()
-            ->andReturn(Name::fromString($sectionName));
-
-        $section->shouldReceive('getHandle')
-            ->once()
-            ->andReturn(Handle::fromString($sectionHandle));
-
-        $section->shouldReceive('getFields')
-            ->once()
-            ->andReturn($this->givenASetOfFieldsForASection(true));
-
-        $sectionConfig = SectionConfig::fromArray([
-            'section' => [
-                'name' => 'Some section',
-                'handle' => 'Some handle',
-                'fields' => [
-                    'someHandle',
-                    'someOtherHandle',
-                    'someRelationshipFieldHandle'
-                ],
-                'default' => 'default',
-                'namespace' => 'NameSpace',
-                'sexy-field-instructions' => ['relationship' => 'getName']
-            ]
-        ]);
-        $section->shouldReceive('getConfig')
-            ->once()
-            ->andReturn($sectionConfig);
-
-        $this->requestStack->shouldReceive('getCurrentRequest')
-            ->once()
-            ->andReturn($request);
-
-        $sectionEntitiesTo = new \ArrayIterator();
-        $formattedRecords = $this->givenSomeFormattedToRecords();
-
-        foreach ($formattedRecords as $formattedRecord) {
-            $section = Mockery::mock(CommonSectionInterface::class);
-            $otherSection = Mockery::mock(CommonSectionInterface::class);
-            $yetAnotherSection = Mockery::mock(CommonSectionInterface::class);
-
-            $section->shouldReceive('getFoo')
-                ->once()
-                ->andReturn($otherSection);
-
-            $otherSection->shouldReceive('getBar')
-                ->once()
-                ->andReturn($yetAnotherSection);
-
-            $yetAnotherSection->shouldReceive('getName')
-                ->once()
-                ->andReturn($formattedRecord['name']);
-
-            $section->shouldReceive('getId')
-                ->once()
-                ->andReturn($formattedRecord['id']);
-
-            $section->shouldReceive('getSlug')
-                ->once()
-                ->andReturn($formattedRecord['slug']);
-
-            $section->shouldReceive('getDefault')
-                ->once()
-                ->andReturn($formattedRecord['name']);
-
-            $section->shouldReceive('getCreated')
-                ->once()
-                ->andReturn($formattedRecord['created']);
-
-            $section->shouldReceive('getUpdated')
-                ->once()
-                ->andReturn($formattedRecord['updated']);
-
-            $sectionEntitiesTo->append($section);
-        }
-
-        $expectedFieldInfo['fields'] = $this->givenASetOfFieldInfo(true);
-        $expectedFieldInfo['fields'][2]['someRelationshipFieldHandle']['whatever'] = $formattedRecords;
-
-        $expectedFieldInfo = array_merge($expectedFieldInfo, $sectionConfig->toArray());
-
-        $expectedResponse = new JsonResponse(
-            $expectedFieldInfo,
-            200,
-            [
-                'Access-Control-Allow-Origin' => 'iamtheorigin.com',
-                'Access-Control-Allow-Credentials' => 'true'
-            ]
-        );
-
-        $this->readSection->shouldReceive('read')->andReturn($sectionEntitiesTo);
-
-        $response = $this->controller->getSectionInfo('sexyHandle');
-
-        $this->assertEquals($expectedResponse, $response);
-    }
-
-    /**
-     * @test
-     * @covers ::__construct
-     * @covers ::getSectionInfo
-     * @runInSeparateProcess
-     */
-    public function it_fails_getting_section_info_of_a_section_with_relationships()
-    {
-        $sectionName = 'Even more sexy';
-        $sectionHandle = 'evenMoreSexy';
-        $section = Mockery::mock(SectionInterface::class);
-
-        $expectedFieldInfo = [
-            'name' => $sectionName,
-            'handle' => $sectionHandle
-        ];
-
-        $request = new Request([], [], [], [], [], [
-            'HTTP_ORIGIN' => 'iamtheorigin.com'
-        ]);
-
-        $entryMock = Mockery::mock(CommonSectionInterface::class);
-        $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
-        $mockedForm->shouldReceive('getData')
-            ->once()
-            ->andReturn($entryMock);
-
-        $this->form->shouldReceive('buildFormForSection')
-            ->once()
-            ->andReturn($mockedForm);
-
-        $this->sectionManager->shouldReceive('readByHandle')
-            ->once()
-            ->andReturn($section);
-
-        $section->shouldReceive('getName')
-            ->once()
-            ->andReturn(Name::fromString($sectionName));
-
-        $section->shouldReceive('getHandle')
-            ->once()
-            ->andReturn(Handle::fromString($sectionHandle));
-
-        $section->shouldReceive('getFields')
-            ->once()
-            ->andReturn($this->givenASetOfFieldsForASection(true));
-
-        $sectionConfig = SectionConfig::fromArray([
-            'section' => [
-                'name' => 'Some section',
-                'handle' => 'Some handle',
-                'fields' => [
-                    'someHandle',
-                    'someOtherHandle',
-                    'someRelationshipFieldHandle'
-                ],
-                'default' => 'default',
-                'namespace' => 'NameSpace'
-            ]
-        ]);
-        $section->shouldReceive('getConfig')
-            ->once()
-            ->andReturn($sectionConfig);
-
-        $this->requestStack->shouldReceive('getCurrentRequest')
-            ->once()
-            ->andReturn($request);
-
-        $expectedFieldInfo['fields'] = $this->givenASetOfFieldInfo(true);
-        $expectedFieldInfo['fields'][2]['someRelationshipFieldHandle']['whatever'] = ['error' => 'Entry not found'];
-
-        $expectedFieldInfo = array_merge($expectedFieldInfo, $sectionConfig->toArray());
-
-
-        $this->readSection->shouldReceive('read')->andThrow(EntryNotFoundException::class);
-
-        $response = $this->controller->getSectionInfo('sexyHandle');
-        $expectedResponse = new JsonResponse(
-            $expectedFieldInfo,
-            200,
-            [
-                'Access-Control-Allow-Origin' => 'iamtheorigin.com',
-                'Access-Control-Allow-Credentials' => 'true'
-            ]
-        );
-
-        $this->assertEquals($expectedResponse, $response);
     }
 
     /**
@@ -1192,13 +835,13 @@ class RestControllerTest extends TestCase
 
         $mockedRequest = Mockery::mock(Request::class)->makePartial();
         $mockedRequest->request = Mockery::mock(ParameterBag::class)->makePartial();
-        $mockedRequest->request->shouldReceive('get')
+        $mockedRequest->shouldReceive('get')
             ->with('form')
             ->andReturn(['no']);
 
         $mockedRequest->shouldReceive('getMethod')
             ->andReturn('not options');
-        $mockedRequest->request->shouldReceive('get')
+        $mockedRequest->shouldReceive('get')
             ->with('name of form')
             ->andReturn('foo');
 
@@ -1389,51 +1032,5 @@ class RestControllerTest extends TestCase
         }
 
         return $fields;
-    }
-
-    private function givenSomeFormattedToRecords(): array
-    {
-        return [
-            [
-                'id' => 1,
-                'slug' => 'sleepy-sluggg',
-                'name' => 'Sleepy Slugg',
-                'created' => new \DateTime(),
-                'updated' => new \DateTime(),
-                'selected' => false
-            ],
-            [
-                'id' => 2,
-                'slug' => 'some-slug-slack',
-                'name' => 'Some slack slug',
-                'created' => new \DateTime(),
-                'updated' => new \DateTime(),
-                'selected' => false
-            ],
-            [
-                'id' => 3,
-                'slug' => 'slack-slug-slog',
-                'name' => 'Slack slug slog',
-                'created' => new \DateTime(),
-                'updated' => new \DateTime(),
-                'selected' => false
-            ]
-        ];
-    }
-
-    private function givenASetOfFieldInfo(bool $includeRelationships = false): array
-    {
-        $fieldInfos = [];
-        $fields = $this->givenASetOfFieldsForASection($includeRelationships);
-
-        foreach ($fields as $field) {
-            $fieldInfo = [
-                (string)$field->getHandle() => $field->getConfig()->toArray()['field']
-            ];
-
-            $fieldInfos[] = $fieldInfo;
-        }
-
-        return $fieldInfos;
     }
 }

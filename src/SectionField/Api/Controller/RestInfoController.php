@@ -78,12 +78,14 @@ class RestInfoController extends RestController implements RestControllerInterfa
             );
 
             if (!is_null($id)) {
+                /** @var CommonSectionInterface $entry */
                 $entry = $this->readSection->read(ReadOptions::fromArray([
                     ReadOptions::SECTION => $sectionHandle,
                     ReadOptions::ID => (int) $id
                 ]))->current();
 
                 $responseData['entry'] = $this->serialize->toArray($request, $entry);
+                $responseData = $this->mapEntryToFields($responseData);
                 $jsonResponse->setData($responseData);
 
                 $this->dispatcher->dispatch(
@@ -98,10 +100,48 @@ class RestInfoController extends RestController implements RestControllerInterfa
         }
     }
 
-    /**
-     * @param array $fields
-     * @return array
-     */
+    private function mapEntryToFields(array $responseData): array
+    {
+        foreach ($responseData['fields'] as $key=>&$field) {
+            $fieldHandle = $field[key($field)]['handle'];
+            if (!empty($field[key($field)]['to'])) {
+                $fieldHandle = $field[key($field)]['to'];
+            }
+            if (!empty($field[key($field)]['as'])) {
+                $fieldHandle = $field[key($field)]['as'];
+            }
+
+            try {
+                $mapsTo = explode('|', $field[key($field)]['form']['sexy-field-instructions']['maps-to']);
+            } catch (\Exception $exception) {
+                $mapsTo = $fieldHandle;
+            }
+
+            if (is_array($mapsTo)) {
+                $value = $responseData['entry'];
+                foreach ($mapsTo as $map) {
+                    if (is_string($map) &&
+                        is_array($value) &&
+                        !empty($value[$map])
+                    ) {
+                        $value = $value[$map];
+                    } else {
+                        $value = '';
+                    }
+                }
+            } else {
+                if (!empty($responseData['entry'][$mapsTo])) {
+                    $value = $responseData['entry'][$mapsTo];
+                } else {
+                    $value = '';
+                }
+            }
+            $field[$fieldHandle]['value'] = $value;
+        }
+
+        return $responseData;
+    }
+
     private function orderFields(array $fields): array
     {
         $originalFields = $fields['fields'];
@@ -304,11 +344,6 @@ class RestInfoController extends RestController implements RestControllerInterfa
         return $fieldInfo;
     }
 
-    /**
-     * @param array $entityProperties
-     * @param array $fieldInfo
-     * @return array
-     */
     private function matchFormFieldsWithConfig(array $entityProperties, array $fieldInfo): array
     {
         $newHandle = null;

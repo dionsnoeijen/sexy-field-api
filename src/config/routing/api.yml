@@ -7,7 +7,7 @@ rest.section.all:
 # GET INFORMATION OF SECTION, HOW TO BUILD FORM
 rest.section.info:
   path: /v1/section/info/{sectionHandle}/{id}
-  defaults: { _controller: 'rest.controller:getSectionInfo', id: null }
+  defaults: { _controller: 'rest.info.controller:getSectionInfo', id: null }
   methods: [ GET, OPTIONS ]
 
 # SELECT BY ID
