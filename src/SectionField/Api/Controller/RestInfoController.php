@@ -283,6 +283,14 @@ class RestInfoController extends RestController implements RestControllerInterfa
                     $nameExpression = explode('|', $sexyFieldInstructions['name-expression']);
                 }
 
+                // Maybe you want to add some more fields to the relationship content
+                $addFields = [];
+                if (!empty($sexyFieldInstructions) &&
+                    !empty($sexyFieldInstructions['add-fields'])
+                ) {
+                    $addFields = $sexyFieldInstructions['add-fields'];
+                }
+
                 $to = $this->readSection->read(ReadOptions::fromArray($readOptions));
                 $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']] = [];
 
@@ -301,7 +309,8 @@ class RestInfoController extends RestController implements RestControllerInterfa
                         }
                     }
 
-                    $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']][] = [
+                    // Default relationship data
+                    $data = [
                         'id' => $entry->getId(),
                         'slug' => (string) $entry->getSlug(),
                         'name' => $name,
@@ -309,6 +318,13 @@ class RestInfoController extends RestController implements RestControllerInterfa
                         'updated' => $entry->getUpdated(),
                         'selected' => false
                     ];
+
+                    foreach ($addFields as $field) {
+                        $method = 'get' . ucfirst($field);
+                        $data[$field] = (string) $entry->{$method}();
+                    }
+
+                    $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']][] = $data;
                 }
             } catch (EntryNotFoundException $exception) {
                 $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']]['error'] = $exception->getMessage();
