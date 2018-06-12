@@ -49,24 +49,34 @@ class RestInfoController extends RestController implements RestControllerInterfa
                 'name' => (string) $section->getName(),
                 'handle' => (string) $section->getHandle()
             ];
+
+            $showFields = $this->getFields();
             $fieldProperties = $this->getEntityProperties($sectionHandle);
 
             /** @var FieldInterface $field */
             foreach ($section->getFields() as $field) {
                 $fieldHandle = $this->handleToPropertyName((string) $field->getHandle(), $fieldProperties);
 
-                // Default initial configuration
-                $fieldInfo = [ $fieldHandle => $field->getConfig()->toArray()['field'] ];
+                if (is_null($showFields) || in_array($fieldHandle, $showFields)) {
+                    // Default initial configuration
+                    $fieldInfo = [$fieldHandle => $field->getConfig()->toArray()['field']];
 
-                // If we have a relationship field, get the entries
-                if ((string) $field->getFieldType()->getFullyQualifiedClassName() === Relationship::class) {
-                    $fieldInfo = $this->getRelationshipsTo($fieldHandle, $fieldInfo, $sectionHandle, $fieldProperties, (int)$id);
+                    // If we have a relationship field, get the entries
+                    if ((string) $field->getFieldType()->getFullyQualifiedClassName() === Relationship::class) {
+                        $fieldInfo = $this->getRelationshipsTo(
+                            $fieldHandle,
+                            $fieldInfo,
+                            $sectionHandle,
+                            $fieldProperties,
+                            (int)$id
+                        );
+                    }
+                    $responseData['fields'][] = $fieldInfo;
                 }
-                $responseData['fields'][] = $fieldInfo;
             }
 
             $responseData = array_merge($responseData, $section->getConfig()->toArray());
-            $responseData['fields'] = $this->orderFields($responseData, $fieldProperties);
+            $responseData['fields'] = $this->orderFields($responseData, $fieldProperties, $showFields);
 
             $jsonResponse = new JsonResponse(
                 $responseData,
@@ -135,7 +145,6 @@ class RestInfoController extends RestController implements RestControllerInterfa
             } catch (\Exception $exception) {
                 $mapsTo = $fieldHandle;
             }
-
             if (is_array($mapsTo)) {
                 $find = $entry;
                 foreach ($mapsTo as $property) {
@@ -147,7 +156,6 @@ class RestInfoController extends RestController implements RestControllerInterfa
                 $value = $find ? (string) $find : null;
             } else {
                 try {
-
                     if (strpos(strtolower($fieldHandle), 'slug') !== false) {
                         $method = 'getSlug';
                     } else {
@@ -171,7 +179,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
      * @param array $fieldProperties
      * @return array
      */
-    private function orderFields(array $fields, array $fieldProperties): array
+    private function orderFields(array $fields, array $fieldProperties, array $showFields = null): array
     {
         $originalFields = $fields['fields'];
         $desiredFieldsOrder = $fields['section']['fields'];
@@ -180,12 +188,19 @@ class RestInfoController extends RestController implements RestControllerInterfa
 
         foreach ($originalFields as $field) {
             $handle = array_keys($field)[0];
-            $originalFieldsOrder[] = $handle;
+            if (is_null($showFields) || in_array($handle, $showFields)) {
+                $originalFieldsOrder[] = $handle;
+            }
         }
 
         foreach ($desiredFieldsOrder as $handle) {
-            $fieldIndex = array_search($this->handleToPropertyName($handle, $fieldProperties), $originalFieldsOrder);
-            $result[] = $originalFields[$fieldIndex];
+            if (is_null($showFields) || in_array($handle, $showFields)) {
+                $fieldIndex = array_search(
+                    $this->handleToPropertyName($handle, $fieldProperties),
+                    $originalFieldsOrder
+                );
+                $result[] = $originalFields[$fieldIndex];
+            }
         }
 
         return $result;
@@ -446,7 +461,13 @@ class RestInfoController extends RestController implements RestControllerInterfa
      */
     private function getFields(): ?array
     {
-        $requestOptions = $this->requestStack->getCurrentRequest()->get('fields');
+        $fields = $this->requestStack->getCurrentRequest()->get('fields');
+
+        if (!is_null($fields)) {
+            $fields = array_map('trim', explode(',', $fields));
+        }
+
+        return $fields;
     }
 
     /**
