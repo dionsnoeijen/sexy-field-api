@@ -3,9 +3,7 @@ declare(strict_types=1);
 
 namespace Tardigrades\SectionField\Api\Controller;
 
-use Doctrine\Common\Util\Inflector;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Tardigrades\Entity\FieldInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Event\ApiEntryFetched;
@@ -13,6 +11,7 @@ use Tardigrades\SectionField\Generator\CommonSectionInterface;
 use Tardigrades\SectionField\Service\EntryNotFoundException;
 use Tardigrades\SectionField\Service\ReadOptions;
 use Tardigrades\SectionField\ValueObject\Handle;
+use Tardigrades\SectionField\Service\ReadOptionsInterface;
 
 class RestInfoController extends RestController implements RestControllerInterface
 {
@@ -45,31 +44,38 @@ class RestInfoController extends RestController implements RestControllerInterfa
         }
 
         try {
-            $responseData = [];
             $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
+            $responseData = [
+                'name' => (string) $section->getName(),
+                'handle' => (string) $section->getHandle()
+            ];
 
-            $responseData['name'] = (string) $section->getName();
-            $responseData['handle'] = (string) $section->getHandle();
-
+            $showFields = $this->getFields();
             $fieldProperties = $this->getEntityProperties($sectionHandle);
 
             /** @var FieldInterface $field */
             foreach ($section->getFields() as $field) {
-                $fieldInfo = [
-                    (string) $field->getHandle() => $field->getConfig()->toArray()['field']
-                ];
+                $fieldHandle = $this->handleToPropertyName((string) $field->getHandle(), $fieldProperties);
 
-                if ((string) $field->getFieldType()->getFullyQualifiedClassName() === Relationship::class) {
-                    $fieldInfo = $this->getRelationshipsTo($request, $field, $fieldInfo, $sectionHandle, (int) $id);
+                if (is_null($showFields) || in_array($fieldHandle, $showFields)) {
+                    // Default initial configuration
+                    $fieldInfo = [$fieldHandle => $field->getConfig()->toArray()['field']];
+
+                    // If we have a relationship field, get the entries
+                    if ((string) $field->getFieldType()->getFullyQualifiedClassName() === Relationship::class) {
+                        $fieldInfo = $this->getRelationshipsTo(
+                            $fieldHandle,
+                            $fieldInfo,
+                            $sectionHandle,
+                            (int)$id
+                        );
+                    }
+                    $responseData['fields'][] = $fieldInfo;
                 }
-
-                $fieldInfo = $this->matchFormFieldsWithConfig($fieldProperties, $fieldInfo);
-
-                $responseData['fields'][] = $fieldInfo;
             }
 
             $responseData = array_merge($responseData, $section->getConfig()->toArray());
-            $responseData['fields'] = $this->orderFields($responseData);
+            $responseData['fields'] = $this->orderFields($responseData, $fieldProperties, $showFields);
 
             $jsonResponse = new JsonResponse(
                 $responseData,
@@ -84,8 +90,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
                     ReadOptions::ID => (int) $id
                 ]))->current();
 
-                $responseData['entry'] = $this->serialize->toArray($request, $entry);
-                $responseData = $this->mapEntryToFields($responseData);
+                $responseData = $this->mapEntryToFields($responseData, $entry, $fieldProperties);
                 $jsonResponse->setData($responseData);
 
                 $this->dispatcher->dispatch(
@@ -100,40 +105,64 @@ class RestInfoController extends RestController implements RestControllerInterfa
         }
     }
 
-    private function mapEntryToFields(array $responseData): array
+    /**
+     * Use the handle to convert it to the actual property name
+     *
+     * @param string $handle
+     * @param array $fieldProperties
+     * @return string
+     */
+    private function handleToPropertyName(string $handle, array $fieldProperties): string
     {
+        foreach ($fieldProperties as $propertyName=>$property) {
+            if ($property['handle'] === $handle) {
+                return $propertyName;
+            }
+        }
+
+        return $handle;
+    }
+
+    /**
+     * Make sure the entry values are passed on to the fields
+     *
+     * @param array $responseData
+     * @param CommonSectionInterface $entry
+     * @param array $fieldProperties
+     * @return array
+     */
+    private function mapEntryToFields(
+        array $responseData,
+        CommonSectionInterface $entry,
+        array $fieldProperties
+    ): array {
+
         foreach ($responseData['fields'] as $key=>&$field) {
             $fieldHandle = $field[key($field)]['handle'];
-            if (!empty($field[key($field)]['to'])) {
-                $fieldHandle = $field[key($field)]['to'];
-            }
-            if (!empty($field[key($field)]['as'])) {
-                $fieldHandle = $field[key($field)]['as'];
-            }
-
             try {
                 $mapsTo = explode('|', $field[key($field)]['form']['sexy-field-instructions']['maps-to']);
             } catch (\Exception $exception) {
                 $mapsTo = $fieldHandle;
             }
-
             if (is_array($mapsTo)) {
-                $value = $responseData['entry'];
-                foreach ($mapsTo as $map) {
-                    if (is_string($map) &&
-                        is_array($value) &&
-                        !empty($value[$map])
-                    ) {
-                        $value = $value[$map];
-                    } else {
-                        $value = '';
+                $find = $entry;
+                foreach ($mapsTo as $property) {
+                    $method = 'get' . ucfirst($property);
+                    if ($find) {
+                        $find = $find->$method();
                     }
                 }
+                $value = $find ? (string) $find : null;
             } else {
-                if (!empty($responseData['entry'][$mapsTo])) {
-                    $value = $responseData['entry'][$mapsTo];
-                } else {
-                    $value = '';
+                try {
+                    if (strpos(strtolower($fieldHandle), 'slug') !== false) {
+                        $method = 'getSlug';
+                    } else {
+                        $method = 'get' . ucfirst($this->handleToPropertyName($fieldHandle, $fieldProperties));
+                    }
+                    $value = (string) $entry->$method();
+                } catch (\Exception $exception) {
+                    //
                 }
             }
             $field[$fieldHandle]['value'] = $value;
@@ -142,7 +171,14 @@ class RestInfoController extends RestController implements RestControllerInterfa
         return $responseData;
     }
 
-    private function orderFields(array $fields): array
+    /**
+     * Make sure the fields are returned in the order you have configured them
+     *
+     * @param array $fields
+     * @param array $fieldProperties
+     * @return array
+     */
+    private function orderFields(array $fields, array $fieldProperties, array $showFields = null): array
     {
         $originalFields = $fields['fields'];
         $desiredFieldsOrder = $fields['section']['fields'];
@@ -151,129 +187,61 @@ class RestInfoController extends RestController implements RestControllerInterfa
 
         foreach ($originalFields as $field) {
             $handle = array_keys($field)[0];
-            $handle = !empty($field[$handle]['originalHandle']) ? $field[$handle]['originalHandle'] : $handle;
-            $originalFieldsOrder[] = $handle;
+            if (is_null($showFields) || in_array($handle, $showFields)) {
+                $originalFieldsOrder[] = $handle;
+            }
         }
 
         foreach ($desiredFieldsOrder as $handle) {
-            $fieldIndex = array_search($handle, $originalFieldsOrder);
-            $result[] = $originalFields[$fieldIndex];
+            if (is_null($showFields) || in_array($handle, $showFields)) {
+                $fieldIndex = array_search(
+                    $this->handleToPropertyName($handle, $fieldProperties),
+                    $originalFieldsOrder
+                );
+                $result[] = $originalFields[$fieldIndex];
+            }
         }
 
         return $result;
     }
 
     /**
-     * This is tricky, the form requires the properties from the entity
-     * as their name="form[entityProperty]" but this doesn't
-     * reflect what is configured because of pluralizing and/or relationship
-     * fields that would not use the configured handle but the "to" or "as"
-     * field. Find a better solution for this problem.
+     * Get the built in field mapping
      *
      * @param string $sectionHandle
      * @return array
      */
     private function getEntityProperties(string $sectionHandle): array
     {
-        $form = $this->form->buildFormForSection(
+        $entity = $this->form->buildFormForSection(
             $sectionHandle,
             $this->requestStack,
             null,
             false
         )->getData();
-        try {
-            $reflect = new \ReflectionClass($form);
-            $properties = array_map(function ($data) {
-                return $data->name;
-            }, $reflect->getProperties());
 
-            return $properties;
-        } catch (\ReflectionException $exception) {
-            //
-        }
+        return $entity::FIELDS;
     }
 
     /**
      * Get entries to populate a relationships field
      *
-     * @param FieldInterface $field
-     * @param Request $request
+     * @param string $fieldHandle
      * @param array $fieldInfo
      * @param string $sectionHandle
      * @param int|null $id
      * @return array|null
      */
     private function getRelationshipsTo(
-        Request $request,
-        FieldInterface $field,
+        string $fieldHandle,
         array $fieldInfo,
         string $sectionHandle,
         int $id = null
     ): ?array {
 
-        $fieldHandle = (string) $field->getHandle();
-
         if (!empty($fieldInfo[$fieldHandle]['to'])) {
             try {
-                $options = $this->getOptions($request);
-                $sexyFieldInstructions =
-                    !empty($fieldInfo[$fieldHandle]['form']['sexy-field-instructions']['relationship']) ?
-                        $fieldInfo[$fieldHandle]['form']['sexy-field-instructions']['relationship'] : null;
-
-                $readOptions = [
-                    ReadOptions::SECTION => $fieldInfo[$fieldHandle]['to'],
-                    ReadOptions::LIMIT => !empty($options[$fieldHandle]['limit']) ?
-                        (int)$options[$fieldHandle]['limit'] :
-                        ((!empty($sexyFieldInstructions) && !empty($sexyFieldInstructions['limit'])) ?
-                            (int)$sexyFieldInstructions['limit'] :
-                            self::DEFAULT_RELATIONSHIPS_LIMIT),
-                    ReadOptions::OFFSET => !empty($options[$fieldHandle]['offset']) ?
-                        (int)$options[$fieldHandle]['offset'] :
-                        ((!empty($sexyFieldInstructions) && !empty($sexyFieldInstructions['offset'])) ?
-                            (int)$sexyFieldInstructions['offset'] :
-                            self::DEFAULT_RELATIONSHIPS_OFFSET)
-                ];
-
-                // You can add limitations for the relationship through config
-                if (!empty($sexyFieldInstructions) &&
-                    !empty($sexyFieldInstructions['field']) &&
-                    !empty($sexyFieldInstructions['value'])
-                ) {
-                    if (strpos((string) $sexyFieldInstructions['value'], ',') !== false) {
-                        $sexyFieldInstructions['value'] = explode(',', $sexyFieldInstructions['value']);
-                    }
-                    $readOptions[ReadOptions::FIELD] = [
-                        $sexyFieldInstructions['field'] => $sexyFieldInstructions['value']
-                    ];
-                }
-
-                // You can add limitations for the relationship through get options
-                if (!empty($options) &&
-                    !empty($options[$fieldHandle]) &&
-                    !empty($options[$fieldHandle]['field']) &&
-                    !empty($options[$fieldHandle]['value'])
-                ) {
-                    if (strpos((string) $options[$fieldHandle]['value'], ',') !== false) {
-                        $options[$fieldHandle]['value'] = explode(',', $options[$fieldHandle]['value']);
-                    }
-                    $readOptions[ReadOptions::FIELD] = [
-                        $options[$fieldHandle]['field'] => $options[$fieldHandle]['value']
-                    ];
-                }
-
-                // You can add limitations for the relationship through get options
-                if (!empty($options) &&
-                    !empty($options[$fieldHandle]) &&
-                    !empty($options[$fieldHandle]['join']) &&
-                    !empty($options[$fieldHandle]['value'])
-                ) {
-                    if (strpos((string) $options[$fieldHandle]['value'], ',') !== false) {
-                        $options[$fieldHandle]['value'] = explode(',', $options[$fieldHandle]['value']);
-                    }
-                    $readOptions[ReadOptions::JOIN] = [
-                        $options[$fieldHandle]['join'] => $options[$fieldHandle]['value']
-                    ];
-                }
+                $sexyFieldInstructions = $this->getSexyFieldRelationshipInstructions($fieldInfo, $fieldHandle);
 
                 // You can have a different name for elements through config
                 $nameExpression = [];
@@ -291,12 +259,17 @@ class RestInfoController extends RestController implements RestControllerInterfa
                     $addFields = $sexyFieldInstructions['add-fields'];
                 }
 
-                $to = $this->readSection->read(ReadOptions::fromArray($readOptions));
+                $to = $this->readSection->read(
+                    $this->getRelationshipReadOptions($fieldHandle, $fieldInfo, $sexyFieldInstructions)
+                );
                 $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']] = [];
 
                 /** @var CommonSectionInterface $entry */
                 foreach ($to as $entry) {
+
+                    // Map the name-expression to override naming
                     $name = $entry->getDefault();
+
                     if ($nameExpression) {
                         $find = $entry;
                         foreach ($nameExpression as $method) {
@@ -319,6 +292,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
                         'selected' => false
                     ];
 
+                    // Add data if configured
                     foreach ($addFields as $field) {
                         $method = 'get' . ucfirst($field);
                         $data[$field] = (string) $entry->{$method}();
@@ -331,11 +305,103 @@ class RestInfoController extends RestController implements RestControllerInterfa
             }
 
             if (!empty($id)) {
-                $fieldInfo = $this->setSelectedRelationshipsTo($sectionHandle, $fieldHandle, $fieldInfo, $id);
+                $fieldInfo = $this->setSelectedRelationshipsTo(
+                    $sectionHandle,
+                    $fieldHandle,
+                    $fieldInfo,
+                    $id
+                );
             }
         }
 
         return $fieldInfo;
+    }
+
+    /**
+     * We may have special instructions configured
+     *
+     * @param array $fieldInfo
+     * @param string $fieldHandle
+     * @return array|null
+     */
+    private function getSexyFieldRelationshipInstructions(array $fieldInfo, string $fieldHandle): ?array
+    {
+        return !empty($fieldInfo[$fieldHandle]['form']['sexy-field-instructions']['relationship']) ?
+            $fieldInfo[$fieldHandle]['form']['sexy-field-instructions']['relationship'] : null;
+    }
+
+    /**
+     * For a relationship, we may have options of configured instructions
+     *
+     * @param string $fieldHandle
+     * @param array $fieldInfo
+     * @param array|null $sexyFieldInstructions
+     * @return ReadOptionsInterface
+     */
+    private function getRelationshipReadOptions(
+        string $fieldHandle,
+        array $fieldInfo,
+        array $sexyFieldInstructions = null
+    ): ReadOptionsInterface
+    {
+        $options = $this->getOptions();
+
+        $readOptions = [
+            ReadOptions::SECTION => $fieldInfo[$fieldHandle]['to'],
+            ReadOptions::LIMIT => !empty($options[$fieldHandle]['limit']) ?
+                (int)$options[$fieldHandle]['limit'] :
+                ((!empty($sexyFieldInstructions) && !empty($sexyFieldInstructions['limit'])) ?
+                    (int)$sexyFieldInstructions['limit'] :
+                    self::DEFAULT_RELATIONSHIPS_LIMIT),
+            ReadOptions::OFFSET => !empty($options[$fieldHandle]['offset']) ?
+                (int)$options[$fieldHandle]['offset'] :
+                ((!empty($sexyFieldInstructions) && !empty($sexyFieldInstructions['offset'])) ?
+                    (int)$sexyFieldInstructions['offset'] :
+                    self::DEFAULT_RELATIONSHIPS_OFFSET)
+        ];
+
+        // You can add limitations for the relationship through config
+        if (!empty($sexyFieldInstructions) &&
+            !empty($sexyFieldInstructions['field']) &&
+            !empty($sexyFieldInstructions['value'])
+        ) {
+            if (strpos((string) $sexyFieldInstructions['value'], ',') !== false) {
+                $sexyFieldInstructions['value'] = explode(',', $sexyFieldInstructions['value']);
+            }
+            $readOptions[ReadOptions::FIELD] = [
+                $sexyFieldInstructions['field'] => $sexyFieldInstructions['value']
+            ];
+        }
+
+        // You can add limitations for the relationship through get options
+        if (!empty($options) &&
+            !empty($options[$fieldHandle]) &&
+            !empty($options[$fieldHandle]['field']) &&
+            !empty($options[$fieldHandle]['value'])
+        ) {
+            if (strpos((string) $options[$fieldHandle]['value'], ',') !== false) {
+                $options[$fieldHandle]['value'] = explode(',', $options[$fieldHandle]['value']);
+            }
+            $readOptions[ReadOptions::FIELD] = [
+                $options[$fieldHandle]['field'] => $options[$fieldHandle]['value']
+            ];
+        }
+
+        // You can add limitations for the relationship through get options
+        if (!empty($options) &&
+            !empty($options[$fieldHandle]) &&
+            !empty($options[$fieldHandle]['join']) &&
+            !empty($options[$fieldHandle]['value'])
+        ) {
+            if (strpos((string) $options[$fieldHandle]['value'], ',') !== false) {
+                $options[$fieldHandle]['value'] = explode(',', $options[$fieldHandle]['value']);
+            }
+            $readOptions[ReadOptions::JOIN] = [
+                $options[$fieldHandle]['join'] => $options[$fieldHandle]['value']
+            ];
+        }
+
+        return ReadOptions::fromArray($readOptions);
     }
 
     /**
@@ -362,25 +428,23 @@ class RestInfoController extends RestController implements RestControllerInterfa
         )->current();
 
         try {
-
-            $method = !empty($fieldInfo[$fieldHandle]['as']) ?
-                $fieldInfo[$fieldHandle]['as'] :
-                $fieldInfo[$fieldHandle]['to'];
-
-            $relationshipsEntityMethod = 'get' . ucfirst(Inflector::pluralize($method));
-            if ($fieldInfo['kind'] !== Relationship::MANY_TO_ONE &&
-                $fieldInfo['kind'] !== Relationship::ONE_TO_ONE) {
-                $relationshipsEntityMethod = 'get' . ucfirst($method);
-            }
-
+            $method = $this->handleToPropertyName($fieldHandle, $editing::FIELDS);
+            $relationshipsEntityMethod = 'get' . ucfirst($method);
             $related = $editing->{$relationshipsEntityMethod}();
-            $relatedIds = [];
-            foreach ($related as $relation) {
-                $relatedIds[] = $relation->getId();
-            }
-            foreach ($fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']] as &$relatable) {
-                if (!empty($relatable['id']) && in_array($relatable['id'], $relatedIds)) {
-                    $relatable['selected'] = true;
+            if (!is_null($related)) {
+                $relatedIds = [];
+                if (is_iterable($related)) {
+                    /** @var CommonSectionInterface $relation */
+                    foreach ($related as $relation) {
+                        $relatedIds[] = $relation->getId();
+                    }
+                } else {
+                    $relatedIds[] = $related->getId();
+                }
+                foreach ($fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']] as &$relatable) {
+                    if (!empty($relatable['id']) && in_array($relatable['id'], $relatedIds)) {
+                        $relatable['selected'] = true;
+                    }
                 }
             }
         } catch (\Exception $exception) {
@@ -390,59 +454,20 @@ class RestInfoController extends RestController implements RestControllerInterfa
         return $fieldInfo;
     }
 
-    private function matchFormFieldsWithConfig(array $entityProperties, array $fieldInfo): array
-    {
-        $newHandle = null;
-        $oldHandle = array_keys($fieldInfo)[0];
-
-        // In case of a faux field, we just want to keep the originally defined handle
-        $useOriginalHandle = false;
-        try {
-            $useOriginalHandle = $fieldInfo[$oldHandle]['generator']['entity']['ignore'];
-        } catch (\Exception $exception) {
-            // Empty because the try merely exists as an advanced isset
-        }
-
-        if (!$useOriginalHandle) {
-            $newHandle = !empty($fieldInfo[$oldHandle]['as']) ?
-                $this->matchesWithInArray($fieldInfo[$oldHandle]['as'], $entityProperties) : null;
-            if (is_null($newHandle)) {
-                $newHandle = !empty($fieldInfo[$oldHandle]['to']) ?
-                    $this->matchesWithInArray($fieldInfo[$oldHandle]['to'], $entityProperties) : null;
-            }
-        }
-
-        if (!is_null($newHandle)) {
-            $update = [];
-            $update[$newHandle] = $fieldInfo[array_keys($fieldInfo)[0]];
-            $update[$newHandle]['handle'] = $newHandle;
-            $update[$newHandle]['originalHandle'] = $oldHandle;
-            return $update;
-        }
-
-        return $fieldInfo;
-    }
-
     /**
-     * @param string $needle
-     * @param array $search
-     * @return null|string
+     * You can restrict the fields you desire to see
+     *
+     * @return array|null
      */
-    private function matchesWithInArray(string $needle, array $search): ?string
+    private function getFields(): ?array
     {
-        $match = [];
-        foreach ($search as $key => $value) {
-            similar_text($needle, $value, $percent);
-            $match[$key] = $percent;
+        $fields = $this->requestStack->getCurrentRequest()->get('fields');
+
+        if (!is_null($fields)) {
+            $fields = array_map('trim', explode(',', $fields));
         }
 
-        $highestValue = max($match);
-        if ($highestValue > 80 && $highestValue < 100) {
-            $keyHighest = array_keys($match, $highestValue)[0];
-            return $search[$keyHighest];
-        }
-
-        return null;
+        return $fields;
     }
 
     /**
@@ -456,12 +481,12 @@ class RestInfoController extends RestController implements RestControllerInterfa
      *    'limit' => 100,
      *    'offset' => 0
      * ]
-     * @param Request $request
+     *
      * @return array|null
      */
-    private function getOptions(Request $request): ?array
+    private function getOptions(): ?array
     {
-        $requestOptions = $request->get('options');
+        $requestOptions = $this->requestStack->getCurrentRequest()->get('options');
 
         if (is_null($requestOptions)) {
             return null;
