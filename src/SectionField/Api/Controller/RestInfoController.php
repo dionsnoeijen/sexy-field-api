@@ -67,7 +67,6 @@ class RestInfoController extends RestController implements RestControllerInterfa
                             $fieldHandle,
                             $fieldInfo,
                             $sectionHandle,
-                            $fieldProperties,
                             (int)$id
                         );
                     }
@@ -237,13 +236,12 @@ class RestInfoController extends RestController implements RestControllerInterfa
         string $fieldHandle,
         array $fieldInfo,
         string $sectionHandle,
-        array $fieldProperties,
         int $id = null
     ): ?array {
 
         if (!empty($fieldInfo[$fieldHandle]['to'])) {
             try {
-                $sexyFieldInstructions = $this->getSexyFieldRelationshipInstructions($fieldHandle);
+                $sexyFieldInstructions = $this->getSexyFieldRelationshipInstructions($fieldInfo, $fieldHandle);
 
                 // You can have a different name for elements through config
                 $nameExpression = [];
@@ -271,6 +269,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
 
                     // Map the name-expression to override naming
                     $name = $entry->getDefault();
+
                     if ($nameExpression) {
                         $find = $entry;
                         foreach ($nameExpression as $method) {
@@ -321,10 +320,11 @@ class RestInfoController extends RestController implements RestControllerInterfa
     /**
      * We may have special instructions configured
      *
+     * @param array $fieldInfo
      * @param string $fieldHandle
      * @return array|null
      */
-    private function getSexyFieldRelationshipInstructions(string $fieldHandle): ?array
+    private function getSexyFieldRelationshipInstructions(array $fieldInfo, string $fieldHandle): ?array
     {
         return !empty($fieldInfo[$fieldHandle]['form']['sexy-field-instructions']['relationship']) ?
             $fieldInfo[$fieldHandle]['form']['sexy-field-instructions']['relationship'] : null;

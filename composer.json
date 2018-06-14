@@ -42,7 +42,7 @@
     "tardigrades/sexy-field-field-types-base": "dev-master",
     "phpunit/phpunit": "^6.1",
     "squizlabs/PHP_CodeSniffer": "^3.2",
-    "mockery/mockery": "^0.9.9",
+    "mockery/mockery": "dev-master",
     "mikey179/vfsStream": "^1.6",
     "phing/phing": "^2.16"
   }

@@ -8,34 +8,21 @@ use Doctrine\Common\Collections\Collection;
 use Guzzle\Http\Message\Header\HeaderCollection;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Form\FormError;
-use Symfony\Component\HttpFoundation\HeaderBag;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Tardigrades\Entity\Field;
 use Tardigrades\Entity\FieldType;
 use Tardigrades\Entity\SectionInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Api\Serializer\SerializeToArrayInterface;
-use Tardigrades\SectionField\Event\ApiBeforeEntrySavedAfterValidated;
-use Tardigrades\SectionField\Event\ApiBeforeEntryUpdatedAfterValidated;
-use Tardigrades\SectionField\Event\ApiCreateEntry;
-use Tardigrades\SectionField\Event\ApiDeleteEntry;
-use Tardigrades\SectionField\Event\ApiEntriesFetched;
-use Tardigrades\SectionField\Event\ApiEntryCreated;
-use Tardigrades\SectionField\Event\ApiEntryDeleted;
-use Tardigrades\SectionField\Event\ApiEntryFetched;
-use Tardigrades\SectionField\Event\ApiEntryUpdated;
-use Tardigrades\SectionField\Event\ApiUpdateEntry;
 use Tardigrades\SectionField\Form\FormInterface;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 use Tardigrades\SectionField\Service\CreateSectionInterface;
 use Tardigrades\SectionField\Service\DeleteSectionInterface;
 use Tardigrades\SectionField\Service\EntryNotFoundException;
-use Tardigrades\SectionField\Service\ReadOptions;
 use Tardigrades\SectionField\Service\ReadSectionInterface;
 use Tardigrades\SectionField\Service\SectionManagerInterface;
 use Mockery;
@@ -157,10 +144,10 @@ class RestInfoControllerTest extends TestCase
         $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
 
         $this->requestStack->shouldReceive('getCurrentRequest')
-            ->once()
+            ->twice()
             ->andReturn($request);
 
-        $entryMock = Mockery::mock(CommonSectionInterface::class);
+        $entryMock = Mockery::mock(new SomeSectionEntity())->makePartial();
 
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
         $mockedForm->shouldReceive('getData')
@@ -294,7 +281,7 @@ class RestInfoControllerTest extends TestCase
             'HTTP_ORIGIN' => 'iamtheorigin.com'
         ]);
 
-        $entryMock = Mockery::mock(CommonSectionInterface::class);
+        $entryMock = Mockery::mock(new SomeSectionEntity())->makePartial();
 
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
         $mockedForm->shouldReceive('getData')
@@ -340,7 +327,7 @@ class RestInfoControllerTest extends TestCase
             ->andReturn($sectionConfig);
 
         $this->requestStack->shouldReceive('getCurrentRequest')
-            ->once()
+            ->times(3)
             ->andReturn($request);
 
         $sectionEntitiesTo = new \ArrayIterator();
@@ -428,7 +415,7 @@ class RestInfoControllerTest extends TestCase
             'HTTP_ORIGIN' => 'iamtheorigin.com'
         ]);
 
-        $entryMock = Mockery::mock(CommonSectionInterface::class);
+        $entryMock = Mockery::mock(new SomeSectionEntity())->makePartial();
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
         $mockedForm->shouldReceive('getData')
             ->once()
@@ -472,15 +459,12 @@ class RestInfoControllerTest extends TestCase
             ->andReturn($sectionConfig);
 
         $this->requestStack->shouldReceive('getCurrentRequest')
-            ->once()
+            ->times(3)
             ->andReturn($request);
 
         $expectedFieldInfo['fields'] = $this->givenASetOfFieldInfo(true);
         $expectedFieldInfo['fields'][2]['someRelationshipFieldHandle']['whatever'] = ['error' => 'Entry not found'];
-
         $expectedFieldInfo = array_merge($expectedFieldInfo, $sectionConfig->toArray());
-
-
         $this->readSection->shouldReceive('read')->andThrow(EntryNotFoundException::class);
 
         $response = $this->controller->getSectionInfo('sexyHandle');
@@ -618,5 +602,30 @@ class RestInfoControllerTest extends TestCase
         }
 
         return $fieldInfos;
+    }
+}
+
+class SomeSectionEntity implements CommonSectionInterface {
+
+    const FIELDS = [];
+
+    public function getId(): ?int
+    {
+        // TODO: Implement getId() method.
+    }
+
+    public static function loadValidatorMetadata(ClassMetadata $metadata): void
+    {
+        // TODO: Implement loadValidatorMetadata() method.
+    }
+
+    public function onPrePersist(): void
+    {
+        // TODO: Implement onPrePersist() method.
+    }
+
+    public function onPreUpdate(): void
+    {
+        // TODO: Implement onPreUpdate() method.
     }
 }
