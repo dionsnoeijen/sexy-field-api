@@ -318,7 +318,7 @@ class RestController implements RestControllerInterface
 
         $abortCode = $request->get('abort');
         if ($abortCode) {
-            return new JsonResponse(null, $abortCode);
+            return new JsonResponse(null, $abortCode, $this->getDefaultResponseHeaders($request));
         }
 
         try {
@@ -473,7 +473,7 @@ class RestController implements RestControllerInterface
 
         $abortCode = $request->get('abort');
         if ($abortCode) {
-            return new JsonResponse(null, $abortCode);
+            return new JsonResponse(null, $abortCode, $this->getDefaultResponseHeaders($request));
         }
 
         try {
