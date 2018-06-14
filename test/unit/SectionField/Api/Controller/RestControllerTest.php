@@ -957,19 +957,13 @@ class RestControllerTest extends TestCase
      */
     public function it_should_abort_with_abort_flag_on_update()
     {
-        $request = Mockery::mock(Request::class);
+        $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
+        $request->setMethod('POST');
+        $request->request->set('abort', 409);
+
         $this->requestStack->shouldReceive('getCurrentRequest')->andReturn($request);
 
-        $request->shouldReceive('getMethod')
-            ->once()
-            ->andReturn('POST');
-
         $this->dispatcher->shouldReceive('dispatch');
-
-        $request->shouldReceive('get')
-            ->with('abort')
-            ->once()
-            ->andReturn(409);
 
         $response = $this->controller->updateEntryBySlug('sectionHandle', 'slug');
 
@@ -983,19 +977,13 @@ class RestControllerTest extends TestCase
      */
     public function it_should_abort_with_abort_flag_on_create()
     {
-        $request = Mockery::mock(Request::class);
+        $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
+        $request->setMethod('POST');
+        $request->request->set('abort', 409);
+
         $this->requestStack->shouldReceive('getCurrentRequest')->andReturn($request);
 
-        $request->shouldReceive('getMethod')
-            ->once()
-            ->andReturn('POST');
-
         $this->dispatcher->shouldReceive('dispatch');
-
-        $request->shouldReceive('get')
-            ->with('abort')
-            ->once()
-            ->andReturn(409);
 
         $response = $this->controller->createEntry('sectionHandle');
 
