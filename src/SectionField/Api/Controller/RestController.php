@@ -316,6 +316,11 @@ class RestController implements RestControllerInterface
             new ApiCreateEntry($request, $sectionHandle)
         );
 
+        $abortCode = $request->get('abort');
+        if ($abortCode) {
+            return new JsonResponse(null, $abortCode, $this->getDefaultResponseHeaders($request));
+        }
+
         try {
             $responseData = [ 'code' => JsonResponse::HTTP_OK ];
 
@@ -465,6 +470,11 @@ class RestController implements RestControllerInterface
             ApiUpdateEntry::NAME,
             new ApiUpdateEntry($request, $sectionHandle)
         );
+
+        $abortCode = $request->get('abort');
+        if ($abortCode) {
+            return new JsonResponse(null, $abortCode, $this->getDefaultResponseHeaders($request));
+        }
 
         try {
             $responseData = [ 'code' => JsonResponse::HTTP_OK ];

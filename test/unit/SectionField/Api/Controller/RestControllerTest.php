@@ -3,8 +3,6 @@ declare (strict_types=1);
 
 namespace Tardigrades\SectionField\Api\Controller;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Guzzle\Http\Message\Header\HeaderCollection;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -14,10 +12,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Tardigrades\Entity\Field;
-use Tardigrades\Entity\FieldType;
-use Tardigrades\Entity\SectionInterface;
-use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Api\Serializer\SerializeToArrayInterface;
 use Tardigrades\SectionField\Event\ApiBeforeEntrySavedAfterValidated;
 use Tardigrades\SectionField\Event\ApiBeforeEntryUpdatedAfterValidated;
@@ -39,13 +33,9 @@ use Tardigrades\SectionField\Service\ReadOptions;
 use Tardigrades\SectionField\Service\ReadSectionInterface;
 use Tardigrades\SectionField\Service\SectionManagerInterface;
 use Mockery;
-use Tardigrades\SectionField\Service\SectionNotFoundException;
-use Tardigrades\SectionField\ValueObject\Handle;
-use Tardigrades\SectionField\ValueObject\Name;
-use Tardigrades\SectionField\ValueObject\SectionConfig;
 
 /**
- * @coversDefaultClass Tardigrades\SectionField\Api\Controller\RestController
+ * @coversDefaultClass \Tardigrades\SectionField\Api\Controller\RestController
  *
  * @covers ::<private>
  * @covers ::<protected>
@@ -672,7 +662,7 @@ class RestControllerTest extends TestCase
             ->andReturn($mockedForm);
 
         $mockedRequest = Mockery::mock(Request::class)->makePartial();
-        $mockedRequest->shouldReceive('get')->once();
+        $mockedRequest->shouldReceive('get')->twice();
         $mockedRequest->shouldReceive('getMethod')
             ->andReturn('not options');
 
@@ -839,6 +829,10 @@ class RestControllerTest extends TestCase
             ->with('form')
             ->andReturn(['no']);
 
+        $mockedRequest->shouldReceive('get')
+            ->with('abort')
+            ->andReturn(null);
+
         $mockedRequest->shouldReceive('getMethod')
             ->andReturn('not options');
         $mockedRequest->shouldReceive('get')
@@ -956,81 +950,43 @@ class RestControllerTest extends TestCase
         $this->assertSame('{"success":false}', $response->getContent());
     }
 
-    private function givenASetOfFieldsForASection(bool $includeRelationships = false): Collection
+    /**
+     * @test
+     * @covers ::__construct
+     * @covers ::updateEntryBySlug
+     */
+    public function it_should_abort_with_abort_flag_on_update()
     {
-        $fields = new ArrayCollection();
+        $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
+        $request->setMethod('POST');
+        $request->request->set('abort', 409);
 
-        $fields->add(
-            (new Field())
-                ->setId(1)
-                ->setConfig([
-                    'field' => [
-                        'name' => 'Fieldje',
-                        'handle' => 'fieldje'
-                    ]
-                ])
-                ->setHandle('someHandle')
-                ->setFieldType(
-                    (new FieldType())
-                        ->setFullyQualifiedClassName('Some\\Fully\\Qualified\\Classname')
-                        ->setType('TextInput')
-                        ->setId(1)
-                )
-                ->setName('Some name field')
-        );
+        $this->requestStack->shouldReceive('getCurrentRequest')->andReturn($request);
 
-        $fields->add(
-            (new Field())
-                ->setId(2)
-                ->setConfig([
-                    'field' => [
-                        'name' => 'Nog een fieldje',
-                        'handle' => 'nogEenFieldje'
-                    ]
-                ])
-                ->setHandle('someOtherHandle')
-                ->setFieldType(
-                    (new FieldType())
-                        ->setFullyQualifiedClassName('I\\Am\\The\\Fully\\Qualified\\Classname')
-                        ->setType('TextInput')
-                        ->setId(2)
-                )
-                ->setName('Give me text')
-        );
+        $this->dispatcher->shouldReceive('dispatch');
 
-        if ($includeRelationships) {
-            $fields->add(
-                (new Field())
-                    ->setId(3)
-                    ->setConfig([
-                        'field' => [
-                            'name' => 'Relatie veld',
-                            'handle' => 'someRelationshipFieldHandle',
-                            'to' => 'whatever',
-                            'form' => [
-                                'sexy-field-instructions' => [
-                                    'relationship' => [
-                                        'name-expression' => 'getFoo|getBar|getName',
-                                        'limit' => 75,
-                                        'offset' => 10,
-                                        'field' => 'foo',
-                                        'value' => 'bar,baz'
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ])
-                    ->setHandle('someRelationshipFieldHandle')
-                    ->setFieldType(
-                        (new FieldType())
-                            ->setFullyQualifiedClassName(Relationship::class)
-                            ->setType('Relationship')
-                            ->setId(3)
-                    )
-                    ->setName('Relatie veld')
-            );
-        }
+        $response = $this->controller->updateEntryBySlug('sectionHandle', 'slug');
 
-        return $fields;
+        $this->assertSame($response->getStatusCode(), 409);
+    }
+
+    /**
+     * @test
+     * @covers ::__construct
+     * @covers ::createEntry
+     */
+    public function it_should_abort_with_abort_flag_on_create()
+    {
+        $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
+        $request->setMethod('POST');
+        $request->request->set('abort', 409);
+
+        $this->requestStack->shouldReceive('getCurrentRequest')->andReturn($request);
+
+        $this->dispatcher->shouldReceive('dispatch');
+
+        $response = $this->controller->createEntry('sectionHandle');
+
+        $this->assertSame($response->getStatusCode(), 409);
     }
 }
