@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Tardigrades\SectionField\Api\Serializer\SerializeToArrayInterface;
+use Tardigrades\SectionField\Service\CacheInterface;
 use Tardigrades\SectionField\Event\ApiBeforeEntrySavedAfterValidated;
 use Tardigrades\SectionField\Event\ApiBeforeEntryUpdatedAfterValidated;
 use Tardigrades\SectionField\Event\ApiCreateEntry;
@@ -30,6 +31,7 @@ use Tardigrades\SectionField\Service\SectionManagerInterface;
 use Tardigrades\SectionField\Service\ReadOptions;
 use Tardigrades\SectionField\Service\SectionNotFoundException;
 use Tardigrades\SectionField\ValueObject\SectionFormOptions;
+use Tardigrades\SectionField\ValueObject\Handle;
 
 /**
  * Class RestController
@@ -64,9 +66,17 @@ class RestController implements RestControllerInterface
     /** @var SerializeToArrayInterface */
     protected $serialize;
 
+    /** @var CacheInterface */
+    protected $cache;
+
     const DEFAULT_RELATIONSHIPS_LIMIT = 100;
     const DEFAULT_RELATIONSHIPS_OFFSET = 0;
     const OPTIONS_CALL = 'options';
+
+    const CACHE_CONTEXT_GET_ENTRY_BY_ID = 'get.entry.by.id';
+    const CACHE_CONTEXT_GET_ENTRY_BY_SLUG = 'get.entry.by.slug';
+    const CACHE_CONTEXT_GET_ENTRIES_BY_FIELD_VALUE = 'get.entries.by.field.value';
+    const CACHE_CONTEXT_GET_ENTRIES = 'get.entries';
 
     /** @var string */
     const ALLOWED_HTTP_METHODS = 'OPTIONS, GET, POST, PUT, DELETE';
@@ -81,6 +91,7 @@ class RestController implements RestControllerInterface
      * @param RequestStack $requestStack
      * @param EventDispatcherInterface $dispatcher
      * @param SerializeToArrayInterface $serialize
+     * @param CacheInterface $cache
      */
     public function __construct(
         CreateSectionInterface $createSection,
@@ -90,7 +101,8 @@ class RestController implements RestControllerInterface
         SectionManagerInterface $sectionManager,
         RequestStack $requestStack,
         EventDispatcherInterface $dispatcher,
-        SerializeToArrayInterface $serialize
+        SerializeToArrayInterface $serialize,
+        CacheInterface $cache
     ) {
         $this->readSection = $readSection;
         $this->createSection = $createSection;
@@ -100,6 +112,7 @@ class RestController implements RestControllerInterface
         $this->requestStack = $requestStack;
         $this->dispatcher = $dispatcher;
         $this->serialize = $serialize;
+        $this->cache = $cache;
     }
 
     /**
@@ -118,6 +131,27 @@ class RestController implements RestControllerInterface
         }
 
         try {
+            $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
+
+            try {
+                $this->cache->start(
+                    $section->getConfig()->getFullyQualifiedClassName(),
+                    $this->getFields(),
+                    self::CACHE_CONTEXT_GET_ENTRY_BY_ID,
+                    $id
+                );
+            } catch (\Psr\Cache\InvalidArgumentException $exception) {
+                //
+            }
+
+            if ($this->cache->isHit()) {
+                return new JsonResponse(
+                    $this->cache->get(),
+                    JsonResponse::HTTP_OK,
+                    $this->getDefaultResponseHeaders($request)
+                );
+            }
+
             $entry = $this->readSection->read(ReadOptions::fromArray([
                 ReadOptions::SECTION => $sectionHandle,
                 ReadOptions::ID => (int)$id
@@ -130,6 +164,8 @@ class RestController implements RestControllerInterface
                 ApiEntryFetched::NAME,
                 new ApiEntryFetched($request, $responseData, $jsonResponse, $entry)
             );
+
+            $this->cache->set($responseData);
 
             return $jsonResponse;
         } catch (\Exception $exception) {
@@ -153,6 +189,27 @@ class RestController implements RestControllerInterface
         }
 
         try {
+            $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
+
+            try {
+                $this->cache->start(
+                    $section->getConfig()->getFullyQualifiedClassName(),
+                    $this->getFields(),
+                    self::CACHE_CONTEXT_GET_ENTRY_BY_SLUG,
+                    $slug
+                );
+            } catch (\Psr\Cache\InvalidArgumentException $exception) {
+                //
+            }
+
+            if ($this->cache->isHit()) {
+                return new JsonResponse(
+                    $this->cache->get(),
+                    JsonResponse::HTTP_OK,
+                    $this->getDefaultResponseHeaders($request)
+                );
+            }
+
             $entry = $this->readSection->read(ReadOptions::fromArray([
                 ReadOptions::SECTION => $sectionHandle,
                 ReadOptions::SLUG => $slug
@@ -165,6 +222,8 @@ class RestController implements RestControllerInterface
                 ApiEntryFetched::NAME,
                 new ApiEntryFetched($request, $responseData, $jsonResponse, $entry)
             );
+
+            $this->cache->set($responseData);
 
             return $jsonResponse;
         } catch (\Exception $exception) {
@@ -203,6 +262,27 @@ class RestController implements RestControllerInterface
         $sort = $request->get('sort', 'DESC');
 
         try {
+            $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
+
+            try {
+                $this->cache->start(
+                    $section->getConfig()->getFullyQualifiedClassName(),
+                    $this->getFields(),
+                    self::CACHE_CONTEXT_GET_ENTRIES_BY_FIELD_VALUE,
+                    $fieldHandle
+                );
+            } catch (\Psr\Cache\InvalidArgumentException $exception) {
+                //
+            }
+
+            if ($this->cache->isHit()) {
+                return new JsonResponse(
+                    $this->cache->get(),
+                    JsonResponse::HTTP_OK,
+                    $this->getDefaultResponseHeaders($request)
+                );
+            }
+
             $readOptions = [
                 ReadOptions::SECTION => $sectionHandle,
                 ReadOptions::FIELD => [ $fieldHandle => $fieldValue ],
@@ -234,6 +314,9 @@ class RestController implements RestControllerInterface
                     $entries
                 )
             );
+
+            $this->cache->set($responseData);
+
             return $jsonResponse;
         } catch (\Exception $exception) {
             return $this->errorResponse($request, $exception);
@@ -262,6 +345,26 @@ class RestController implements RestControllerInterface
         $fields = $request->get('fields', null);
 
         try {
+            $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
+
+            try {
+                $this->cache->start(
+                    $section->getConfig()->getFullyQualifiedClassName(),
+                    $this->getFields(),
+                    self::CACHE_CONTEXT_GET_ENTRIES
+                );
+            } catch (\Psr\Cache\InvalidArgumentException $exception) {
+                //
+            }
+
+            if ($this->cache->isHit()) {
+                return new JsonResponse(
+                    $this->cache->get(),
+                    JsonResponse::HTTP_OK,
+                    $this->getDefaultResponseHeaders($request)
+                );
+            }
+
             $entries = $this->readSection->read(ReadOptions::fromArray([
                 ReadOptions::SECTION => $sectionHandle,
                 ReadOptions::OFFSET => (int) $offset,
@@ -291,6 +394,9 @@ class RestController implements RestControllerInterface
                     $entries
                 )
             );
+
+            $this->cache->set($responseData);
+
             return $jsonResponse;
         } catch (\Exception $exception) {
             return $this->errorResponse($request, $exception);
@@ -745,5 +851,21 @@ class RestController implements RestControllerInterface
         return new JsonResponse([
             'message' => $exception->getMessage()
         ], $statusCode, $this->getDefaultResponseHeaders($request));
+    }
+
+    /**
+     * You can restrict the fields you desire to see
+     *
+     * @return array|null
+     */
+    protected function getFields(): ?array
+    {
+        $fields = $this->requestStack->getCurrentRequest()->get('fields');
+
+        if (!is_null($fields)) {
+            $fields = array_map('trim', explode(',', $fields));
+        }
+
+        return $fields;
     }
 }
