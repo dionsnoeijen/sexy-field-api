@@ -20,6 +20,7 @@ use Tardigrades\SectionField\Api\Serializer\SerializeToArrayInterface;
 use Tardigrades\SectionField\Form\FormInterface;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
+use Tardigrades\SectionField\Service\CacheInterface;
 use Tardigrades\SectionField\Service\CreateSectionInterface;
 use Tardigrades\SectionField\Service\DeleteSectionInterface;
 use Tardigrades\SectionField\Service\EntryNotFoundException;
@@ -65,6 +66,9 @@ class RestInfoControllerTest extends TestCase
     /** @var SerializeToArrayInterface|Mockery\MockInterface */
     private $serialize;
 
+    /** @var CacheInterface|Mockery\MockInterface */
+    private $cache;
+
     /** @var RestInfoController */
     private $controller;
 
@@ -78,6 +82,7 @@ class RestInfoControllerTest extends TestCase
         $this->sectionManager = Mockery::mock(SectionManagerInterface::class);
         $this->dispatcher = Mockery::mock(EventDispatcherInterface::class);
         $this->serialize = Mockery::mock(SerializeToArrayInterface::class);
+        $this->cache = Mockery::mock(CacheInterface::class);
 
         $this->controller = new RestInfoController(
             $this->createSection,
@@ -87,7 +92,8 @@ class RestInfoControllerTest extends TestCase
             $this->sectionManager,
             $this->requestStack,
             $this->dispatcher,
-            $this->serialize
+            $this->serialize,
+            $this->cache
         );
     }
 
@@ -136,6 +142,28 @@ class RestInfoControllerTest extends TestCase
         $sectionName = 'Sexy';
         $sectionHandle = 'sexyHandle';
         $section = Mockery::mock(SectionInterface::class);
+
+        $sectionConfig = SectionConfig::fromArray([
+            'section' => [
+                'name' => 'Some section',
+                'handle' => 'Some handle',
+                'fields' => [
+                    'someHandle',
+                    'someOtherHandle',
+                    'someRelationshipFieldHandle'
+                ],
+                'default' => 'default',
+                'namespace' => 'NameSpace'
+            ]
+        ]);
+        $section->shouldReceive('getConfig')
+            ->once()
+            ->andReturn($sectionConfig);
+
+        $this->cache->shouldReceive('start')->once();
+        $this->cache->shouldReceive('isHit')->once()->andReturn(false);
+        $this->cache->shouldReceive('set')->once();
+
         $expectedFieldInfo = [
             'name' => $sectionName,
             'handle' => $sectionHandle
@@ -221,7 +249,7 @@ class RestInfoControllerTest extends TestCase
 
         $this->sectionManager->shouldReceive('readByHandle')
             ->once()
-            ->andThrow(SectionNotFoundException::class);
+            ->andThrow(SectionNotFoundException::class, 'Section not found');
 
         $expectedResponse = new JsonResponse(['message' => 'Section not found'], 404, [
             'Access-Control-Allow-Origin' => 'iamtheorigin.com',
@@ -269,6 +297,10 @@ class RestInfoControllerTest extends TestCase
         $sectionName = 'Even more sexy';
         $sectionHandle = 'evenMoreSexy';
         $section = Mockery::mock(SectionInterface::class);
+
+        $this->cache->shouldReceive('start')->once();
+        $this->cache->shouldReceive('isHit')->once()->andReturn(false);
+        $this->cache->shouldReceive('set')->once();
 
         $expectedFieldInfo = [
             'name' => $sectionName,
@@ -318,12 +350,11 @@ class RestInfoControllerTest extends TestCase
                     'someRelationshipFieldHandle'
                 ],
                 'default' => 'default',
-                'namespace' => 'NameSpace',
-                'sexy-field-instructions' => ['relationship' => 'getName']
+                'namespace' => 'NameSpace'
             ]
         ]);
         $section->shouldReceive('getConfig')
-            ->once()
+            ->twice()
             ->andReturn($sectionConfig);
 
         $this->requestStack->shouldReceive('getCurrentRequest')
@@ -406,6 +437,30 @@ class RestInfoControllerTest extends TestCase
         $sectionHandle = 'evenMoreSexy';
         $section = Mockery::mock(SectionInterface::class);
 
+        $sectionConfig = SectionConfig::fromArray([
+            'section' => [
+                'name' => 'Some section',
+                'handle' => 'Some handle',
+                'fields' => [
+                    'someHandle',
+                    'someOtherHandle',
+                    'someRelationshipFieldHandle'
+                ],
+                'default' => 'default',
+                'namespace' => 'NameSpace'
+            ]
+        ]);
+        $section->shouldReceive('getConfig')
+            ->twice()
+            ->andReturn($sectionConfig);
+
+        $this->sectionManager->shouldReceive('readByHandle')
+            ->once()
+            ->andReturn($section);
+        $this->cache->shouldReceive('start')->once();
+        $this->cache->shouldReceive('isHit')->once()->andReturn(false);
+        $this->cache->shouldReceive('set')->once();
+
         $expectedFieldInfo = [
             'name' => $sectionName,
             'handle' => $sectionHandle
@@ -425,10 +480,6 @@ class RestInfoControllerTest extends TestCase
             ->once()
             ->andReturn($mockedForm);
 
-        $this->sectionManager->shouldReceive('readByHandle')
-            ->once()
-            ->andReturn($section);
-
         $section->shouldReceive('getName')
             ->once()
             ->andReturn(Name::fromString($sectionName));
@@ -441,23 +492,6 @@ class RestInfoControllerTest extends TestCase
             ->once()
             ->andReturn($this->givenASetOfFieldsForASection(true));
 
-        $sectionConfig = SectionConfig::fromArray([
-            'section' => [
-                'name' => 'Some section',
-                'handle' => 'Some handle',
-                'fields' => [
-                    'someHandle',
-                    'someOtherHandle',
-                    'someRelationshipFieldHandle'
-                ],
-                'default' => 'default',
-                'namespace' => 'NameSpace'
-            ]
-        ]);
-        $section->shouldReceive('getConfig')
-            ->once()
-            ->andReturn($sectionConfig);
-
         $this->requestStack->shouldReceive('getCurrentRequest')
             ->times(3)
             ->andReturn($request);
@@ -465,7 +499,7 @@ class RestInfoControllerTest extends TestCase
         $expectedFieldInfo['fields'] = $this->givenASetOfFieldInfo(true);
         $expectedFieldInfo['fields'][2]['someRelationshipFieldHandle']['whatever'] = ['error' => 'Entry not found'];
         $expectedFieldInfo = array_merge($expectedFieldInfo, $sectionConfig->toArray());
-        $this->readSection->shouldReceive('read')->andThrow(EntryNotFoundException::class);
+        $this->readSection->shouldReceive('read')->andThrow(EntryNotFoundException::class, 'Entry not found');
 
         $response = $this->controller->getSectionInfo('sexyHandle');
         $expectedResponse = new JsonResponse(

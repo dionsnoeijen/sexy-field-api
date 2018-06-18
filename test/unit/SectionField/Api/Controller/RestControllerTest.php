@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Tardigrades\Entity\SectionInterface;
 use Tardigrades\SectionField\Api\Serializer\SerializeToArrayInterface;
 use Tardigrades\SectionField\Event\ApiBeforeEntrySavedAfterValidated;
 use Tardigrades\SectionField\Event\ApiBeforeEntryUpdatedAfterValidated;
@@ -26,6 +27,7 @@ use Tardigrades\SectionField\Event\ApiUpdateEntry;
 use Tardigrades\SectionField\Form\FormInterface;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
+use Tardigrades\SectionField\Service\CacheInterface;
 use Tardigrades\SectionField\Service\CreateSectionInterface;
 use Tardigrades\SectionField\Service\DeleteSectionInterface;
 use Tardigrades\SectionField\Service\EntryNotFoundException;
@@ -33,6 +35,7 @@ use Tardigrades\SectionField\Service\ReadOptions;
 use Tardigrades\SectionField\Service\ReadSectionInterface;
 use Tardigrades\SectionField\Service\SectionManagerInterface;
 use Mockery;
+use Tardigrades\SectionField\ValueObject\SectionConfig;
 
 /**
  * @coversDefaultClass \Tardigrades\SectionField\Api\Controller\RestController
@@ -68,6 +71,9 @@ class RestControllerTest extends TestCase
     /** @var SerializeToArrayInterface|Mockery\MockInterface */
     private $serialize;
 
+    /** @var CacheInterface|Mockery\MockInterface */
+    private $cache;
+
     /** @var RestController */
     private $controller;
 
@@ -81,6 +87,7 @@ class RestControllerTest extends TestCase
         $this->sectionManager = Mockery::mock(SectionManagerInterface::class);
         $this->dispatcher = Mockery::mock(EventDispatcherInterface::class);
         $this->serialize = Mockery::mock(SerializeToArrayInterface::class);
+        $this->cache = Mockery::mock(CacheInterface::class);
 
         $this->controller = new RestController(
             $this->createSection,
@@ -90,7 +97,8 @@ class RestControllerTest extends TestCase
             $this->sectionManager,
             $this->requestStack,
             $this->dispatcher,
-            $this->serialize
+            $this->serialize,
+            $this->cache
         );
     }
 
@@ -171,12 +179,37 @@ class RestControllerTest extends TestCase
             ['updateEntryBySlug', ['foo', 'bar'], [], true, true]
         ];
         foreach ($testCases as [$method, $args, $query, $expectDispatch, $expectBuildForm]) {
-            $request = new Request($query, [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
 
+            $request = new Request($query, [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
             $this->requestStack->shouldReceive('getCurrentRequest')->andReturn($request);
+
+            if (strpos($method, 'get') !== false) {
+                $section = Mockery::mock(SectionInterface::class);
+                $sectionConfig = SectionConfig::fromArray([
+                    'section' => [
+                        'name' => 'Some section',
+                        'handle' => 'Some handle',
+                        'fields' => [
+                            'someHandle',
+                            'someOtherHandle',
+                            'someRelationshipFieldHandle'
+                        ],
+                        'default' => 'default',
+                        'namespace' => 'NameSpace'
+                    ]
+                ]);
+                $section->shouldReceive('getConfig')
+                    ->once()
+                    ->andReturn($sectionConfig);
+
+                $this->sectionManager->shouldReceive('readByHandle')->once()->andReturn($section);
+                $this->cache->shouldReceive('start')->once();
+                $this->cache->shouldReceive('isHit')->once()->andReturn(false);
+            }
+
             $this->readSection->shouldReceive('read')
                 ->once()
-                ->andThrow(EntryNotFoundException::class);
+                ->andThrow(EntryNotFoundException::class, 'Entry not found');
 
 
             if ($expectDispatch) {
@@ -221,14 +254,36 @@ class RestControllerTest extends TestCase
         foreach ($testCases as [$method, $args, $query, $expectDispatch]) {
             $request = new Request($query, [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
 
-            $this->requestStack->shouldReceive('getCurrentRequest')
-                ->once()
+            $this->requestStack
+                ->shouldReceive('getCurrentRequest')
                 ->andReturn($request);
+
+            if (strpos($method, 'get') !== false) {
+                $section = Mockery::mock(SectionInterface::class);
+                $sectionConfig = SectionConfig::fromArray([
+                    'section' => [
+                        'name' => 'Some section',
+                        'handle' => 'Some handle',
+                        'fields' => [
+                            'someHandle',
+                            'someOtherHandle',
+                            'someRelationshipFieldHandle'
+                        ],
+                        'default' => 'default',
+                        'namespace' => 'NameSpace'
+                    ]
+                ]);
+                $section->shouldReceive('getConfig')
+                    ->once()
+                    ->andReturn($sectionConfig);
+                $this->sectionManager->shouldReceive('readByHandle')->once()->andReturn($section);
+                $this->cache->shouldReceive('start')->once();
+                $this->cache->shouldReceive('isHit')->once()->andReturn(false);
+            }
 
             $this->readSection->shouldReceive('read')
                 ->once()
                 ->andThrow(\Exception::class, "Something exceptional happened");
-
 
             $expectedResponse = new JsonResponse(['message' => "Something exceptional happened"], 400, [
                 'Access-Control-Allow-Origin' => 'iamtheorigin.com',
@@ -299,6 +354,28 @@ class RestControllerTest extends TestCase
         $this->requestStack->shouldReceive('getCurrentRequest')
             ->andReturn($request);
 
+        $section = Mockery::mock(SectionInterface::class);
+        $sectionConfig = SectionConfig::fromArray([
+            'section' => [
+                'name' => 'Some section',
+                'handle' => 'Some handle',
+                'fields' => [
+                    'someHandle',
+                    'someOtherHandle',
+                    'someRelationshipFieldHandle'
+                ],
+                'default' => 'default',
+                'namespace' => 'NameSpace'
+            ]
+        ]);
+        $section->shouldReceive('getConfig')
+            ->twice()
+            ->andReturn($sectionConfig);
+        $this->sectionManager->shouldReceive('readByHandle')->twice()->andReturn($section);
+        $this->cache->shouldReceive('start')->twice();
+        $this->cache->shouldReceive('isHit')->twice()->andReturn(false);
+        $this->cache->shouldReceive('set')->twice();
+
         $this->readSection
             ->shouldReceive('read')
             ->andReturn(new \ArrayIterator([Mockery::mock(CommonSectionInterface::class)]));
@@ -340,12 +417,34 @@ class RestControllerTest extends TestCase
             'limit' => $limit,
             'orderBy' => $orderBy,
             'sort' => $sort,
-            'fields' => ['id']
+            'fields' => 'id'
         ]);
 
         $this->requestStack->shouldReceive('getCurrentRequest')
             ->once()
             ->andReturn($request);
+
+        $section = Mockery::mock(SectionInterface::class);
+        $sectionConfig = SectionConfig::fromArray([
+            'section' => [
+                'name' => 'Some section',
+                'handle' => 'Some handle',
+                'fields' => [
+                    'someHandle',
+                    'someOtherHandle',
+                    'someRelationshipFieldHandle'
+                ],
+                'default' => 'default',
+                'namespace' => 'NameSpace'
+            ]
+        ]);
+        $section->shouldReceive('getConfig')
+            ->twice()
+            ->andReturn($sectionConfig);
+        $this->sectionManager->shouldReceive('readByHandle')->twice()->andReturn($section);
+        $this->cache->shouldReceive('start')->twice();
+        $this->cache->shouldReceive('isHit')->twice()->andReturn(false);
+        $this->cache->shouldReceive('set')->twice();
 
         $this->readSection->shouldReceive('read')
             ->once()
@@ -394,12 +493,33 @@ class RestControllerTest extends TestCase
             'limit' => $limit,
             'orderBy' => $orderBy,
             'sort' => $sort,
-            'fields' => ['id']
+            'fields' => 'id'
         ]);
 
         $this->requestStack->shouldReceive('getCurrentRequest')
-            ->once()
             ->andReturn($request);
+
+        $section = Mockery::mock(SectionInterface::class);
+        $sectionConfig = SectionConfig::fromArray([
+            'section' => [
+                'name' => 'Some section',
+                'handle' => 'Some handle',
+                'fields' => [
+                    'someHandle',
+                    'someOtherHandle',
+                    'someRelationshipFieldHandle'
+                ],
+                'default' => 'default',
+                'namespace' => 'NameSpace'
+            ]
+        ]);
+        $section->shouldReceive('getConfig')
+            ->twice()
+            ->andReturn($sectionConfig);
+        $this->sectionManager->shouldReceive('readByHandle')->twice()->andReturn($section);
+        $this->cache->shouldReceive('start')->twice();
+        $this->cache->shouldReceive('isHit')->twice()->andReturn(false);
+        $this->cache->shouldReceive('set')->twice();
 
         $this->dispatcher->shouldReceive('dispatch')
             ->once()
@@ -454,7 +574,7 @@ class RestControllerTest extends TestCase
 
         $mockRequest->shouldReceive('get')
             ->with('fields', null)
-            ->andReturn(['id']);
+            ->andReturn('id');
 
         $mockRequest->shouldReceive('get')
             ->with('depth', 20)
@@ -468,6 +588,28 @@ class RestControllerTest extends TestCase
 
         $this->requestStack->shouldReceive('getCurrentRequest')
             ->andReturn($mockRequest);
+
+        $section = Mockery::mock(SectionInterface::class);
+        $sectionConfig = SectionConfig::fromArray([
+            'section' => [
+                'name' => 'Some section',
+                'handle' => 'Some handle',
+                'fields' => [
+                    'someHandle',
+                    'someOtherHandle',
+                    'someRelationshipFieldHandle'
+                ],
+                'default' => 'default',
+                'namespace' => 'NameSpace'
+            ]
+        ]);
+        $section->shouldReceive('getConfig')
+            ->twice()
+            ->andReturn($sectionConfig);
+        $this->sectionManager->shouldReceive('readByHandle')->twice()->andReturn($section);
+        $this->cache->shouldReceive('start')->twice();
+        $this->cache->shouldReceive('isHit')->twice()->andReturn(false);
+        $this->cache->shouldReceive('set')->twice();
 
         $this->dispatcher->shouldReceive('dispatch')
             ->once()

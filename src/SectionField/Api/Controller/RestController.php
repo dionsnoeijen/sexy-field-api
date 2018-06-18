@@ -158,7 +158,11 @@ class RestController implements RestControllerInterface
             ]))->current();
 
             $responseData = $this->serialize->toArray($request, $entry);
-            $jsonResponse = new JsonResponse($responseData, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
+            $jsonResponse = new JsonResponse(
+                $responseData,
+                JsonResponse::HTTP_OK,
+                $this->getDefaultResponseHeaders($request)
+            );
 
             $this->dispatcher->dispatch(
                 ApiEntryFetched::NAME,
