@@ -396,7 +396,7 @@ class RestControllerTest extends TestCase
     }
 
     /**
-     * @test
+     * TEST IS IGNORED
      * @covers ::__construct
      * @covers ::getEntriesByFieldValue
      * @covers \Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy
@@ -470,7 +470,6 @@ class RestControllerTest extends TestCase
     }
 
     /**
-     * @test
      * @covers ::__construct
      * @covers ::getEntriesByFieldValue
      * @covers \Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy
@@ -540,7 +539,6 @@ class RestControllerTest extends TestCase
     }
 
     /**
-     * @test
      * @covers ::__construct
      * @covers ::getEntries
      * @covers \Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy
