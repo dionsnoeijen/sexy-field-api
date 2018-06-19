@@ -221,7 +221,7 @@ class RestInfoControllerTest extends TestCase
 
         $this->sectionManager->shouldReceive('readByHandle')
             ->once()
-            ->andThrow(SectionNotFoundException::class);
+            ->andThrow(SectionNotFoundException::class, 'Section not found');
 
         $expectedResponse = new JsonResponse(['message' => 'Section not found'], 404, [
             'Access-Control-Allow-Origin' => 'iamtheorigin.com',
@@ -465,7 +465,7 @@ class RestInfoControllerTest extends TestCase
         $expectedFieldInfo['fields'] = $this->givenASetOfFieldInfo(true);
         $expectedFieldInfo['fields'][2]['someRelationshipFieldHandle']['whatever'] = ['error' => 'Entry not found'];
         $expectedFieldInfo = array_merge($expectedFieldInfo, $sectionConfig->toArray());
-        $this->readSection->shouldReceive('read')->andThrow(EntryNotFoundException::class);
+        $this->readSection->shouldReceive('read')->andThrow(EntryNotFoundException::class, 'Entry not found');
 
         $response = $this->controller->getSectionInfo('sexyHandle');
         $expectedResponse = new JsonResponse(

@@ -174,6 +174,8 @@ class RestInfoController extends RestController implements RestControllerInterfa
     /**
      * Make sure the fields are returned in the order you have configured them
      *
+     * @todo I feel this method is lacking a lot of elegance, make better when the brain is energised.
+     *
      * @param array $fields
      * @param array $fieldProperties
      * @return array
@@ -182,6 +184,19 @@ class RestInfoController extends RestController implements RestControllerInterfa
     {
         $originalFields = $fields['fields'];
         $desiredFieldsOrder = $fields['section']['fields'];
+        $desiredFieldsOrderFiltered = [];
+
+        if (!is_null($showFields)) {
+            foreach ($desiredFieldsOrder as $fieldHandle) {
+                $propertyName = $this->handleToPropertyName($fieldHandle, $fieldProperties);
+                if (in_array($propertyName, $showFields)) {
+                    $desiredFieldsOrderFiltered[] = $propertyName;
+                }
+            }
+        } else {
+            $desiredFieldsOrderFiltered = $desiredFieldsOrder;
+        }
+
         $originalFieldsOrder = [];
         $result = [];
 
@@ -192,12 +207,9 @@ class RestInfoController extends RestController implements RestControllerInterfa
             }
         }
 
-        foreach ($desiredFieldsOrder as $handle) {
+        foreach ($desiredFieldsOrderFiltered as $handle) {
             if (is_null($showFields) || in_array($handle, $showFields)) {
-                $fieldIndex = array_search(
-                    $this->handleToPropertyName($handle, $fieldProperties),
-                    $originalFieldsOrder
-                );
+                $fieldIndex = array_search($handle, $originalFieldsOrder);
                 $result[] = $originalFields[$fieldIndex];
             }
         }

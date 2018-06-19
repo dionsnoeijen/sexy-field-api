@@ -176,7 +176,7 @@ class RestControllerTest extends TestCase
             $this->requestStack->shouldReceive('getCurrentRequest')->andReturn($request);
             $this->readSection->shouldReceive('read')
                 ->once()
-                ->andThrow(EntryNotFoundException::class);
+                ->andThrow(EntryNotFoundException::class, 'Entry not found');
 
 
             if ($expectDispatch) {
