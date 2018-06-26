@@ -195,8 +195,6 @@ class RestInfoControllerTest extends TestCase
 
         $expectedFieldInfo['fields'] = $fields;
 
-        $expectedFieldInfo = array_merge($expectedFieldInfo, $sectionConfig->toArray());
-
         $expectedResponse = new JsonResponse($expectedFieldInfo, 200, [
             'Access-Control-Allow-Origin' => 'iamtheorigin.com',
             'Access-Control-Allow-Credentials' => 'true'
@@ -376,8 +374,6 @@ class RestInfoControllerTest extends TestCase
         $expectedFieldInfo['fields'] = $this->givenASetOfFieldInfo(true);
         $expectedFieldInfo['fields'][2]['someRelationshipFieldHandle']['whatever'] = $formattedRecords;
 
-        $expectedFieldInfo = array_merge($expectedFieldInfo, $sectionConfig->toArray());
-
         $expectedResponse = new JsonResponse(
             $expectedFieldInfo,
             200,
@@ -464,7 +460,6 @@ class RestInfoControllerTest extends TestCase
 
         $expectedFieldInfo['fields'] = $this->givenASetOfFieldInfo(true);
         $expectedFieldInfo['fields'][2]['someRelationshipFieldHandle']['whatever'] = ['error' => 'Entry not found'];
-        $expectedFieldInfo = array_merge($expectedFieldInfo, $sectionConfig->toArray());
         $this->readSection->shouldReceive('read')->andThrow(EntryNotFoundException::class, 'Entry not found');
 
         $response = $this->controller->getSectionInfo('sexyHandle');
@@ -597,7 +592,6 @@ class RestInfoControllerTest extends TestCase
             $fieldInfo = [
                 (string)$field->getHandle() => $field->getConfig()->toArray()['field']
             ];
-
             $fieldInfos[] = $fieldInfo;
         }
 
