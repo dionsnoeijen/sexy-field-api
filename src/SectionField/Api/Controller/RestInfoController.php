@@ -162,7 +162,12 @@ class RestInfoController extends RestController implements RestControllerInterfa
                     } else {
                         $method = 'get' . ucfirst($this->handleToPropertyName($fieldHandle, $fieldProperties));
                     }
-                    $value = (string) $entry->$method();
+                    $data = $entry->$method();
+                    if ($data instanceof \DateTime) {
+                        $value = $data->format('Y-m-d H:i:s');
+                    } else {
+                        $value = (string) $data;
+                    }
                 } catch (\Exception $exception) {
                     //
                 }
