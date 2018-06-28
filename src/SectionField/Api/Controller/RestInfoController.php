@@ -164,7 +164,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
                     }
                     $data = $entry->$method();
                     if ($data instanceof \DateTime) {
-                        $value = $data->format('Y-m-d H:i:s');
+                        $value = $data->format('Y-m-d H:i');
                     } else {
                         $value = (string) $data;
                     }
