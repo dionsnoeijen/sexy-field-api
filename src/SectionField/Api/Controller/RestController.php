@@ -190,6 +190,11 @@ class RestController implements RestControllerInterface
             return $optionsResponse;
         }
 
+        // We may join and want to select something on what is in the joined table
+        // Like this: accountHasRole:role&value=1,2,3
+        $fieldHandles = explode(':', $fieldHandle);
+        $fieldHandle = array_shift($fieldHandles);
+
         // You could have many results on a field value,
         // so add some control over the results with limit, offset and also sorting.
         $fieldValue = (string)$request->get('value');
@@ -206,6 +211,7 @@ class RestController implements RestControllerInterface
             $readOptions = [
                 ReadOptions::SECTION => $sectionHandle,
                 ReadOptions::FIELD => [ $fieldHandle => $fieldValue ],
+                ReadOptions::RELATE => $fieldHandles,
                 ReadOptions::OFFSET => (int) $offset,
                 ReadOptions::LIMIT => (int) $limit,
                 ReadOptions::ORDER_BY => [ $orderBy => strtolower($sort) ],
@@ -318,7 +324,11 @@ class RestController implements RestControllerInterface
 
         $abortCode = $request->get('abort');
         if ($abortCode) {
-            return new JsonResponse($request->get('abortMessage'), $abortCode, $this->getDefaultResponseHeaders($request));
+            return new JsonResponse(
+                $request->get('abortMessage'),
+                $abortCode,
+                $this->getDefaultResponseHeaders($request)
+            );
         }
 
         try {
