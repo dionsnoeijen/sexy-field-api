@@ -142,9 +142,12 @@ class RestInfoController extends RestController implements RestControllerInterfa
             $value = null;
             $fieldHandle = $field[key($field)]['handle'];
             try {
-                $mapsTo = explode('|', $field[key($field)]['form']['sexy-field-instructions']['maps-to']);
+                $mapsTo = $field[key($field)]['form']['sexy-field-instructions']['maps-to'];
             } catch (\Exception $exception) {
                 $mapsTo = $fieldHandle;
+            }
+            if (!is_null($mapsTo)) {
+                $mapsTo = explode('|', $mapsTo);
             }
             if (is_array($mapsTo)) {
                 $find = $entry;
@@ -164,7 +167,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
                     }
                     $data = $entry->$method();
                     if ($data instanceof \DateTime) {
-                        $value = $data->format('Y-m-d H:i:s');
+                        $value = $data->format('Y-m-d H:i');
                     } else {
                         $value = (string) $data;
                     }
