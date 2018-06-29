@@ -142,7 +142,8 @@ class RestInfoController extends RestController implements RestControllerInterfa
             $value = null;
             $fieldHandle = $field[key($field)]['handle'];
             try {
-                $mapsTo = explode('|', $field[key($field)]['form']['sexy-field-instructions']['maps-to']);
+                $mapsTo = $field[key($field)]['form']['sexy-field-instructions']['maps-to'];
+                $mapsTo = explode('|', $mapsTo);
             } catch (\Exception $exception) {
                 $mapsTo = $fieldHandle;
             }
