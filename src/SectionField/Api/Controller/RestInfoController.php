@@ -144,7 +144,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
             try {
                 $mapsTo = $field[key($field)]['form']['sexy-field-instructions']['maps-to'];
             } catch (\Exception $exception) {
-                $mapsTo = $fieldHandle;
+                $mapsTo = null;
             }
             if (!is_null($mapsTo)) {
                 $mapsTo = explode('|', $mapsTo);
@@ -165,17 +165,17 @@ class RestInfoController extends RestController implements RestControllerInterfa
                     } else {
                         $method = 'get' . ucfirst($this->handleToPropertyName($fieldHandle, $fieldProperties));
                     }
-                    $data = $entry->$method();
-                    if ($data instanceof \DateTime) {
-                        $value = $data->format('Y-m-d H:i');
-                    } else {
-                        $value = (string) $data;
-                    }
+                    $value = $entry->$method();
+
                 } catch (\Exception $exception) {
                     //
                 }
             }
-            $field[$fieldHandle]['value'] = $value;
+            if ($value instanceof \DateTime) {
+                $field[$fieldHandle]['value'] = $value->format('Y-m-d H:i');
+            } else {
+                $field[$fieldHandle]['value'] = $value;
+            }
             $value = null;
         }
 
