@@ -79,7 +79,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
 
                 if (is_null($showFields) || in_array($fieldHandle, $showFields)) {
                     // Default initial configuration
-                    $fieldInfo = [$fieldHandle => $field->getConfig()->toArray()['field']];
+                    $fieldInfo = [ $fieldHandle => $field->getConfig()->toArray()['field'] ];
 
                     // If we have a relationship field, get the entries
                     if ((string) $field->getFieldType()->getFullyQualifiedClassName() === Relationship::class) {
@@ -87,7 +87,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
                             $fieldHandle,
                             $fieldInfo,
                             $sectionHandle,
-                            (int)$id
+                            (int) $id
                         );
                     }
                     $responseData['fields'][] = $fieldInfo;
@@ -96,6 +96,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
 
             $responseData = array_merge($responseData, $section->getConfig()->toArray());
             $responseData['fields'] = $this->orderFields($responseData, $fieldProperties, $showFields);
+            $responseData = $this->cleanFields($responseData);
 
             $jsonResponse = new JsonResponse(
                 $responseData,
@@ -160,11 +161,15 @@ class RestInfoController extends RestController implements RestControllerInterfa
     ): array {
 
         foreach ($responseData['fields'] as $key=>&$field) {
+            $value = null;
             $fieldHandle = $field[key($field)]['handle'];
             try {
-                $mapsTo = explode('|', $field[key($field)]['form']['sexy-field-instructions']['maps-to']);
+                $mapsTo = $field[key($field)]['form']['sexy-field-instructions']['maps-to'];
             } catch (\Exception $exception) {
-                $mapsTo = $fieldHandle;
+                $mapsTo = null;
+            }
+            if (!is_null($mapsTo)) {
+                $mapsTo = explode('|', $mapsTo);
             }
             if (is_array($mapsTo)) {
                 $find = $entry;
@@ -182,12 +187,18 @@ class RestInfoController extends RestController implements RestControllerInterfa
                     } else {
                         $method = 'get' . ucfirst($this->handleToPropertyName($fieldHandle, $fieldProperties));
                     }
-                    $value = (string) $entry->$method();
+                    $value = $entry->$method();
+
                 } catch (\Exception $exception) {
                     //
                 }
             }
-            $field[$fieldHandle]['value'] = $value;
+            if ($value instanceof \DateTime) {
+                $field[$fieldHandle]['value'] = $value->format('Y-m-d H:i');
+            } else {
+                $field[$fieldHandle]['value'] = $value;
+            }
+            $value = null;
         }
 
         return $responseData;
@@ -195,6 +206,8 @@ class RestInfoController extends RestController implements RestControllerInterfa
 
     /**
      * Make sure the fields are returned in the order you have configured them
+     *
+     * @todo I feel this method is lacking a lot of elegance, make better when the brain is energised.
      *
      * @param array $fields
      * @param array $fieldProperties
@@ -204,6 +217,19 @@ class RestInfoController extends RestController implements RestControllerInterfa
     {
         $originalFields = $fields['fields'];
         $desiredFieldsOrder = $fields['section']['fields'];
+        $desiredFieldsOrderFiltered = [];
+
+        if (!is_null($showFields)) {
+            foreach ($desiredFieldsOrder as $fieldHandle) {
+                $propertyName = $this->handleToPropertyName($fieldHandle, $fieldProperties);
+                if (in_array($propertyName, $showFields)) {
+                    $desiredFieldsOrderFiltered[] = $propertyName;
+                }
+            }
+        } else {
+            $desiredFieldsOrderFiltered = $desiredFieldsOrder;
+        }
+
         $originalFieldsOrder = [];
         $result = [];
 
@@ -214,17 +240,36 @@ class RestInfoController extends RestController implements RestControllerInterfa
             }
         }
 
-        foreach ($desiredFieldsOrder as $handle) {
+        foreach ($desiredFieldsOrderFiltered as $handle) {
             if (is_null($showFields) || in_array($handle, $showFields)) {
-                $fieldIndex = array_search(
-                    $this->handleToPropertyName($handle, $fieldProperties),
-                    $originalFieldsOrder
-                );
+                $fieldIndex = array_search($handle, $originalFieldsOrder);
                 $result[] = $originalFields[$fieldIndex];
             }
         }
 
         return $result;
+    }
+
+    /**
+     * Just remove stuff that's not needed for a frontend
+     *
+     * @todo: I might want to introduce a method in the field that only returns the relevant
+     * data for the front-end
+     *
+     * @param array $fields
+     * @return array
+     */
+    private function cleanFields(array $fields): array
+    {
+        foreach ($fields['fields'] as &$field) {
+            if (array_key_exists('generator', $field[key($field)])) {
+                unset($field[key($field)]['generator']);
+            }
+        }
+
+        unset($fields['section']);
+
+        return $fields;
     }
 
     /**
@@ -364,8 +409,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
         string $fieldHandle,
         array $fieldInfo,
         array $sexyFieldInstructions = null
-    ): ReadOptionsInterface
-    {
+    ): ReadOptionsInterface {
         $options = $this->getOptions();
 
         $readOptions = [
@@ -418,6 +462,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
             if (strpos((string) $options[$fieldHandle]['value'], ',') !== false) {
                 $options[$fieldHandle]['value'] = explode(',', $options[$fieldHandle]['value']);
             }
+
             $readOptions[ReadOptions::JOIN] = [
                 $options[$fieldHandle]['join'] => $options[$fieldHandle]['value']
             ];
