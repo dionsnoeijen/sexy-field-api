@@ -45,12 +45,32 @@ class RestInfoController extends RestController implements RestControllerInterfa
 
         try {
             $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
+            $showFields = $this->getFields();
+
+            try {
+                $this->cache->start(
+                    $section->getConfig()->getFullyQualifiedClassName(),
+                    $showFields,
+                    self::class,
+                    $id
+                );
+            } catch (\Psr\Cache\InvalidArgumentException $exception) {
+                //
+            }
+
+            if ($this->cache->isHit()) {
+                return new JsonResponse(
+                    $this->cache->get(),
+                    JsonResponse::HTTP_OK,
+                    $this->getDefaultResponseHeaders($request)
+                );
+            }
+
             $responseData = [
                 'name' => (string) $section->getName(),
                 'handle' => (string) $section->getHandle()
             ];
 
-            $showFields = $this->getFields();
             $fieldProperties = $this->getEntityProperties($sectionHandle);
 
             /** @var FieldInterface $field */
@@ -99,6 +119,8 @@ class RestInfoController extends RestController implements RestControllerInterfa
                     new ApiEntryFetched($request, $responseData, $jsonResponse, $entry)
                 );
             }
+
+            $this->cache->set($responseData);
 
             return $jsonResponse;
         } catch (\Exception $exception) {
@@ -497,22 +519,6 @@ class RestInfoController extends RestController implements RestControllerInterfa
         }
 
         return $fieldInfo;
-    }
-
-    /**
-     * You can restrict the fields you desire to see
-     *
-     * @return array|null
-     */
-    private function getFields(): ?array
-    {
-        $fields = $this->requestStack->getCurrentRequest()->get('fields');
-
-        if (!is_null($fields)) {
-            $fields = array_map('trim', explode(',', $fields));
-        }
-
-        return $fields;
     }
 
     /**
