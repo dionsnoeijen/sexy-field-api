@@ -5,6 +5,7 @@ namespace Tardigrades\SectionField\Api\Controller;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Tardigrades\Entity\FieldInterface;
+use Tardigrades\Entity\SectionInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Event\ApiEntryFetched;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
@@ -71,7 +72,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
                 'handle' => (string) $section->getHandle()
             ];
 
-            $fieldProperties = $this->getEntityProperties($sectionHandle);
+            $fieldProperties = $this->getEntityProperties($section);
 
             /** @var FieldInterface $field */
             foreach ($section->getFields() as $field) {
@@ -211,6 +212,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
      *
      * @param array $fields
      * @param array $fieldProperties
+     * @param array|null $showFields
      * @return array
      */
     private function orderFields(array $fields, array $fieldProperties, array $showFields = null): array
@@ -268,26 +270,21 @@ class RestInfoController extends RestController implements RestControllerInterfa
         }
 
         unset($fields['section']);
-
         return $fields;
     }
 
     /**
      * Get the built in field mapping
      *
-     * @param string $sectionHandle
+     * @param SectionInterface $section
      * @return array
      */
-    private function getEntityProperties(string $sectionHandle): array
+    private function getEntityProperties(SectionInterface $section): array
     {
-        $entity = $this->form->buildFormForSection(
-            $sectionHandle,
-            $this->requestStack,
-            null,
-            false
-        )->getData();
+        $sectionFullyQualifiedClassName = (string) $section->getConfig()->getFullyQualifiedClassName();
+        $sectionEntity = new $sectionFullyQualifiedClassName;
 
-        return $entity::FIELDS;
+        return $sectionEntity::FIELDS;
     }
 
     /**

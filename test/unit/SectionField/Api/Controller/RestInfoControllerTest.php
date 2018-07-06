@@ -146,18 +146,17 @@ class RestInfoControllerTest extends TestCase
         $sectionConfig = SectionConfig::fromArray([
             'section' => [
                 'name' => 'Some section',
-                'handle' => 'Some handle',
+                'handle' => 'someHandle',
                 'fields' => [
                     'someHandle',
-                    'someOtherHandle',
-                    'someRelationshipFieldHandle'
+                    'someOtherHandle'
                 ],
                 'default' => 'default',
-                'namespace' => 'NameSpace'
+                'namespace' => 'Space'
             ]
         ]);
         $section->shouldReceive('getConfig')
-            ->once()
+            ->twice()
             ->andReturn($sectionConfig);
 
         $this->cache->shouldReceive('start')->once();
@@ -176,16 +175,6 @@ class RestInfoControllerTest extends TestCase
             ->andReturn($request);
 
         $entryMock = Mockery::mock(new SomeSectionEntity())->makePartial();
-
-        $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
-        $mockedForm->shouldReceive('getData')
-            ->once()
-            ->andReturn($entryMock);
-
-        $this->form->shouldReceive('buildFormForSection')
-            ->once()
-            ->with($sectionHandle, $this->requestStack, null, false)
-            ->andReturn($mockedForm);
 
         $this->sectionManager->shouldReceive('readByHandle')
             ->once()
@@ -208,13 +197,13 @@ class RestInfoControllerTest extends TestCase
         $sectionConfig = SectionConfig::fromArray([
             'section' => [
                 'name' => 'Some section',
-                'handle' => 'Some handle',
+                'handle' => 'someHandle',
                 'fields' => [
                     'someHandle',
                     'someOtherHandle'
                 ],
                 'default' => 'default',
-                'namespace' => 'NameSpace'
+                'namespace' => 'Space'
             ]
         ]);
         $section->shouldReceive('getConfig')
@@ -311,17 +300,6 @@ class RestInfoControllerTest extends TestCase
             'HTTP_ORIGIN' => 'iamtheorigin.com'
         ]);
 
-        $entryMock = Mockery::mock(new SomeSectionEntity())->makePartial();
-
-        $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
-        $mockedForm->shouldReceive('getData')
-            ->once()
-            ->andReturn($entryMock);
-
-        $this->form->shouldReceive('buildFormForSection')
-            ->once()
-            ->andReturn($mockedForm);
-
         $this->sectionManager->shouldReceive('readByHandle')
             ->once()
             ->andReturn($section);
@@ -341,19 +319,19 @@ class RestInfoControllerTest extends TestCase
         $sectionConfig = SectionConfig::fromArray([
             'section' => [
                 'name' => 'Some section',
-                'handle' => 'Some handle',
+                'handle' => 'someHandle',
                 'fields' => [
                     'someHandle',
                     'someOtherHandle',
                     'someRelationshipFieldHandle'
                 ],
                 'default' => 'default',
-                'namespace' => 'NameSpace',
+                'namespace' => 'Space',
                 'sexy-field-instructions' => ['relationship' => 'getName']
             ]
         ]);
         $section->shouldReceive('getConfig')
-            ->twice()
+            ->times(3)
             ->andReturn($sectionConfig);
 
         $this->requestStack->shouldReceive('getCurrentRequest')
@@ -437,18 +415,18 @@ class RestInfoControllerTest extends TestCase
         $sectionConfig = SectionConfig::fromArray([
             'section' => [
                 'name' => 'Some section',
-                'handle' => 'Some handle',
+                'handle' => 'someHandle',
                 'fields' => [
                     'someHandle',
                     'someOtherHandle',
                     'someRelationshipFieldHandle'
                 ],
                 'default' => 'default',
-                'namespace' => 'NameSpace'
+                'namespace' => 'Space'
             ]
         ]);
         $section->shouldReceive('getConfig')
-            ->twice()
+            ->times(3)
             ->andReturn($sectionConfig);
 
         $this->sectionManager->shouldReceive('readByHandle')
@@ -466,16 +444,6 @@ class RestInfoControllerTest extends TestCase
         $request = new Request([], [], [], [], [], [
             'HTTP_ORIGIN' => 'iamtheorigin.com'
         ]);
-
-        $entryMock = Mockery::mock(new SomeSectionEntity())->makePartial();
-        $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
-        $mockedForm->shouldReceive('getData')
-            ->once()
-            ->andReturn($entryMock);
-
-        $this->form->shouldReceive('buildFormForSection')
-            ->once()
-            ->andReturn($mockedForm);
 
         $section->shouldReceive('getName')
             ->once()
@@ -660,3 +628,13 @@ class SomeSectionEntity implements CommonSectionInterface {
         // TODO: Implement onPreUpdate() method.
     }
 }
+
+namespace Space\Entity;
+
+class SomeHandle {
+
+    const FIELDS = [];
+
+}
+
+
