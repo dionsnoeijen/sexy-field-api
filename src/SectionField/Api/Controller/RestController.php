@@ -464,6 +464,15 @@ class RestController implements RestControllerInterface
                     ApiBeforeEntrySavedAfterValidated::NAME,
                     new ApiBeforeEntrySavedAfterValidated($request, $responseData, $jsonResponse, $form->getData())
                 );
+                $abortCode = $request->get('abort');
+                if ($abortCode) {
+                    return new JsonResponse(
+                        $request->get('abortMessage'),
+                        $abortCode,
+                        $this->getDefaultResponseHeaders($request)
+                    );
+                }
+
                 $responseData = $this->save($form, $jsonResponse, $request);
                 $jsonResponse->setData($responseData);
                 $this->dispatcher->dispatch(
