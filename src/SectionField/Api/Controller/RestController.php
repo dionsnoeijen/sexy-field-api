@@ -513,6 +513,15 @@ class RestController implements RestControllerInterface
             new ApiUpdateEntry($request, $sectionHandle)
         );
 
+        $abortCode = $request->get('abort');
+        if ($abortCode) {
+            return new JsonResponse(
+                $request->get('abortMessage'),
+                $abortCode,
+                $this->getDefaultResponseHeaders($request)
+            );
+        }
+
         try {
             $responseData = [ 'code' => JsonResponse::HTTP_OK ];
             $this->putToPost();
@@ -552,6 +561,15 @@ class RestController implements RestControllerInterface
                         $newEntry
                     )
                 );
+                $abortCode = $request->get('abort');
+                if ($abortCode) {
+                    return new JsonResponse(
+                        $request->get('abortMessage'),
+                        $abortCode,
+                        $this->getDefaultResponseHeaders($request)
+                    );
+                }
+
                 $responseData = $this->save($form, $jsonResponse, $request);
                 $jsonResponse->setData($responseData);
                 $this->dispatcher->dispatch(
@@ -602,7 +620,11 @@ class RestController implements RestControllerInterface
 
         $abortCode = $request->get('abort');
         if ($abortCode) {
-            return new JsonResponse($request->get('abortMessage'), $abortCode, $this->getDefaultResponseHeaders($request));
+            return new JsonResponse(
+                $request->get('abortMessage'),
+                $abortCode,
+                $this->getDefaultResponseHeaders($request)
+            );
         }
 
         try {
@@ -643,6 +665,14 @@ class RestController implements RestControllerInterface
                         $newEntry
                     )
                 );
+                $abortCode = $request->get('abort');
+                if ($abortCode) {
+                    return new JsonResponse(
+                        $request->get('abortMessage'),
+                        $abortCode,
+                        $this->getDefaultResponseHeaders($request)
+                    );
+                }
 
                 $responseData = $this->save($form, $jsonResponse, $request);
                 $jsonResponse->setData($responseData);
