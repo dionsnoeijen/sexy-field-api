@@ -221,7 +221,7 @@ class RestControllerTest extends TestCase
 
             $response = $this->controller->$method(...$args);
             $expectedResponse = new JsonResponse([
-                'message' => 'Entry not found'
+                'error' => 'Entry not found'
             ], 404, [
                 'Access-Control-Allow-Origin' => 'iamtheorigin.com',
                 'Access-Control-Allow-Credentials' => 'true'
@@ -285,7 +285,7 @@ class RestControllerTest extends TestCase
                 ->once()
                 ->andThrow(\Exception::class, "Something exceptional happened");
 
-            $expectedResponse = new JsonResponse(['message' => "Something exceptional happened"], 400, [
+            $expectedResponse = new JsonResponse(['error' => "Something exceptional happened"], 400, [
                 'Access-Control-Allow-Origin' => 'iamtheorigin.com',
                 'Access-Control-Allow-Credentials' => 'true'
             ]);
@@ -324,7 +324,7 @@ class RestControllerTest extends TestCase
                 ->once()
                 ->andThrow(\Exception::class, "Something exceptional happened");
 
-            $expectedResponse = new JsonResponse(['message' => "Something exceptional happened"], 400, [
+            $expectedResponse = new JsonResponse(['error' => "Something exceptional happened"], 400, [
                 'Access-Control-Allow-Origin' => 'iamtheorigin.com',
                 'Access-Control-Allow-Credentials' => 'true'
             ]);

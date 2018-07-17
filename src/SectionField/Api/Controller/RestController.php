@@ -902,7 +902,7 @@ class RestController implements RestControllerInterface
             $statusCode = JsonResponse::HTTP_BAD_REQUEST;
         }
         return new JsonResponse([
-            'message' => $exception->getMessage()
+            'error' => $exception->getMessage()
         ], $statusCode, $this->getDefaultResponseHeaders($request));
     }
 

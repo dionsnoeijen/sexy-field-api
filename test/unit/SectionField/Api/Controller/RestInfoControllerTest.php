@@ -238,7 +238,7 @@ class RestInfoControllerTest extends TestCase
             ->once()
             ->andThrow(SectionNotFoundException::class, 'Section not found');
 
-        $expectedResponse = new JsonResponse(['message' => 'Section not found'], 404, [
+        $expectedResponse = new JsonResponse(['error' => 'Section not found'], 404, [
             'Access-Control-Allow-Origin' => 'iamtheorigin.com',
             'Access-Control-Allow-Credentials' => 'true'
         ]);
@@ -264,7 +264,7 @@ class RestInfoControllerTest extends TestCase
             ->once()
             ->andThrow(\Exception::class, "Uh-oh");
 
-        $expectedResponse = new JsonResponse(['message' => 'Uh-oh'], 400, [
+        $expectedResponse = new JsonResponse(['error' => 'Uh-oh'], 400, [
             'Access-Control-Allow-Origin' => 'iamtheorigin.com',
             'Access-Control-Allow-Credentials' => 'true'
         ]);
