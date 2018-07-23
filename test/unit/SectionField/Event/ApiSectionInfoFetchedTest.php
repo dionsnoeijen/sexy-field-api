@@ -28,16 +28,21 @@ final class ApiSectionInfoFetchedTest extends TestCase
     /** @var JsonResponse */
     private $jsonResponse;
 
+    /** @var string */
+    private $sectionHandle;
+
     public function setUp()
     {
         $this->request = new Request();
         $this->responseData = [];
         $this->jsonResponse = new JsonResponse();
+        $this->sectionHandle = 'sectionHandle';
 
         $this->apiSectionInfoFetched = new ApiSectionInfoFetched(
             $this->request,
             $this->responseData,
-            $this->jsonResponse
+            $this->jsonResponse,
+            $this->sectionHandle
         );
     }
 

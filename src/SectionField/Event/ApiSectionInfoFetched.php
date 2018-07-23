@@ -37,14 +37,19 @@ class ApiSectionInfoFetched extends Event
     /** @var JsonResponse */
     protected $response;
 
+    /** @var string */
+    protected $sectionHandle;
+
     public function __construct(
         Request $request,
         array $responseData,
-        JsonResponse $response
+        JsonResponse $response,
+        string $sectionHandle
     ) {
         $this->request = $request;
         $this->responseData = $responseData;
         $this->response = $response;
+        $this->sectionHandle = $sectionHandle;
     }
 
     public function getRequest(): Request
@@ -60,5 +65,10 @@ class ApiSectionInfoFetched extends Event
     public function getResponse(): JsonResponse
     {
         return $this->response;
+    }
+
+    public function getSectionHandle(): string
+    {
+        return $this->sectionHandle;
     }
 }

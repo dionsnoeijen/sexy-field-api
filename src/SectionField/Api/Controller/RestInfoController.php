@@ -127,7 +127,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
 
             $this->dispatcher->dispatch(
                 ApiSectionInfoFetched::NAME,
-                new ApiSectionInfoFetched($request, $responseData, $jsonResponse)
+                new ApiSectionInfoFetched($request, $responseData, $jsonResponse, $sectionHandle)
             );
 
             $this->cache->set($responseData);
