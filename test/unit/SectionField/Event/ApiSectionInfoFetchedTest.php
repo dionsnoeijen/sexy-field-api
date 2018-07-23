@@ -19,9 +19,6 @@ final class ApiSectionInfoFetchedTest extends TestCase
     /** @var ApiSectionInfoFetched */
     private $apiSectionInfoFetched;
 
-    /** @var \ArrayIterator */
-    private $entries;
-
     /** @var Request */
     private $request;
 
@@ -36,13 +33,11 @@ final class ApiSectionInfoFetchedTest extends TestCase
         $this->request = new Request();
         $this->responseData = [];
         $this->jsonResponse = new JsonResponse();
-        $this->entries = new \ArrayIterator();
 
         $this->apiSectionInfoFetched = new ApiSectionInfoFetched(
             $this->request,
             $this->responseData,
-            $this->jsonResponse,
-            $this->entries
+            $this->jsonResponse
         );
     }
 
@@ -77,16 +72,5 @@ final class ApiSectionInfoFetchedTest extends TestCase
         $result = $this->apiSectionInfoFetched->getResponse();
 
         $this->assertEquals($this->jsonResponse, $result);
-    }
-
-    /**
-     * @test
-     * @covers ::getEntries
-     */
-    public function it_should_return_the_original_entry()
-    {
-        $result = $this->apiSectionInfoFetched->getEntries();
-
-        $this->assertEquals($this->entries, $result);
     }
 }

@@ -13,6 +13,10 @@ declare (strict_types = 1);
 
 namespace Tardigrades\SectionField\Event;
 
+use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+
 /**
  * Class ApiSectionInfoFetched
  *
@@ -20,7 +24,41 @@ namespace Tardigrades\SectionField\Event;
  *
  * @package Tardigrades\SectionField\Event
  */
-class ApiSectionInfoFetched extends ApiAfterEntriesEvent
+class ApiSectionInfoFetched extends Event
 {
     const NAME = 'api.section.info.fetched';
+
+    /** @var Request */
+    protected $request;
+
+    /** @var array */
+    protected $responseData;
+
+    /** @var JsonResponse */
+    protected $response;
+
+    public function __construct(
+        Request $request,
+        array $responseData,
+        JsonResponse $response
+    ) {
+        $this->request = $request;
+        $this->responseData = $responseData;
+        $this->response = $response;
+    }
+
+    public function getRequest(): Request
+    {
+        return $this->request;
+    }
+
+    public function getResponseData(): array
+    {
+        return $this->responseData;
+    }
+
+    public function getResponse(): JsonResponse
+    {
+        return $this->response;
+    }
 }

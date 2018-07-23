@@ -17,6 +17,7 @@ use Tardigrades\Entity\FieldType;
 use Tardigrades\Entity\SectionInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Api\Serializer\SerializeToArrayInterface;
+use Tardigrades\SectionField\Event\ApiSectionInfoFetched;
 use Tardigrades\SectionField\Form\FormInterface;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
@@ -194,6 +195,9 @@ class RestInfoControllerTest extends TestCase
 
         $fields = $this->givenASetOfFieldInfo();
 
+        $this->dispatcher->shouldReceive('dispatch')
+            ->once();
+
         $sectionConfig = SectionConfig::fromArray([
             'section' => [
                 'name' => 'Some section',
@@ -341,6 +345,9 @@ class RestInfoControllerTest extends TestCase
         $sectionEntitiesTo = new \ArrayIterator();
         $formattedRecords = $this->givenSomeFormattedToRecords();
 
+        $this->dispatcher->shouldReceive('dispatch')
+            ->once();
+
         foreach ($formattedRecords as $formattedRecord) {
             $section = Mockery::mock(CommonSectionInterface::class);
             $otherSection = Mockery::mock(CommonSectionInterface::class);
@@ -460,6 +467,9 @@ class RestInfoControllerTest extends TestCase
         $this->requestStack->shouldReceive('getCurrentRequest')
             ->times(3)
             ->andReturn($request);
+
+        $this->dispatcher->shouldReceive('dispatch')
+            ->once();
 
         $expectedFieldInfo['fields'] = $this->givenASetOfFieldInfo(true);
         $expectedFieldInfo['fields'][2]['someRelationshipFieldHandle']['whatever'] = ['error' => 'Entry not found'];

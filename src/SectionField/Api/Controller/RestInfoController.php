@@ -8,6 +8,7 @@ use Tardigrades\Entity\FieldInterface;
 use Tardigrades\Entity\SectionInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Event\ApiEntryFetched;
+use Tardigrades\SectionField\Event\ApiSectionInfoFetched;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 use Tardigrades\SectionField\Service\EntryNotFoundException;
 use Tardigrades\SectionField\Service\ReadOptions;
@@ -59,6 +60,9 @@ class RestInfoController extends RestController implements RestControllerInterfa
                 //
             }
 
+            // @todo: We will have to distinguish between users
+            // (the logged in user) Because based on that changes
+            // in the result will occur.
             if ($this->cache->isHit()) {
                 return new JsonResponse(
                     $this->cache->get(),
@@ -120,6 +124,11 @@ class RestInfoController extends RestController implements RestControllerInterfa
                     new ApiEntryFetched($request, $responseData, $jsonResponse, $entry)
                 );
             }
+
+            $this->dispatcher->dispatch(
+                ApiSectionInfoFetched::NAME,
+                new ApiSectionInfoFetched($request, $responseData, $jsonResponse)
+            );
 
             $this->cache->set($responseData);
 
