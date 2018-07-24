@@ -13,11 +13,13 @@ declare(strict_types=1);
 
 namespace Tardigrades\SectionField\Api\Serializer;
 
+use JMS\Serializer\Handler\HandlerRegistry;
 use JMS\Serializer\Naming\IdenticalPropertyNamingStrategy;
 use JMS\Serializer\Naming\SerializedNameAnnotationStrategy;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerBuilder;
 use Symfony\Component\HttpFoundation\Request;
+use Tardigrades\SectionField\Api\Handler\DateTimeTimezoneHandler;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 
 class SerializeToArray implements SerializeToArrayInterface {
@@ -48,6 +50,9 @@ class SerializeToArray implements SerializeToArrayInterface {
                     new IdenticalPropertyNamingStrategy()
                 )
             )
+            ->configureHandlers(function(HandlerRegistry $registry) {
+                $registry->registerSubscribingHandler(new DateTimeTimezoneHandler());
+            })
             ->setCacheDir($this->cacheDir . '/serializer')
             ->build();
 
