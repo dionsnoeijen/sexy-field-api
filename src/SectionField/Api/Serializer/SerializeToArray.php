@@ -50,6 +50,7 @@ class SerializeToArray implements SerializeToArrayInterface {
                     new IdenticalPropertyNamingStrategy()
                 )
             )
+            ->addDefaultHandlers()
             ->configureHandlers(function(HandlerRegistry $registry) {
                 $registry->registerSubscribingHandler(new DateTimeTimezoneHandler());
             })
