@@ -11,6 +11,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Tardigrades\Entity\Field;
 use Tardigrades\Entity\FieldType;
@@ -70,6 +71,9 @@ class RestInfoControllerTest extends TestCase
     /** @var CacheInterface|Mockery\MockInterface */
     private $cache;
 
+    /** @var TokenStorageInterface|Mockery\MockInterface */
+    private $tokenStorage;
+
     /** @var RestInfoController */
     private $controller;
 
@@ -84,6 +88,7 @@ class RestInfoControllerTest extends TestCase
         $this->dispatcher = Mockery::mock(EventDispatcherInterface::class);
         $this->serialize = Mockery::mock(SerializeToArrayInterface::class);
         $this->cache = Mockery::mock(CacheInterface::class);
+        $this->tokenStorage = Mockery::mock(TokenStorageInterface::class);
 
         $this->controller = new RestInfoController(
             $this->createSection,
@@ -94,7 +99,8 @@ class RestInfoControllerTest extends TestCase
             $this->requestStack,
             $this->dispatcher,
             $this->serialize,
-            $this->cache
+            $this->cache,
+            $this->tokenStorage
         );
     }
 
@@ -159,6 +165,10 @@ class RestInfoControllerTest extends TestCase
         $section->shouldReceive('getConfig')
             ->twice()
             ->andReturn($sectionConfig);
+
+        $this->tokenStorage->shouldReceive('getToken')
+            ->once()
+            ->andReturn(null);
 
         $this->cache->shouldReceive('start')->once();
         $this->cache->shouldReceive('isHit')->once()->andReturn(false);
@@ -288,6 +298,10 @@ class RestInfoControllerTest extends TestCase
         $sectionName = 'Even more sexy';
         $sectionHandle = 'evenMoreSexy';
         $section = Mockery::mock(SectionInterface::class);
+
+        $this->tokenStorage->shouldReceive('getToken')
+            ->once()
+            ->andReturn(null);
 
         $this->cache->shouldReceive('start')->once();
         $this->cache->shouldReceive('isHit')->once()->andReturn(false);
@@ -439,6 +453,11 @@ class RestInfoControllerTest extends TestCase
         $this->sectionManager->shouldReceive('readByHandle')
             ->once()
             ->andReturn($section);
+
+        $this->tokenStorage->shouldReceive('getToken')
+            ->once()
+            ->andReturn(null);
+
         $this->cache->shouldReceive('start')->once();
         $this->cache->shouldReceive('isHit')->once()->andReturn(false);
         $this->cache->shouldReceive('set')->once();

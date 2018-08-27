@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Tardigrades\Entity\SectionInterface;
 use Tardigrades\SectionField\Api\Serializer\SerializeToArrayInterface;
 use Tardigrades\SectionField\Event\ApiBeforeEntrySavedAfterValidated;
@@ -77,6 +78,9 @@ class RestControllerTest extends TestCase
     /** @var RestController */
     private $controller;
 
+    /** @var TokenStorageInterface|Mockery\MockInterface */
+    private $tokenStorage;
+
     public function setUp()
     {
         $this->readSection = Mockery::mock(ReadSectionInterface::class);
@@ -88,6 +92,7 @@ class RestControllerTest extends TestCase
         $this->dispatcher = Mockery::mock(EventDispatcherInterface::class);
         $this->serialize = Mockery::mock(SerializeToArrayInterface::class);
         $this->cache = Mockery::mock(CacheInterface::class);
+        $this->tokenStorage = Mockery::mock(TokenStorageInterface::class);
 
         $this->controller = new RestController(
             $this->createSection,
@@ -98,7 +103,8 @@ class RestControllerTest extends TestCase
             $this->requestStack,
             $this->dispatcher,
             $this->serialize,
-            $this->cache
+            $this->cache,
+            $this->tokenStorage
         );
     }
 
