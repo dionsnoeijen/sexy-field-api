@@ -50,19 +50,23 @@ class RestInfoController extends RestController implements RestControllerInterfa
             $showFields = $this->getFields();
 
             try {
+                // Distinguish between user.
+                // It's possible that the data for an individual user is different
+                $token = $this->tokenStorage->getToken();
+                $context = self::class;
+                if (!is_null($token)) {
+                    $context .= '.' . $token->getUsername();
+                }
                 $this->cache->start(
                     $section->getConfig()->getFullyQualifiedClassName(),
                     $showFields,
-                    self::class,
+                    $context,
                     $id
                 );
             } catch (\Psr\Cache\InvalidArgumentException $exception) {
                 //
             }
 
-            // @todo: We will have to distinguish between users
-            // (the logged in user) Because based on that changes
-            // in the result will occur.
             if ($this->cache->isHit()) {
                 return new JsonResponse(
                     $this->cache->get(),

@@ -16,6 +16,7 @@ services:
       - '@event_dispatcher'
       - '@Tardigrades\SectionField\Api\Serializer\SerializeToArray'
       - '@default.cache'
+      - '@security.token_storage'
 
   rest.controller: '@Tardigrades\SectionField\Api\Controller\RestController'
 
@@ -31,5 +32,6 @@ services:
       - '@event_dispatcher'
       - '@Tardigrades\SectionField\Api\Serializer\SerializeToArray'
       - '@default.cache'
+      - '@security.token_storage'
 
   rest.info.controller: '@Tardigrades\SectionField\Api\Controller\RestInfoController'

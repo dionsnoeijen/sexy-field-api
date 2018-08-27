@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Tardigrades\SectionField\Api\Serializer\SerializeToArrayInterface;
 use Tardigrades\SectionField\Service\CacheInterface;
 use Tardigrades\SectionField\Event\ApiBeforeEntrySavedAfterValidated;
@@ -69,6 +70,9 @@ class RestController implements RestControllerInterface
     /** @var CacheInterface */
     protected $cache;
 
+    /** @var TokenStorageInterface */
+    protected $tokenStorage;
+
     const DEFAULT_RELATIONSHIPS_LIMIT = 100;
     const DEFAULT_RELATIONSHIPS_OFFSET = 0;
     const OPTIONS_CALL = 'options';
@@ -92,6 +96,7 @@ class RestController implements RestControllerInterface
      * @param EventDispatcherInterface $dispatcher
      * @param SerializeToArrayInterface $serialize
      * @param CacheInterface $cache
+     * @param TokenStorageInterface $tokenStorage
      */
     public function __construct(
         CreateSectionInterface $createSection,
@@ -102,7 +107,8 @@ class RestController implements RestControllerInterface
         RequestStack $requestStack,
         EventDispatcherInterface $dispatcher,
         SerializeToArrayInterface $serialize,
-        CacheInterface $cache
+        CacheInterface $cache,
+        TokenStorageInterface $tokenStorage
     ) {
         $this->readSection = $readSection;
         $this->createSection = $createSection;
@@ -113,6 +119,7 @@ class RestController implements RestControllerInterface
         $this->dispatcher = $dispatcher;
         $this->serialize = $serialize;
         $this->cache = $cache;
+        $this->tokenStorage = $tokenStorage;
     }
 
     /**
