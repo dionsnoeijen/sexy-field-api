@@ -267,7 +267,9 @@ class RestInfoController extends RestController implements RestControllerInterfa
         foreach ($desiredFieldsOrderFiltered as $handle) {
             if (is_null($showFields) || in_array($handle, $showFields)) {
                 $fieldIndex = array_search($handle, $originalFieldsOrder);
-                $result[] = $originalFields[$fieldIndex];
+                if ($fieldIndex !== false) {
+                    $result[] = $originalFields[$fieldIndex];
+                }
             }
         }
 
