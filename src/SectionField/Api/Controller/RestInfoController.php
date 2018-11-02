@@ -8,6 +8,7 @@ use Tardigrades\Entity\FieldInterface;
 use Tardigrades\Entity\SectionInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Event\ApiEntryFetched;
+use Tardigrades\SectionField\Event\ApiFetchSectionInfo;
 use Tardigrades\SectionField\Event\ApiSectionInfoFetched;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 use Tardigrades\SectionField\Service\EntryNotFoundException;
@@ -39,6 +40,20 @@ class RestInfoController extends RestController implements RestControllerInterfa
     ): JsonResponse {
 
         $request = $this->requestStack->getCurrentRequest();
+
+        $this->dispatcher->dispatch(
+            ApiFetchSectionInfo::NAME,
+            new ApiFetchSectionInfo($request, $sectionHandle)
+        );
+
+        $abortCode = $request->get('abort');
+        if ($abortCode) {
+            return new JsonResponse(
+                $request->get('abortMessage'),
+                $abortCode,
+                $this->getDefaultResponseHeaders($request)
+            );
+        }
 
         $optionsResponse = $this->preFlightOptions($request, self::ALLOWED_HTTP_METHODS);
         if ($optionsResponse) {

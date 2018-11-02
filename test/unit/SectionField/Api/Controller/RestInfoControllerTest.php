@@ -111,6 +111,8 @@ class RestInfoControllerTest extends TestCase
      */
     public function it_returns_options_listings()
     {
+        $this->dispatcher->shouldReceive('dispatch')->once();
+
         $allowedMethods = 'OPTIONS, GET, POST, PUT, DELETE';
         $testCases = [
             // method name,    arguments,      allowed HTTP methods
@@ -120,6 +122,9 @@ class RestInfoControllerTest extends TestCase
             $request = Mockery::mock(Request::class);
             $request->shouldReceive('getMethod')
                 ->andReturn('options');
+
+            $request->shouldReceive('get')->once();
+
             $this->requestStack->shouldReceive('getCurrentRequest')
                 ->once()
                 ->andReturn($request);
@@ -165,6 +170,8 @@ class RestInfoControllerTest extends TestCase
         $section->shouldReceive('getConfig')
             ->twice()
             ->andReturn($sectionConfig);
+
+        $this->dispatcher->shouldReceive('dispatch')->once();
 
         $this->tokenStorage->shouldReceive('getToken')
             ->once()
@@ -257,6 +264,8 @@ class RestInfoControllerTest extends TestCase
             'Access-Control-Allow-Credentials' => 'true'
         ]);
 
+        $this->dispatcher->shouldReceive('dispatch')->once();
+
         $response = $this->controller->getSectionInfo('foo');
         $this->assertEquals($expectedResponse, $response);
     }
@@ -282,6 +291,8 @@ class RestInfoControllerTest extends TestCase
             'Access-Control-Allow-Origin' => 'iamtheorigin.com',
             'Access-Control-Allow-Credentials' => 'true'
         ]);
+
+        $this->dispatcher->shouldReceive('dispatch')->once();
 
         $response = $this->controller->getSectionInfo('foo');
         $this->assertEquals($expectedResponse, $response);
@@ -360,7 +371,7 @@ class RestInfoControllerTest extends TestCase
         $formattedRecords = $this->givenSomeFormattedToRecords();
 
         $this->dispatcher->shouldReceive('dispatch')
-            ->once();
+            ->twice();
 
         foreach ($formattedRecords as $formattedRecord) {
             $section = Mockery::mock(CommonSectionInterface::class);
@@ -488,7 +499,7 @@ class RestInfoControllerTest extends TestCase
             ->andReturn($request);
 
         $this->dispatcher->shouldReceive('dispatch')
-            ->once();
+            ->twice();
 
         $expectedFieldInfo['fields'] = $this->givenASetOfFieldInfo(true);
         $expectedFieldInfo['fields'][2]['someRelationshipFieldHandle']['whatever'] = ['error' => 'Entry not found'];
