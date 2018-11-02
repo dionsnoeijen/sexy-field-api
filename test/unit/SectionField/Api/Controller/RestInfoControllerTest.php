@@ -122,6 +122,9 @@ class RestInfoControllerTest extends TestCase
             $request = Mockery::mock(Request::class);
             $request->shouldReceive('getMethod')
                 ->andReturn('options');
+
+            $request->shouldReceive('get')->once();
+
             $this->requestStack->shouldReceive('getCurrentRequest')
                 ->once()
                 ->andReturn($request);

@@ -46,6 +46,15 @@ class RestInfoController extends RestController implements RestControllerInterfa
             new ApiFetchSectionInfo($request, $sectionHandle)
         );
 
+        $abortCode = $request->get('abort');
+        if ($abortCode) {
+            return new JsonResponse(
+                $request->get('abortMessage'),
+                $abortCode,
+                $this->getDefaultResponseHeaders($request)
+            );
+        }
+
         $optionsResponse = $this->preFlightOptions($request, self::ALLOWED_HTTP_METHODS);
         if ($optionsResponse) {
             return $optionsResponse;
