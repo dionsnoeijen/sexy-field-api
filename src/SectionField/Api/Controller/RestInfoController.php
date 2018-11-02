@@ -122,11 +122,19 @@ class RestInfoController extends RestController implements RestControllerInterfa
 
                 $responseData = $this->mapEntryToFields($responseData, $entry, $fieldProperties);
                 $jsonResponse->setData($responseData);
-
                 $this->dispatcher->dispatch(
                     ApiEntryFetched::NAME,
                     new ApiEntryFetched($request, $responseData, $jsonResponse, $entry)
                 );
+
+                $abortCode = $request->get('abort');
+                if ($abortCode) {
+                    return new JsonResponse(
+                        $request->get('abortMessage'),
+                        $abortCode,
+                        $this->getDefaultResponseHeaders($request)
+                    );
+                }
             }
 
             $this->dispatcher->dispatch(
@@ -198,10 +206,11 @@ class RestInfoController extends RestController implements RestControllerInterfa
                 try {
                     if (strpos(strtolower($fieldHandle), 'slug') !== false) {
                         $method = 'getSlug';
+                        $value = (string) $entry->$method();
                     } else {
                         $method = 'get' . ucfirst($this->handleToPropertyName($fieldHandle, $fieldProperties));
+                        $value = $entry->$method();
                     }
-                    $value = (string) $entry->$method();
 
                 } catch (\Exception $exception) {
                     //
