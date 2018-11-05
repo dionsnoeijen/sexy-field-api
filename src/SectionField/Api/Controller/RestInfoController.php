@@ -224,9 +224,10 @@ class RestInfoController extends RestController implements RestControllerInterfa
                         $value = (string) $entry->$method();
                     } else {
                         $method = 'get' . ucfirst($this->handleToPropertyName($fieldHandle, $fieldProperties));
-                        $value = $entry->$method();
+                        if (method_exists($entry, $method)) {
+                            $value = $entry->$method();
+                        }
                     }
-
                 } catch (\Exception $exception) {
                     //
                 }
