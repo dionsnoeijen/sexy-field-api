@@ -185,6 +185,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
 
     /**
      * Make sure the entry values are passed on to the fields
+     * @todo Simplify with specification pattern
      *
      * @param array $responseData
      * @param CommonSectionInterface $entry
@@ -219,9 +220,11 @@ class RestInfoController extends RestController implements RestControllerInterfa
                 $value = $find ? (string) $find : null;
             } else {
                 try {
-                    if (strpos(strtolower($fieldHandle), 'slug') !== false) {
-                        $method = 'getSlug';
-                        $value = (string) $entry->$method();
+                    // The slug field
+                    if (strpos(strtolower($fieldHandle), 'slug') !== false &&
+                        method_exists($entry, 'getSlug')
+                    ) {
+                        $value = (string) $entry->getSlug();
                     } else {
                         $method = 'get' . ucfirst($this->handleToPropertyName($fieldHandle, $fieldProperties));
                         if (method_exists($entry, $method)) {
@@ -232,10 +235,17 @@ class RestInfoController extends RestController implements RestControllerInterfa
                     //
                 }
             }
+
             if ($value instanceof \DateTime) {
                 $field[$fieldHandle]['value'] = $value->format('Y-m-d H:i');
             } else {
-                $field[$fieldHandle]['value'] = $value;
+                if (is_object($value) && method_exists($value, 'getSlug')) {
+                    // Slug for relationship selected value
+                    $field[$fieldHandle]['value'] = (string) $value->getSlug();
+                } else {
+                    // Just some scalar
+                    $field[$fieldHandle]['value'] = $value;
+                }
             }
             $value = null;
         }
