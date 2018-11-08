@@ -166,6 +166,31 @@ class RestInfoController extends RestController implements RestControllerInterfa
     }
 
     /**
+     * Just like getSectionInfo, but for slugs instead of IDs.
+     * IDs are used in too much logic to cleanly replace by slugs. So we fetch by slug,
+     * then transform that into a getSectionInfo call.
+     * That could be a bit slower, but maybe not, if Doctrine is smart enough.
+     * @param string $sectionHandle
+     * @param string $slug
+     * @return JsonResponse
+     */
+    public function getSectionInfoBySlug(
+        string $sectionHandle,
+        string $slug
+    ): JsonResponse {
+        try {
+            /** @var CommonSectionInterface $entry */
+            $entry = $this->readSection->read(ReadOptions::fromArray([
+                ReadOptions::SECTION => $sectionHandle,
+                ReadOptions::SLUG => $slug
+            ]))[0];
+        } catch (\Exception $exception) {
+            return $this->errorResponse($this->requestStack->getCurrentRequest(), $exception);
+        }
+        return $this->getSectionInfo($sectionHandle, (string)$entry->getId());
+    }
+
+    /**
      * Use the handle to convert it to the actual property name
      *
      * @param string $handle
