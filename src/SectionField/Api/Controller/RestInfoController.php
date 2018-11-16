@@ -240,6 +240,9 @@ class RestInfoController extends RestController implements RestControllerInterfa
                     $method = 'get' . ucfirst($property);
                     if ($find) {
                         $find = $find->$method();
+                        if ($find instanceof \DateTime) {
+                            $find = $find->format('Y-m-d');
+                        }
                     }
                 }
                 $value = $find ? (string) $find : null;
@@ -260,7 +263,6 @@ class RestInfoController extends RestController implements RestControllerInterfa
                     //
                 }
             }
-
             if ($value instanceof \DateTime) {
                 $field[$fieldHandle]['value'] = $value->format('Y-m-d H:i');
             } else {
