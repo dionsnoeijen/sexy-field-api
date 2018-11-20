@@ -150,12 +150,13 @@ class RestControllerTest extends TestCase
                 ->once()
                 ->andReturn('someorigin.com');
 
-            $response = new JsonResponse([], JsonResponse::HTTP_OK, [
+            $expectedResponse = new JsonResponse([], JsonResponse::HTTP_OK, [
                 'Access-Control-Allow-Origin' => 'someorigin.com',
                 'Access-Control-Allow-Methods' => $allowMethods,
                 'Access-Control-Allow-Credentials' => 'true'
             ]);
-            $this->assertEquals($this->controller->$method(...$args), $response);
+
+            $this->assertEquals($expectedResponse, $this->controller->$method(...$args));
         }
     }
 
@@ -188,6 +189,7 @@ class RestControllerTest extends TestCase
 
             $request = new Request($query, [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
             $this->requestStack->shouldReceive('getCurrentRequest')->andReturn($request);
+            $this->dispatcher->shouldReceive('dispatch');
 
             if (strpos($method, 'get') !== false) {
                 $section = Mockery::mock(SectionInterface::class);
@@ -217,10 +219,6 @@ class RestControllerTest extends TestCase
                 ->once()
                 ->andThrow(EntryNotFoundException::class, 'Entry not found');
 
-
-            if ($expectDispatch) {
-                $this->dispatcher->shouldReceive('dispatch')->once();
-            }
             if ($expectBuildForm) {
                 $this->form->shouldReceive('buildFormForSection')->once();
             }
@@ -264,6 +262,8 @@ class RestControllerTest extends TestCase
                 ->shouldReceive('getCurrentRequest')
                 ->andReturn($request);
 
+            $this->dispatcher->shouldReceive('dispatch');
+
             if (strpos($method, 'get') !== false) {
                 $section = Mockery::mock(SectionInterface::class);
                 $sectionConfig = SectionConfig::fromArray([
@@ -295,10 +295,6 @@ class RestControllerTest extends TestCase
                 'Access-Control-Allow-Origin' => 'iamtheorigin.com',
                 'Access-Control-Allow-Credentials' => 'true'
             ]);
-
-            if ($expectDispatch) {
-                $this->dispatcher->shouldReceive('dispatch')->once();
-            }
 
             $response = $this->controller->$method(...$args);
             $this->assertEquals($expectedResponse, $response);
@@ -386,12 +382,7 @@ class RestControllerTest extends TestCase
             ->shouldReceive('read')
             ->andReturn(new \ArrayIterator([Mockery::mock(CommonSectionInterface::class)]));
 
-        $this->dispatcher->shouldReceive('dispatch')
-            ->twice()
-            ->withArgs([
-                ApiEntryFetched::NAME,
-                Mockery::type(ApiEntryFetched::class)
-            ]);
+        $this->dispatcher->shouldReceive('dispatch');
 
         $response = $this->controller->getEntryById('sexyHandle', '90000');
         $this->assertSame('[]', $response->getContent());
