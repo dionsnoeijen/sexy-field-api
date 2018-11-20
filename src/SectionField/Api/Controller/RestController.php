@@ -144,6 +144,10 @@ class RestController implements RestControllerInterface
             new ApiFetchEntry($request, $sectionHandle)
         );
 
+        if ($abort = $this->shouldAbort($request)) {
+            return $abort;
+        }
+
         try {
             $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
 
@@ -183,6 +187,10 @@ class RestController implements RestControllerInterface
                 new ApiEntryFetched($request, $responseData, $jsonResponse, $entry)
             );
 
+            if ($abort = $this->shouldAbort($request)) {
+                return $abort;
+            }
+
             $this->cache->set($responseData);
 
             return $jsonResponse;
@@ -210,6 +218,10 @@ class RestController implements RestControllerInterface
             ApiFetchEntry::NAME,
             new ApiFetchEntry($request, $sectionHandle)
         );
+
+        if ($abort = $this->shouldAbort($request)) {
+            return $abort;
+        }
 
         try {
             $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
@@ -246,6 +258,10 @@ class RestController implements RestControllerInterface
                 new ApiEntryFetched($request, $responseData, $jsonResponse, $entry)
             );
 
+            if ($abort = $this->shouldAbort($request)) {
+                return $abort;
+            }
+
             $this->cache->set($responseData);
 
             return $jsonResponse;
@@ -276,6 +292,10 @@ class RestController implements RestControllerInterface
             ApiFetchEntries::NAME,
             new ApiFetchEntries($request, $sectionHandle)
         );
+
+        if ($abort = $this->shouldAbort($request)) {
+            return $abort;
+        }
 
         // We may join and want to select something on what is in the joined table
         // Like this: accountHasRole:role&value=1,2,3
@@ -349,6 +369,10 @@ class RestController implements RestControllerInterface
                 )
             );
 
+            if ($abort = $this->shouldAbort($request)) {
+                return $abort;
+            }
+
             $this->cache->set($responseData);
 
             return $jsonResponse;
@@ -376,6 +400,10 @@ class RestController implements RestControllerInterface
             ApiFetchEntries::NAME,
             new ApiFetchEntries($request, $sectionHandle)
         );
+
+        if ($abort = $this->shouldAbort($request)) {
+            return $abort;
+        }
 
         $offset = $request->get('offset', 0);
         $limit = $request->get('limit', 100);
@@ -434,6 +462,10 @@ class RestController implements RestControllerInterface
                 )
             );
 
+            if ($abort = $this->shouldAbort($request)) {
+                return $abort;
+            }
+
             $this->cache->set($responseData);
 
             return $jsonResponse;
@@ -461,13 +493,8 @@ class RestController implements RestControllerInterface
             new ApiCreateEntry($request, $sectionHandle)
         );
 
-        $abortCode = $request->get('abort');
-        if ($abortCode) {
-            return new JsonResponse(
-                $request->get('abortMessage'),
-                $abortCode,
-                $this->getDefaultResponseHeaders($request)
-            );
+        if ($abort = $this->shouldAbort($request)) {
+            return $abort;
         }
 
         try {
@@ -508,6 +535,10 @@ class RestController implements RestControllerInterface
                     ApiEntryCreated::NAME,
                     new ApiEntryCreated($request, $responseData, $jsonResponse, $form->getData())
                 );
+
+                if ($abort = $this->shouldAbort($request)) {
+                    return $abort;
+                }
             } else {
                 $responseData['errors'] = $this->getFormErrors($form);
                 $responseData['code'] = JsonResponse::HTTP_BAD_REQUEST;
@@ -542,13 +573,8 @@ class RestController implements RestControllerInterface
             new ApiUpdateEntry($request, $sectionHandle)
         );
 
-        $abortCode = $request->get('abort');
-        if ($abortCode) {
-            return new JsonResponse(
-                $request->get('abortMessage'),
-                $abortCode,
-                $this->getDefaultResponseHeaders($request)
-            );
+        if ($abort = $this->shouldAbort($request)) {
+            return $abort;
         }
 
         try {
@@ -590,13 +616,9 @@ class RestController implements RestControllerInterface
                         $newEntry
                     )
                 );
-                $abortCode = $request->get('abort');
-                if ($abortCode) {
-                    return new JsonResponse(
-                        $request->get('abortMessage'),
-                        $abortCode,
-                        $this->getDefaultResponseHeaders($request)
-                    );
+
+                if ($abort = $this->shouldAbort($request)) {
+                    return $abort;
                 }
 
                 $responseData = $this->save($form, $jsonResponse, $request);
@@ -647,13 +669,8 @@ class RestController implements RestControllerInterface
             new ApiUpdateEntry($request, $sectionHandle)
         );
 
-        $abortCode = $request->get('abort');
-        if ($abortCode) {
-            return new JsonResponse(
-                $request->get('abortMessage'),
-                $abortCode,
-                $this->getDefaultResponseHeaders($request)
-            );
+        if ($abort = $this->shouldAbort($request)) {
+            return $abort;
         }
 
         try {
@@ -694,13 +711,9 @@ class RestController implements RestControllerInterface
                         $newEntry
                     )
                 );
-                $abortCode = $request->get('abort');
-                if ($abortCode) {
-                    return new JsonResponse(
-                        $request->get('abortMessage'),
-                        $abortCode,
-                        $this->getDefaultResponseHeaders($request)
-                    );
+
+                if ($abort = $this->shouldAbort($request)) {
+                    return $abort;
                 }
 
                 $responseData = $this->save($form, $jsonResponse, $request);
@@ -790,6 +803,10 @@ class RestController implements RestControllerInterface
             new ApiDeleteEntry($request, $sectionHandle)
         );
 
+        if ($abort = $this->shouldAbort($request)) {
+            return $abort;
+        }
+
         try {
             $entry = $this->readSection->read(ReadOptions::fromArray([
                 ReadOptions::SECTION => $sectionHandle,
@@ -806,6 +823,11 @@ class RestController implements RestControllerInterface
                 ApiEntryDeleted::NAME,
                 new ApiEntryDeleted($request, $responseData, $jsonResponse, $entry)
             );
+
+            if ($abort = $this->shouldAbort($request)) {
+                return $abort;
+            }
+
             return $jsonResponse;
         } catch (\Exception $exception) {
             return $this->errorResponse($request, $exception);
@@ -860,6 +882,19 @@ class RestController implements RestControllerInterface
         $responseData = array_merge(json_decode($jsonResponse->getContent(), true), $responseData);
 
         return $responseData;
+    }
+
+    protected function shouldAbort(Request $request): ?JsonResponse
+    {
+        $abortCode = $request->get('abort');
+        if ($abortCode) {
+            return new JsonResponse(
+                $request->get('abortMessage'),
+                $abortCode,
+                $this->getDefaultResponseHeaders($request)
+            );
+        }
+        return null;
     }
 
     /**
