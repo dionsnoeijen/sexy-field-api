@@ -11,6 +11,8 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Tardigrades\SectionField\Api\Serializer\SerializeToArrayInterface;
+use Tardigrades\SectionField\Event\ApiFetchEntries;
+use Tardigrades\SectionField\Event\ApiFetchEntry;
 use Tardigrades\SectionField\Service\CacheInterface;
 use Tardigrades\SectionField\Event\ApiBeforeEntrySavedAfterValidated;
 use Tardigrades\SectionField\Event\ApiBeforeEntryUpdatedAfterValidated;
@@ -137,6 +139,11 @@ class RestController implements RestControllerInterface
             return $optionsResponse;
         }
 
+        $this->dispatcher->dispatch(
+            ApiFetchEntry::NAME,
+            new ApiFetchEntry($request, $sectionHandle)
+        );
+
         try {
             $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
 
@@ -199,6 +206,11 @@ class RestController implements RestControllerInterface
             return $optionsResponse;
         }
 
+        $this->dispatcher->dispatch(
+            ApiFetchEntry::NAME,
+            new ApiFetchEntry($request, $sectionHandle)
+        );
+
         try {
             $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
 
@@ -259,6 +271,11 @@ class RestController implements RestControllerInterface
         if ($optionsResponse) {
             return $optionsResponse;
         }
+
+        $this->dispatcher->dispatch(
+            ApiFetchEntries::NAME,
+            new ApiFetchEntries($request, $sectionHandle)
+        );
 
         // We may join and want to select something on what is in the joined table
         // Like this: accountHasRole:role&value=1,2,3
@@ -354,6 +371,11 @@ class RestController implements RestControllerInterface
         if ($optionsResponse) {
             return $optionsResponse;
         }
+
+        $this->dispatcher->dispatch(
+            ApiFetchEntries::NAME,
+            new ApiFetchEntries($request, $sectionHandle)
+        );
 
         $offset = $request->get('offset', 0);
         $limit = $request->get('limit', 100);
