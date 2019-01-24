@@ -57,6 +57,11 @@ class ApiSectionInfoFetched extends Event
         return $this->request;
     }
 
+    public function setResponseData(array $responseData): void
+    {
+        $this->responseData = $responseData;
+    }
+
     public function getResponseData(): array
     {
         return $this->responseData;
