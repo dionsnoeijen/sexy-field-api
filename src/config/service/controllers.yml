@@ -34,4 +34,6 @@ services:
       - '@default.cache'
       - '@security.token_storage'
 
-  rest.info.controller: '@Tardigrades\SectionField\Api\Controller\RestInfoController'
+  rest.info.controller:
+    alias: Tardigrades\SectionField\Api\Controller\RestInfoController
+    public: true
