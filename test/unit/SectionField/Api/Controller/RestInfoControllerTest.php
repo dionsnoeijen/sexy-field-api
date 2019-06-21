@@ -33,6 +33,7 @@ use Tardigrades\SectionField\Service\SectionNotFoundException;
 use Tardigrades\SectionField\ValueObject\Handle;
 use Tardigrades\SectionField\ValueObject\Name;
 use Tardigrades\SectionField\ValueObject\SectionConfig;
+use Tardigrades\SectionField\ValueObject\Slug;
 
 /**
  * @coversDefaultClass Tardigrades\SectionField\Api\Controller\RestInfoController
@@ -396,7 +397,7 @@ class RestInfoControllerTest extends TestCase
 
             $section->shouldReceive('getSlug')
                 ->once()
-                ->andReturn($formattedRecord['slug']);
+                ->andReturn(Slug::fromString($formattedRecord['slug']));
 
             $section->shouldReceive('getDefault')
                 ->once()
@@ -650,22 +651,38 @@ class SomeSectionEntity implements CommonSectionInterface {
 
     public function getId(): ?int
     {
-        // TODO: Implement getId() method.
     }
 
     public static function loadValidatorMetadata(ClassMetadata $metadata): void
     {
-        // TODO: Implement loadValidatorMetadata() method.
     }
 
     public function onPrePersist(): void
     {
-        // TODO: Implement onPrePersist() method.
     }
 
     public function onPreUpdate(): void
     {
-        // TODO: Implement onPreUpdate() method.
+    }
+
+    public function getCreated(): ?\DateTime
+    {
+    }
+
+    public function getUpdated(): ?\DateTime
+    {
+    }
+
+    public function getSlug(): \Tardigrades\SectionField\ValueObject\Slug
+    {
+    }
+
+    public function getDefault(): string
+    {
+    }
+
+    public static function fieldInfo(): array
+    {
     }
 }
 
