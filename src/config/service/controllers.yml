@@ -3,6 +3,7 @@ services:
     public: false
     arguments:
       - '%kernel.cache_dir%'
+      - '@service_container'
 
   Tardigrades\SectionField\Api\Controller\RestController:
     public: false

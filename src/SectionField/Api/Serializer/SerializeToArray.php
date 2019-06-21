@@ -18,6 +18,7 @@ use JMS\Serializer\Naming\IdenticalPropertyNamingStrategy;
 use JMS\Serializer\Naming\SerializedNameAnnotationStrategy;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Tardigrades\SectionField\Api\Handler\DateTimeTimezoneHandler;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
@@ -27,10 +28,15 @@ class SerializeToArray implements SerializeToArrayInterface {
     /** @var string */
     private $cacheDir;
 
+    /** @var ContainerInterface */
+    private $container;
+
     public function __construct(
-        string $cacheDir
+        string $cacheDir,
+        ContainerInterface $container
     ) {
         $this->cacheDir = $cacheDir;
+        $this->container = $container;
     }
 
     /**
@@ -53,6 +59,7 @@ class SerializeToArray implements SerializeToArrayInterface {
             ->addDefaultHandlers()
             ->configureHandlers(function(HandlerRegistry $registry) {
                 $registry->registerSubscribingHandler(new DateTimeTimezoneHandler());
+
             })
             ->setCacheDir($this->cacheDir . '/serializer')
             ->build();
