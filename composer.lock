@@ -1,7 +1,7 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
     "content-hash": "00684cba5b201c091d42a5313b429274",
@@ -1772,12 +1772,12 @@
             "version": "v2.6.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/doctrine/doctrine2.git",
+                "url": "https://github.com/doctrine/orm.git",
                 "reference": "87ee409783a4a322b5597ebaae558661404055a7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/doctrine2/zipball/87ee409783a4a322b5597ebaae558661404055a7",
+                "url": "https://api.github.com/repos/doctrine/orm/zipball/87ee409783a4a322b5597ebaae558661404055a7",
                 "reference": "87ee409783a4a322b5597ebaae558661404055a7",
                 "shasum": ""
             },
@@ -1995,12 +1995,12 @@
             "version": "v1.6.5",
             "source": {
                 "type": "git",
-                "url": "https://github.com/mikey179/vfsStream.git",
+                "url": "https://github.com/bovigo/vfsStream.git",
                 "reference": "d5fec95f541d4d71c4823bb5e30cf9b9e5b96145"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mikey179/vfsStream/zipball/d5fec95f541d4d71c4823bb5e30cf9b9e5b96145",
+                "url": "https://api.github.com/repos/bovigo/vfsStream/zipball/d5fec95f541d4d71c4823bb5e30cf9b9e5b96145",
                 "reference": "d5fec95f541d4d71c4823bb5e30cf9b9e5b96145",
                 "shasum": ""
             },
@@ -2100,7 +2100,7 @@
                 "test double",
                 "testing"
             ],
-            "time": "2018-06-07 15:49:30"
+            "time": "2018-06-07T15:49:30+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -3008,6 +3008,7 @@
                 "mock",
                 "xunit"
             ],
+            "abandoned": true,
             "time": "2018-01-06T05:45:45+00:00"
         },
         {
@@ -4550,12 +4551,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/dionsnoeijen/sexy-field.git",
-                "reference": "d0c78f6b3d645c2d2994b9a6ff496a8a187af1a2"
+                "reference": "90f1ddb9afa7d9a7d153d45fbfaca767b6f27ab8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field/zipball/d0c78f6b3d645c2d2994b9a6ff496a8a187af1a2",
-                "reference": "d0c78f6b3d645c2d2994b9a6ff496a8a187af1a2",
+                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field/zipball/90f1ddb9afa7d9a7d153d45fbfaca767b6f27ab8",
+                "reference": "90f1ddb9afa7d9a7d153d45fbfaca767b6f27ab8",
                 "shasum": ""
             },
             "require": {
@@ -4600,7 +4601,7 @@
                 }
             ],
             "description": "SexyField helps you build application structure and accompanying forms.",
-            "time": "2018-06-26T11:54:06+00:00"
+            "time": "2019-06-18T11:55:11+00:00"
         },
         {
             "name": "tardigrades/sexy-field-doctrine",
@@ -4648,7 +4649,7 @@
                 }
             ],
             "description": "SexyField Doctrine package, containing config generator, writer, reader and deleter",
-            "time": "2018-06-11 12:21:32"
+            "time": "2018-06-11T12:21:32+00:00"
         },
         {
             "name": "tardigrades/sexy-field-entity",
@@ -4696,7 +4697,7 @@
                 }
             ],
             "description": "Section field entity generator",
-            "time": "2018-04-30 13:53:16"
+            "time": "2018-04-30T13:53:16+00:00"
         },
         {
             "name": "tardigrades/sexy-field-field-types-base",
@@ -4742,7 +4743,7 @@
                 }
             ],
             "description": "Section field basic field types",
-            "time": "2018-05-04 06:33:12"
+            "time": "2018-05-04T06:33:12+00:00"
         },
         {
             "name": "tardigrades/sexy-field-form",
@@ -4796,7 +4797,7 @@
                 }
             ],
             "description": "SexyField Form. Generate symfony forms based on section configuration.",
-            "time": "2018-05-03 12:28:40"
+            "time": "2018-05-03T12:28:40+00:00"
         },
         {
             "name": "theseer/tokenizer",
