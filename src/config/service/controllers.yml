@@ -6,7 +6,7 @@ services:
       - '@service_container'
 
   Tardigrades\SectionField\Api\Controller\RestController:
-    public: false
+    public: true
     arguments:
       - '@section_field.create.section'
       - '@section_field.read.section'
@@ -19,10 +19,12 @@ services:
       - '@default.cache'
       - '@security.token_storage'
 
-  rest.controller: '@Tardigrades\SectionField\Api\Controller\RestController'
+  rest.controller:
+    alias: 'Tardigrades\SectionField\Api\Controller\RestController'
+    public: true
 
   Tardigrades\SectionField\Api\Controller\RestInfoController:
-    public: false
+    public: true
     arguments:
       - '@section_field.create.section'
       - '@section_field.read.section'
@@ -36,5 +38,5 @@ services:
       - '@security.token_storage'
 
   rest.info.controller:
-    alias: Tardigrades\SectionField\Api\Controller\RestInfoController
+    alias: 'Tardigrades\SectionField\Api\Controller\RestInfoController'
     public: true
