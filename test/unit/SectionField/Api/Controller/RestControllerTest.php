@@ -660,22 +660,22 @@ class RestControllerTest extends TestCase
         $this->dispatcher->shouldReceive('dispatch')
             ->once()
             ->withArgs([
-                ApiCreateEntry::NAME,
-                Mockery::type(ApiCreateEntry::class)
+                Mockery::type(ApiCreateEntry::class),
+                ApiCreateEntry::NAME
             ]);
 
         $this->dispatcher->shouldReceive('dispatch')
             ->once()
             ->withArgs([
-                ApiBeforeEntrySavedAfterValidated::NAME,
-                Mockery::type(ApiBeforeEntrySavedAfterValidated::class)
+                Mockery::type(ApiBeforeEntrySavedAfterValidated::class),
+                ApiBeforeEntrySavedAfterValidated::NAME
             ]);
 
         $this->dispatcher->shouldReceive('dispatch')
             ->once()
             ->withArgs([
-                ApiEntryCreated::NAME,
-                Mockery::type(ApiEntryCreated::class)
+                Mockery::type(ApiEntryCreated::class),
+                ApiEntryCreated::NAME
             ]);
 
         $mockedRequest = Mockery::mock(Request::class)->makePartial();
@@ -716,22 +716,22 @@ class RestControllerTest extends TestCase
         $this->dispatcher->shouldReceive('dispatch')
             ->once()
             ->withArgs([
-                ApiCreateEntry::NAME,
-                Mockery::type(ApiCreateEntry::class)
+                Mockery::type(ApiCreateEntry::class),
+                ApiCreateEntry::NAME
             ]);
 
         $this->dispatcher->shouldReceive('dispatch')
             ->once()
             ->withArgs([
-                ApiBeforeEntrySavedAfterValidated::NAME,
-                Mockery::type(ApiBeforeEntrySavedAfterValidated::class)
+                Mockery::type(ApiBeforeEntrySavedAfterValidated::class),
+                ApiBeforeEntrySavedAfterValidated::NAME
             ]);
 
         $this->dispatcher->shouldReceive('dispatch')
             ->once()
             ->withArgs([
-                ApiEntryCreated::NAME,
-                Mockery::type(ApiEntryCreated::class)
+                Mockery::type(ApiEntryCreated::class),
+                ApiEntryCreated::NAME
             ]);
 
         $entryMock = Mockery::mock(CommonSectionInterface::class);
@@ -791,8 +791,8 @@ class RestControllerTest extends TestCase
         $this->dispatcher->shouldReceive('dispatch')
             ->once()
             ->withArgs([
-                ApiCreateEntry::NAME,
-                Mockery::type(ApiCreateEntry::class)
+                Mockery::type(ApiCreateEntry::class),
+                ApiCreateEntry::NAME
             ]);
 
         $this->form->shouldReceive('buildFormForSection')
@@ -868,18 +868,24 @@ class RestControllerTest extends TestCase
 
         $this->dispatcher->shouldReceive('dispatch')
             ->twice()
-            ->withArgs([ApiUpdateEntry::NAME, Mockery::type(ApiUpdateEntry::class)]);
+            ->withArgs([
+                Mockery::type(ApiUpdateEntry::class),
+                ApiUpdateEntry::NAME
+            ]);
 
         $this->dispatcher->shouldReceive('dispatch')
             ->twice()
             ->withArgs([
-                ApiBeforeEntryUpdatedAfterValidated::NAME,
-                Mockery::type(ApiBeforeEntryUpdatedAfterValidated::class)]
-            );
+                Mockery::type(ApiBeforeEntryUpdatedAfterValidated::class),
+                ApiBeforeEntryUpdatedAfterValidated::NAME
+            ]);
 
         $this->dispatcher->shouldReceive('dispatch')
             ->twice()
-            ->withArgs([ApiEntryUpdated::NAME, Mockery::type(ApiEntryUpdated::class)]);
+            ->withArgs([
+                Mockery::type(ApiEntryUpdated::class),
+                ApiEntryUpdated::NAME
+            ]);
 
 
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
@@ -988,7 +994,10 @@ class RestControllerTest extends TestCase
 
         $this->dispatcher->shouldReceive('dispatch')
             ->twice()
-            ->withArgs([ApiUpdateEntry::NAME, Mockery::type(ApiUpdateEntry::class)]);
+            ->withArgs([
+                Mockery::type(ApiUpdateEntry::class),
+                ApiUpdateEntry::NAME
+            ]);
 
         $response = $this->controller->updateEntryById('sexy', 9);
         $this->assertSame(400, $response->getStatusCode());
@@ -1033,11 +1042,17 @@ class RestControllerTest extends TestCase
 
         $this->dispatcher->shouldReceive('dispatch')
             ->twice()
-            ->withArgs([ApiEntryDeleted::NAME, Mockery::type(ApiEntryDeleted::class)]);
+            ->withArgs([
+                Mockery::type(ApiEntryDeleted::class),
+                ApiEntryDeleted::NAME
+            ]);
 
         $this->dispatcher->shouldReceive('dispatch')
             ->twice()
-            ->withArgs([ApiDeleteEntry::NAME, Mockery::type(ApiDeleteEntry::class)]);
+            ->withArgs([
+                Mockery::type(ApiDeleteEntry::class),
+                ApiDeleteEntry::NAME
+            ]);
 
         $response = $this->controller->deleteEntryById('notsexy', 1);
         $this->assertSame('{"success":true}', $response->getContent());
@@ -1074,11 +1089,17 @@ class RestControllerTest extends TestCase
 
         $this->dispatcher->shouldReceive('dispatch')
             ->twice()
-            ->withArgs([ApiEntryDeleted::NAME, Mockery::type(ApiEntryDeleted::class)]);
+            ->withArgs([
+                Mockery::type(ApiEntryDeleted::class),
+                ApiEntryDeleted::NAME
+            ]);
 
         $this->dispatcher->shouldReceive('dispatch')
             ->twice()
-            ->withArgs([ApiDeleteEntry::NAME, Mockery::type(ApiDeleteEntry::class)]);
+            ->withArgs([
+                Mockery::type(ApiDeleteEntry::class),
+                ApiDeleteEntry::NAME
+            ]);
 
         $response = $this->controller->deleteEntryById('notsexy', 1);
         $this->assertSame('{"success":false}', $response->getContent());

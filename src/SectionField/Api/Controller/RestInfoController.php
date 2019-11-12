@@ -42,8 +42,8 @@ class RestInfoController extends RestController implements RestControllerInterfa
         $request = $this->requestStack->getCurrentRequest();
 
         $this->dispatcher->dispatch(
-            ApiFetchSectionInfo::NAME,
-            new ApiFetchSectionInfo($request, $sectionHandle)
+            new ApiFetchSectionInfo($request, $sectionHandle),
+            ApiFetchSectionInfo::NAME
         );
 
         $abortCode = $request->get('abort');
@@ -138,8 +138,8 @@ class RestInfoController extends RestController implements RestControllerInterfa
                 $responseData = $this->mapEntryToFields($responseData, $entry, $fieldProperties);
                 $jsonResponse->setData($responseData);
                 $this->dispatcher->dispatch(
-                    ApiEntryFetched::NAME,
-                    new ApiEntryFetched($request, $responseData, $jsonResponse, $entry)
+                    new ApiEntryFetched($request, $responseData, $jsonResponse, $entry),
+                    ApiEntryFetched::NAME
                 );
 
                 $abortCode = $request->get('abort');
@@ -153,8 +153,8 @@ class RestInfoController extends RestController implements RestControllerInterfa
             }
 
             $this->dispatcher->dispatch(
-                ApiSectionInfoFetched::NAME,
-                new ApiSectionInfoFetched($request, $responseData, $jsonResponse, $sectionHandle)
+                new ApiSectionInfoFetched($request, $responseData, $jsonResponse, $sectionHandle),
+                ApiSectionInfoFetched::NAME
             );
 
             $this->cache->set($responseData);
