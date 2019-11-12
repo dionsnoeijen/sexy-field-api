@@ -571,20 +571,22 @@ class RestInfoController extends RestController implements RestControllerInterfa
         try {
             $method = $this->handleToPropertyName($fieldHandle, $editing::FIELDS);
             $relationshipsEntityMethod = 'get' . ucfirst($method);
-            $related = $editing->{$relationshipsEntityMethod}();
-            if (!is_null($related)) {
-                $relatedIds = [];
-                if (is_iterable($related)) {
-                    /** @var CommonSectionInterface $relation */
-                    foreach ($related as $relation) {
-                        $relatedIds[] = $relation->getId();
+            if (method_exists($editing, $relationshipsEntityMethod)) {
+                $related = $editing->{$relationshipsEntityMethod}();
+                if (!is_null($related)) {
+                    $relatedIds = [];
+                    if (is_iterable($related)) {
+                        /** @var CommonSectionInterface $relation */
+                        foreach ($related as $relation) {
+                            $relatedIds[] = $relation->getId();
+                        }
+                    } else {
+                        $relatedIds[] = $related->getId();
                     }
-                } else {
-                    $relatedIds[] = $related->getId();
-                }
-                foreach ($fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']] as &$relatable) {
-                    if (!empty($relatable['id']) && in_array($relatable['id'], $relatedIds)) {
-                        $relatable['selected'] = true;
+                    foreach ($fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']] as &$relatable) {
+                        if (!empty($relatable['id']) && in_array($relatable['id'], $relatedIds)) {
+                            $relatable['selected'] = true;
+                        }
                     }
                 }
             }
