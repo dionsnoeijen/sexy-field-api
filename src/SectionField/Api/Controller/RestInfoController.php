@@ -442,7 +442,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
                     $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']][] = $data;
                 }
             } catch (EntryNotFoundException $exception) {
-                $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']]['error'] = $exception->getMessage();
+                $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']] = [];
             }
 
             if (!empty($id)) {
