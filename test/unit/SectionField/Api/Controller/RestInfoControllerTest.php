@@ -503,7 +503,7 @@ class RestInfoControllerTest extends TestCase
             ->twice();
 
         $expectedFieldInfo['fields'] = $this->givenASetOfFieldInfo(true);
-        $expectedFieldInfo['fields'][2]['someRelationshipFieldHandle']['whatever'] = ['error' => 'Entry not found'];
+        $expectedFieldInfo['fields'][2]['someRelationshipFieldHandle']['whatever'] = [];
         $this->readSection->shouldReceive('read')->andThrow(EntryNotFoundException::class, 'Entry not found');
         $this->readSection->shouldReceive('read')->andThrow(EntryNotFoundException::class, 'Entry not found');
 
