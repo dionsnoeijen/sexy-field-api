@@ -58,7 +58,7 @@ class TriggerHandler implements SubscribingHandlerInterface
     ) {
         $triggerService = $this->container->get((string) $trigger->getService());
 
-        if (!$triggerService instanceof TriggerServiceInterface) {
+        if ($triggerService instanceof TriggerServiceInterface) {
             return $triggerService->execute($trigger);
         }
 
