@@ -1991,7 +1991,7 @@
             "time": "2016-01-20T08:20:44+00:00"
         },
         {
-            "name": "mikey179/vfsStream",
+            "name": "mikey179/vfsstream",
             "version": "v1.6.5",
             "source": {
                 "type": "git",
@@ -3059,16 +3059,16 @@
         },
         {
             "name": "psr/log",
-            "version": "1.0.2",
+            "version": "1.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/log.git",
-                "reference": "4ebe3a8bf773a19edfe0a84b6585ba3d401b724d"
+                "reference": "446d54b4cb6bf489fc9d75f55843658e6f25d801"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/log/zipball/4ebe3a8bf773a19edfe0a84b6585ba3d401b724d",
-                "reference": "4ebe3a8bf773a19edfe0a84b6585ba3d401b724d",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/446d54b4cb6bf489fc9d75f55843658e6f25d801",
+                "reference": "446d54b4cb6bf489fc9d75f55843658e6f25d801",
                 "shasum": ""
             },
             "require": {
@@ -3077,7 +3077,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.0.x-dev"
+                    "dev-master": "1.1.x-dev"
                 }
             },
             "autoload": {
@@ -3102,7 +3102,7 @@
                 "psr",
                 "psr-3"
             ],
-            "time": "2016-10-10T12:19:37+00:00"
+            "time": "2019-11-01T11:05:21+00:00"
         },
         {
             "name": "psr/simple-cache",
@@ -3764,16 +3764,16 @@
         },
         {
             "name": "symfony/cache",
-            "version": "v3.4.12",
+            "version": "v3.4.37",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/cache.git",
-                "reference": "99bd0bc61d1de38a7ab3d98ceab00e46ad7385fa"
+                "reference": "17d1cda69341b631811a1555aab35360a070b953"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/cache/zipball/99bd0bc61d1de38a7ab3d98ceab00e46ad7385fa",
-                "reference": "99bd0bc61d1de38a7ab3d98ceab00e46ad7385fa",
+                "url": "https://api.github.com/repos/symfony/cache/zipball/17d1cda69341b631811a1555aab35360a070b953",
+                "reference": "17d1cda69341b631811a1555aab35360a070b953",
                 "shasum": ""
             },
             "require": {
@@ -3830,7 +3830,7 @@
                 "caching",
                 "psr6"
             ],
-            "time": "2018-06-21T12:16:06+00:00"
+            "time": "2020-01-01T11:03:25+00:00"
         },
         {
             "name": "symfony/console",
@@ -4045,16 +4045,16 @@
         },
         {
             "name": "symfony/polyfill-apcu",
-            "version": "v1.8.0",
+            "version": "v1.13.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-apcu.git",
-                "reference": "9b83bd010112ec196410849e840d9b9fefcb15ad"
+                "reference": "a8e961c841b9ec52927a87914f8820a1ad8f8116"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-apcu/zipball/9b83bd010112ec196410849e840d9b9fefcb15ad",
-                "reference": "9b83bd010112ec196410849e840d9b9fefcb15ad",
+                "url": "https://api.github.com/repos/symfony/polyfill-apcu/zipball/a8e961c841b9ec52927a87914f8820a1ad8f8116",
+                "reference": "a8e961c841b9ec52927a87914f8820a1ad8f8116",
                 "shasum": ""
             },
             "require": {
@@ -4063,7 +4063,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.8-dev"
+                    "dev-master": "1.13-dev"
                 }
             },
             "autoload": {
@@ -4097,7 +4097,7 @@
                 "portable",
                 "shim"
             ],
-            "time": "2018-04-26T10:06:28+00:00"
+            "time": "2019-11-27T13:56:44+00:00"
         },
         {
             "name": "symfony/polyfill-php56",
@@ -4551,12 +4551,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/dionsnoeijen/sexy-field.git",
-                "reference": "90f1ddb9afa7d9a7d153d45fbfaca767b6f27ab8"
+                "reference": "d24e24c2fda0835c08e5ab5437417c7ea489c657"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field/zipball/90f1ddb9afa7d9a7d153d45fbfaca767b6f27ab8",
-                "reference": "90f1ddb9afa7d9a7d153d45fbfaca767b6f27ab8",
+                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field/zipball/d24e24c2fda0835c08e5ab5437417c7ea489c657",
+                "reference": "d24e24c2fda0835c08e5ab5437417c7ea489c657",
                 "shasum": ""
             },
             "require": {
@@ -4601,7 +4601,7 @@
                 }
             ],
             "description": "SexyField helps you build application structure and accompanying forms.",
-            "time": "2019-06-18T11:55:11+00:00"
+            "time": "2019-07-16T13:13:56+00:00"
         },
         {
             "name": "tardigrades/sexy-field-doctrine",
@@ -4609,12 +4609,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/dionsnoeijen/sexy-field-doctrine.git",
-                "reference": "3fbf5bf2d9341f1ca4180c1ba03b013c9628360e"
+                "reference": "1c21726853267cc153d58cf8667a3f758349222c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field-doctrine/zipball/3fbf5bf2d9341f1ca4180c1ba03b013c9628360e",
-                "reference": "3fbf5bf2d9341f1ca4180c1ba03b013c9628360e",
+                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field-doctrine/zipball/1c21726853267cc153d58cf8667a3f758349222c",
+                "reference": "1c21726853267cc153d58cf8667a3f758349222c",
                 "shasum": ""
             },
             "require": {
@@ -4625,6 +4625,7 @@
                 "symfony/yaml": "^3.3.2"
             },
             "require-dev": {
+                "doctrine/doctrine-bundle": "^1.6",
                 "mikey179/vfsstream": "^1.6",
                 "mockery/mockery": "^0.9.9",
                 "phing/phing": "^2.16",
@@ -4649,7 +4650,7 @@
                 }
             ],
             "description": "SexyField Doctrine package, containing config generator, writer, reader and deleter",
-            "time": "2018-06-11T12:21:32+00:00"
+            "time": "2019-10-24T09:16:18+00:00"
         },
         {
             "name": "tardigrades/sexy-field-entity",
@@ -4657,12 +4658,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/dionsnoeijen/sexy-field-entity.git",
-                "reference": "a6c9672420412375a397ed34c8826e782be82e04"
+                "reference": "8d0da9556a56f44950071ac2a54c31c497c289f1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field-entity/zipball/a6c9672420412375a397ed34c8826e782be82e04",
-                "reference": "a6c9672420412375a397ed34c8826e782be82e04",
+                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field-entity/zipball/8d0da9556a56f44950071ac2a54c31c497c289f1",
+                "reference": "8d0da9556a56f44950071ac2a54c31c497c289f1",
                 "shasum": ""
             },
             "require": {
@@ -4697,7 +4698,7 @@
                 }
             ],
             "description": "Section field entity generator",
-            "time": "2018-04-30T13:53:16+00:00"
+            "time": "2019-08-19T07:23:04+00:00"
         },
         {
             "name": "tardigrades/sexy-field-field-types-base",
@@ -4705,12 +4706,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/dionsnoeijen/sexy-field-field-types-base.git",
-                "reference": "f692c57c86c106433276b04731d8f58b0df31196"
+                "reference": "19e7b5899edf330f58d9c63c7dd5a88211690567"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field-field-types-base/zipball/f692c57c86c106433276b04731d8f58b0df31196",
-                "reference": "f692c57c86c106433276b04731d8f58b0df31196",
+                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field-field-types-base/zipball/19e7b5899edf330f58d9c63c7dd5a88211690567",
+                "reference": "19e7b5899edf330f58d9c63c7dd5a88211690567",
                 "shasum": ""
             },
             "require": {
@@ -4743,7 +4744,7 @@
                 }
             ],
             "description": "Section field basic field types",
-            "time": "2018-05-04T06:33:12+00:00"
+            "time": "2019-04-16T06:26:51+00:00"
         },
         {
             "name": "tardigrades/sexy-field-form",
@@ -4751,12 +4752,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/dionsnoeijen/sexy-field-form.git",
-                "reference": "7c953ced35c9b433b669f4e4e863a8b370cd9dc8"
+                "reference": "61c7b911951fd286474625bed35a21ebbd6b0ca4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field-form/zipball/7c953ced35c9b433b669f4e4e863a8b370cd9dc8",
-                "reference": "7c953ced35c9b433b669f4e4e863a8b370cd9dc8",
+                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field-form/zipball/61c7b911951fd286474625bed35a21ebbd6b0ca4",
+                "reference": "61c7b911951fd286474625bed35a21ebbd6b0ca4",
                 "shasum": ""
             },
             "require": {
@@ -4797,7 +4798,7 @@
                 }
             ],
             "description": "SexyField Form. Generate symfony forms based on section configuration.",
-            "time": "2018-05-03T12:28:40+00:00"
+            "time": "2018-07-02T15:04:40+00:00"
         },
         {
             "name": "theseer/tokenizer",
