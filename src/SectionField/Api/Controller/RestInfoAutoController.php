@@ -38,7 +38,6 @@ class RestInfoAutoController extends RestAutoController implements RestControlle
         string $sectionHandle,
         string $id = null
     ): JsonResponse {
-
         $request = $this->requestStack->getCurrentRequest();
 
         $this->dispatcher->dispatch(

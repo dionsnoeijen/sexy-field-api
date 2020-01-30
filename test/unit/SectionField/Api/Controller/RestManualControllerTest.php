@@ -3,14 +3,21 @@ declare (strict_types=1);
 
 namespace Tardigrades\SectionField\Api\Controller;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
+use Tardigrades\Entity\Field;
+use Tardigrades\Entity\FieldType;
 use Tardigrades\Entity\Section;
+use Tardigrades\Entity\SectionInterface;
+use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Api\Serializer\SerializeToArrayInterface;
 use Tardigrades\SectionField\Form\FormInterface;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
@@ -20,6 +27,8 @@ use Tardigrades\SectionField\Service\DeleteSectionInterface;
 use Tardigrades\SectionField\Service\ReadOptions;
 use Tardigrades\SectionField\Service\ReadSectionInterface;
 use Tardigrades\SectionField\Service\SectionManagerInterface;
+use Tardigrades\SectionField\ValueObject\Handle;
+use Tardigrades\SectionField\ValueObject\Name;
 use Tardigrades\SectionField\ValueObject\SectionConfig;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 
@@ -141,7 +150,7 @@ class RestManualControllerTest extends TestCase
             ->once()
             ->with(Mockery::on(function (ReadOptions $readOptions) {
                 return $readOptions->toArray()['id'] === 10 &&
-                    $readOptions->toArray()['section'] === 'someHandle';
+                    $readOptions->toArray()['section'] === 'anotherHandle';
             }))
             ->andReturn(new \ArrayIterator([new SomeCommonSectionEntity()]));
 
@@ -155,7 +164,7 @@ class RestManualControllerTest extends TestCase
             ->once();
 
         $response = $this->controller->getAction(
-            'someHandle',
+            'anotherHandle',
             null,
             (string) 10
         );
@@ -577,6 +586,197 @@ class RestManualControllerTest extends TestCase
         $this->assertSame('{"success":true}', $response->getContent());
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
     }
+
+    /**
+     * @test
+     *
+     * @covers ::infoAction
+     */
+    public function it_should_pass_on_info_request(): void
+    {
+        $sectionName = 'Sexy';
+        $sectionHandle = 'sexyHandle';
+        $section = Mockery::mock(SectionInterface::class);
+
+        $sectionConfig = SectionConfig::fromArray([
+            'section' => [
+                'name' => 'Some section',
+                'handle' => 'anotherHandle',
+                'fields' => [
+                    'someHandle',
+                    'someOtherHandle'
+                ],
+                'default' => 'default',
+                'namespace' => 'Space'
+            ]
+        ]);
+        $section->shouldReceive('getConfig')
+            ->twice()
+            ->andReturn($sectionConfig);
+
+        $this->dispatcher->shouldReceive('dispatch')->once();
+
+        $this->tokenStorage->shouldReceive('getToken')
+            ->once()
+            ->andReturn(null);
+
+        $this->cache->shouldReceive('start')->once();
+        $this->cache->shouldReceive('isHit')->once()->andReturn(false);
+        $this->cache->shouldReceive('set')->once();
+
+        $expectedFieldInfo = [
+            'name' => $sectionName,
+            'handle' => $sectionHandle
+        ];
+
+        $request = new Request([], [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
+        $request->setMethod(Request::METHOD_GET);
+
+        $this->requestStack->shouldReceive('getCurrentRequest')
+            ->times(3)
+            ->andReturn($request);
+
+        $this->sectionManager->shouldReceive('readByHandle')
+            ->once()
+            ->andReturn($section);
+
+        $section->shouldReceive('getName')
+            ->once()
+            ->andReturn(Name::fromString($sectionName));
+
+        $section->shouldReceive('getHandle')
+            ->once()
+            ->andReturn(Handle::fromString($sectionHandle));
+
+        $section->shouldReceive('getFields')
+            ->once()
+            ->andReturn($this->givenASetOfFieldsForASection());
+
+        $fields = $this->givenASetOfFieldInfo();
+
+        $this->dispatcher->shouldReceive('dispatch')
+            ->once();
+
+        $sectionConfig = SectionConfig::fromArray([
+            'section' => [
+                'name' => 'Some section',
+                'handle' => 'someHandle',
+                'fields' => [
+                    'someHandle',
+                    'someOtherHandle'
+                ],
+                'default' => 'default',
+                'namespace' => 'Space'
+            ]
+        ]);
+        $section->shouldReceive('getConfig')
+            ->once()
+            ->andReturn($sectionConfig);
+
+        $expectedFieldInfo['fields'] = $fields;
+
+        $expectedResponse = new JsonResponse($expectedFieldInfo, 200, [
+            'Access-Control-Allow-Origin' => 'iamtheorigin.com',
+            'Access-Control-Allow-Credentials' => 'true'
+        ]);
+
+        $response = $this->controller->infoAction('sexyHandle');
+        $this->assertEquals($expectedResponse, $response);
+    }
+
+    private function givenASetOfFieldInfo(bool $includeRelationships = false): array
+    {
+        $fieldInfos = [];
+        $fields = $this->givenASetOfFieldsForASection($includeRelationships);
+
+        foreach ($fields as $field) {
+            $fieldInfo = [
+                (string)$field->getHandle() => $field->getConfig()->toArray()['field']
+            ];
+
+            $fieldInfos[] = $fieldInfo;
+        }
+
+        return $fieldInfos;
+    }
+
+    private function givenASetOfFieldsForASection(bool $includeRelationships = false): Collection
+    {
+        $fields = new ArrayCollection();
+
+        $fields->add(
+            (new Field())
+                ->setId(1)
+                ->setConfig([
+                    'field' => [
+                        'name' => 'Fieldje',
+                        'handle' => 'fieldje'
+                    ]
+                ])
+                ->setHandle('someHandle')
+                ->setFieldType(
+                    (new FieldType())
+                        ->setFullyQualifiedClassName('Some\\Fully\\Qualified\\Classname')
+                        ->setType('TextInput')
+                        ->setId(1)
+                )
+                ->setName('Some name field')
+        );
+
+        $fields->add(
+            (new Field())
+                ->setId(2)
+                ->setConfig([
+                    'field' => [
+                        'name' => 'Nog een fieldje',
+                        'handle' => 'nogEenFieldje'
+                    ]
+                ])
+                ->setHandle('someOtherHandle')
+                ->setFieldType(
+                    (new FieldType())
+                        ->setFullyQualifiedClassName('I\\Am\\The\\Fully\\Qualified\\Classname')
+                        ->setType('TextInput')
+                        ->setId(2)
+                )
+                ->setName('Give me text')
+        );
+
+        if ($includeRelationships) {
+            $fields->add(
+                (new Field())
+                    ->setId(3)
+                    ->setConfig([
+                        'field' => [
+                            'name' => 'Relatie veld',
+                            'handle' => 'someRelationshipFieldHandle',
+                            'to' => 'whatever',
+                            'form' => [
+                                'sexy-field-instructions' => [
+                                    'relationship' => [
+                                        'name-expression' => 'getFoo|getBar|getName',
+                                        'limit' => 75,
+                                        'offset' => 10,
+                                        'field' => 'foo',
+                                        'value' => 'bar,baz'
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ])
+                    ->setHandle('someRelationshipFieldHandle')
+                    ->setFieldType(
+                        (new FieldType())
+                            ->setFullyQualifiedClassName(Relationship::class)
+                            ->setType('Relationship')
+                            ->setId(3)
+                    )
+                    ->setName('Relatie veld')
+            );
+        }
+
+        return $fields;
+    }
 }
 
 class SomeCommonSectionEntity implements CommonSectionInterface {
@@ -619,4 +819,12 @@ class SomeCommonSectionEntity implements CommonSectionInterface {
     public static function fieldInfo(): array
     {
     }
+}
+
+namespace Space\Entity;
+
+class AnotherHandle {
+
+    const FIELDS = [];
+
 }

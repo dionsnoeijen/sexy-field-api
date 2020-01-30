@@ -216,7 +216,7 @@ class RestManualController extends RestInfoAutoController
      * @param string|null $slug
      * @param string|null $options
      * @param string|null $depth
-     * @param array $fields
+     * @param array|null $fields
      * @return JsonResponse
      */
     public function infoAction(
@@ -225,7 +225,7 @@ class RestManualController extends RestInfoAutoController
         string $slug = null,
         string $options = null,
         string $depth = null,
-        array $fields = []
+        array $fields = null
     ): JsonResponse {
         $request = $this->requestStack->getCurrentRequest();
         $method = $request->getMethod();
@@ -244,7 +244,7 @@ class RestManualController extends RestInfoAutoController
                 if (!is_null($slug)) {
                     return $this->getSectionInfoBySlugAction($sectionHandle, $slug);
                 }
-                break;
+                return $this->getSectionInfoAction($sectionHandle);
             default:
                 return JsonResponse::create([
                     'error' => 'invalid_routing_configuration'

@@ -193,8 +193,6 @@ class RestInfoAutoControllerTest extends TestCase
             ->twice()
             ->andReturn($request);
 
-        $entryMock = Mockery::mock(new SomeSectionEntity())->makePartial();
-
         $this->sectionManager->shouldReceive('readByHandle')
             ->once()
             ->andReturn($section);

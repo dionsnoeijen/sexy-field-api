@@ -30,7 +30,7 @@ class FieldsExclusionStrategy implements ExclusionStrategyInterface
     /**
      * {@inheritDoc}
      */
-    public function shouldSkipClass(ClassMetadata $metadata, Context $navigatorContext)
+    public function shouldSkipClass(ClassMetadata $metadata, Context $navigatorContext): bool
     {
         return false;
     }
@@ -38,7 +38,7 @@ class FieldsExclusionStrategy implements ExclusionStrategyInterface
     /**
      * {@inheritDoc}
      */
-    public function shouldSkipProperty(PropertyMetadata $property, Context $navigatorContext)
+    public function shouldSkipProperty(PropertyMetadata $property, Context $navigatorContext): bool
     {
         if (empty($this->fields)) {
             return false;
