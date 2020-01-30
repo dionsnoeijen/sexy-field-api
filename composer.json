@@ -11,7 +11,7 @@
     }
   ],
   "require": {
-    "php": "^7.1",
+    "php": "^7.2",
     "ext-json": "*",
     "symfony/http-foundation": "^4",
     "symfony/form": "^4",
