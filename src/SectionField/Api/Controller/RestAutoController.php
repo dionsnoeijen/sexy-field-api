@@ -37,13 +37,14 @@ use Tardigrades\SectionField\ValueObject\SectionFormOptions;
 use Tardigrades\SectionField\ValueObject\Handle;
 
 /**
- * Class RestController
+ * Class RestAutoController
  *
- * The REST Controller provides a simple REST implementation for Sections.
+ * The REST Auto Controller provides a simple REST implementation for Sections.
+ * Predominantly meant for during development purposes or admin user interfaces.
  *
  * @package Tardigrades\SectionField\Api\Controller
  */
-class RestController implements RestControllerInterface
+class RestAutoController implements RestControllerInterface
 {
     /** @var ReadSectionInterface */
     protected $readSection;
@@ -130,7 +131,7 @@ class RestController implements RestControllerInterface
      * @param string $id
      * @return JsonResponse
      */
-    public function getEntryById(string $sectionHandle, string $id): JsonResponse
+    public function getEntryByIdAction(string $sectionHandle, string $id): JsonResponse
     {
         $request = $this->requestStack->getCurrentRequest();
 
@@ -205,7 +206,7 @@ class RestController implements RestControllerInterface
      * @param string $slug
      * @return JsonResponse
      */
-    public function getEntryBySlug(string $sectionHandle, string $slug): JsonResponse
+    public function getEntryBySlugAction(string $sectionHandle, string $slug): JsonResponse
     {
         $request = $this->requestStack->getCurrentRequest();
 
@@ -279,7 +280,7 @@ class RestController implements RestControllerInterface
      * @param string $fieldHandle
      * @return JsonResponse
      */
-    public function getEntriesByFieldValue(string $sectionHandle, string $fieldHandle): JsonResponse
+    public function getEntriesByFieldValueAction(string $sectionHandle, string $fieldHandle): JsonResponse
     {
         $request = $this->requestStack->getCurrentRequest();
 
@@ -309,10 +310,14 @@ class RestController implements RestControllerInterface
             $fieldValue = explode(',', $fieldValue);
         }
 
-        $offset = $request->get('offset', 0);
-        $limit = $request->get('limit', 100);
-        $orderBy = $request->get('orderBy', 'created');
-        $sort = $request->get('sort', 'DESC');
+        // The second argument is the default value,
+        // but if the request arguments are set with null
+        // explicitly, it will return null. Therefore also
+        // have a definite fallback on null.
+        $offset = $request->get('offset', 0) ?? 0;
+        $limit = $request->get('limit', 100) ?? 100;
+        $orderBy = $request->get('orderBy', 'created') ?? 'created';
+        $sort = $request->get('sort', 'DESC') ?? 'DESC';
 
         try {
             $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
@@ -386,7 +391,7 @@ class RestController implements RestControllerInterface
      * @param string $sectionHandle
      * @return JsonResponse
      */
-    public function getEntries(
+    public function getEntriesAction(
         string $sectionHandle
     ): JsonResponse {
         $request = $this->requestStack->getCurrentRequest();
@@ -405,10 +410,14 @@ class RestController implements RestControllerInterface
             return $abort;
         }
 
-        $offset = $request->get('offset', 0);
-        $limit = $request->get('limit', 100);
-        $orderBy = $request->get('orderBy', 'created');
-        $sort = $request->get('sort', 'DESC');
+        // The second argument is the default value,
+        // but if the request arguments are set with null
+        // explicitly, it will return null. Therefore also
+        // have a definite fallback on null.
+        $offset = $request->get('offset', 0) ?? 0;
+        $limit = $request->get('limit', 100) ?? 100;
+        $orderBy = $request->get('orderBy', 'created') ?? 'created';
+        $sort = $request->get('sort', 'DESC') ?? 'DESC';
         $fields = $request->get('fields', null);
 
         try {
@@ -479,7 +488,7 @@ class RestController implements RestControllerInterface
      * @param string $sectionHandle
      * @return JsonResponse
      */
-    public function createEntry(string $sectionHandle): JsonResponse
+    public function createEntryAction(string $sectionHandle): JsonResponse
     {
         $request = $this->requestStack->getCurrentRequest();
 
@@ -500,7 +509,6 @@ class RestController implements RestControllerInterface
         try {
             $responseData = [ 'code' => JsonResponse::HTTP_OK ];
 
-            /** @var \Symfony\Component\Form\FormInterface $form */
             $form = $this->form->buildFormForSection(
                 $sectionHandle,
                 $this->requestStack,
@@ -559,7 +567,7 @@ class RestController implements RestControllerInterface
      * @param int $id
      * @return JsonResponse
      */
-    public function updateEntryById(string $sectionHandle, int $id): JsonResponse
+    public function updateEntryByIdAction(string $sectionHandle, int $id): JsonResponse
     {
         $request = $this->requestStack->getCurrentRequest();
 
@@ -655,7 +663,7 @@ class RestController implements RestControllerInterface
      * @param string $slug
      * @return JsonResponse
      */
-    public function updateEntryBySlug(string $sectionHandle, string $slug): JsonResponse
+    public function updateEntryBySlugAction(string $sectionHandle, string $slug): JsonResponse
     {
         $request = $this->requestStack->getCurrentRequest();
 
@@ -747,7 +755,7 @@ class RestController implements RestControllerInterface
      * @param int $id
      * @return JsonResponse
      */
-    public function deleteEntryById(string $sectionHandle, int $id): JsonResponse
+    public function deleteEntryByIdAction(string $sectionHandle, int $id): JsonResponse
     {
         $request = $this->requestStack->getCurrentRequest();
 
@@ -789,7 +797,7 @@ class RestController implements RestControllerInterface
      * @param string $slug
      * @return JsonResponse
      */
-    public function deleteEntryBySlug(string $sectionHandle, string $slug): JsonResponse
+    public function deleteEntryBySlugAction(string $sectionHandle, string $slug): JsonResponse
     {
         $request = $this->requestStack->getCurrentRequest();
 
@@ -836,7 +844,6 @@ class RestController implements RestControllerInterface
 
     /**
      * Send along on options call
-     * @todo: Make headers configurable
      *
      * @param Request $request
      * @param string $allowMethods
@@ -979,7 +986,7 @@ class RestController implements RestControllerInterface
     {
         $fields = $this->requestStack->getCurrentRequest()->get('fields');
 
-        if (!is_null($fields)) {
+        if (!is_null($fields) && is_string($fields)) {
             $fields = array_map('trim', explode(',', $fields));
         }
 

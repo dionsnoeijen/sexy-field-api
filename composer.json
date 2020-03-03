@@ -11,13 +11,13 @@
     }
   ],
   "require": {
-    "php": "^7.1",
+    "php": "^7.2",
     "ext-json": "*",
     "symfony/http-foundation": "^4",
     "symfony/form": "^4",
     "symfony/config": "^4",
     "symfony/dependency-injection": "^4",
-    "jms/serializer": "^1.8"
+    "jms/serializer": "^3.4"
   },
   "autoload": {
     "psr-4": {

@@ -16,7 +16,7 @@ use Tardigrades\SectionField\Service\ReadOptions;
 use Tardigrades\SectionField\ValueObject\Handle;
 use Tardigrades\SectionField\Service\ReadOptionsInterface;
 
-class RestInfoController extends RestController implements RestControllerInterface
+class RestInfoAutoController extends RestAutoController implements RestControllerInterface
 {
     /**
      * GET information about the section so you can build
@@ -34,11 +34,10 @@ class RestInfoController extends RestController implements RestControllerInterfa
      * @param string $id
      * @return JsonResponse
      */
-    public function getSectionInfo(
+    public function getSectionInfoByIdAction(
         string $sectionHandle,
         string $id = null
     ): JsonResponse {
-
         $request = $this->requestStack->getCurrentRequest();
 
         $this->dispatcher->dispatch(
@@ -174,7 +173,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
      * @param string $slug
      * @return JsonResponse
      */
-    public function getSectionInfoBySlug(
+    public function getSectionInfoBySlugAction(
         string $sectionHandle,
         string $slug
     ): JsonResponse {
@@ -187,7 +186,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
         } catch (\Exception $exception) {
             return $this->errorResponse($this->requestStack->getCurrentRequest(), $exception);
         }
-        return $this->getSectionInfo($sectionHandle, (string)$entry->getId());
+        return $this->getSectionInfoByIdAction($sectionHandle, (string)$entry->getId());
     }
 
     /**
@@ -210,7 +209,6 @@ class RestInfoController extends RestController implements RestControllerInterfa
 
     /**
      * Make sure the entry values are passed on to the fields
-     * @todo Simplify with specification pattern
      *
      * @param array $responseData
      * @param CommonSectionInterface $entry
@@ -283,8 +281,6 @@ class RestInfoController extends RestController implements RestControllerInterfa
     /**
      * Make sure the fields are returned in the order you have configured them
      *
-     * @todo I feel this method is lacking a lot of elegance, make better when the brain is energised.
-     *
      * @param array $fields
      * @param array $fieldProperties
      * @param array|null $showFields
@@ -332,9 +328,6 @@ class RestInfoController extends RestController implements RestControllerInterfa
     /**
      * Just remove stuff that's not needed for a frontend
      *
-     * @todo: I might want to introduce a method in the field that only returns the relevant
-     * data for the front-end
-     *
      * @param array $fields
      * @return array
      */
@@ -372,6 +365,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
      * @param string $sectionHandle
      * @param int|null $id
      * @return array|null
+     * @throws EntryNotFoundException
      */
     private function getRelationshipsTo(
         string $fieldHandle,
@@ -553,6 +547,7 @@ class RestInfoController extends RestController implements RestControllerInterfa
      * @param array $fieldInfo
      * @param int $id
      * @return array
+     * @throws EntryNotFoundException
      */
     private function setSelectedRelationshipsTo(
         string $sectionHandle,
@@ -602,6 +597,9 @@ class RestInfoController extends RestController implements RestControllerInterfa
      *
      * It will transform this:
      * ?options=someRelationshipFieldHandle|limit:100|offset:0
+     *
+     * Add other field options by comma separation like this:
+     * someRelationshipFieldHandle|limit:100|offset:0,anotherFieldHandle|limit:100|offset:20
      *
      * Into this:
      * ['someRelationshipFieldHandle'] => [

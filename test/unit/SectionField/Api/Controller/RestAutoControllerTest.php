@@ -39,12 +39,12 @@ use Mockery;
 use Tardigrades\SectionField\ValueObject\SectionConfig;
 
 /**
- * @coversDefaultClass \Tardigrades\SectionField\Api\Controller\RestController
+ * @coversDefaultClass \Tardigrades\SectionField\Api\Controller\RestAutoController
  *
  * @covers ::<private>
  * @covers ::<protected>
  */
-class RestControllerTest extends TestCase
+class RestAutoControllerTest extends TestCase
 {
     use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 
@@ -75,7 +75,7 @@ class RestControllerTest extends TestCase
     /** @var CacheInterface|Mockery\MockInterface */
     private $cache;
 
-    /** @var RestController */
+    /** @var RestAutoController */
     private $controller;
 
     /** @var TokenStorageInterface|Mockery\MockInterface */
@@ -94,7 +94,7 @@ class RestControllerTest extends TestCase
         $this->cache = Mockery::mock(CacheInterface::class);
         $this->tokenStorage = Mockery::mock(TokenStorageInterface::class);
 
-        $this->controller = new RestController(
+        $this->controller = new RestAutoController(
             $this->createSection,
             $this->readSection,
             $this->deleteSection,
@@ -111,30 +111,30 @@ class RestControllerTest extends TestCase
     /**
      * @test
      * @covers ::__construct
-     * @covers ::getEntryById
-     * @covers ::getEntryBySlug
-     * @covers ::getEntriesByFieldValue
-     * @covers ::getEntries
-     * @covers ::createEntry
-     * @covers ::updateEntryById
-     * @covers ::updateEntryBySlug
-     * @covers ::deleteEntryById
-     * @covers ::deleteEntryBySlug
+     * @covers ::getEntryByIdAction
+     * @covers ::getEntryBySlugAction
+     * @covers ::getEntriesByFieldValueAction
+     * @covers ::getEntriesAction
+     * @covers ::createEntryAction
+     * @covers ::updateEntryByIdAction
+     * @covers ::updateEntryBySlugAction
+     * @covers ::deleteEntryByIdAction
+     * @covers ::deleteEntryBySlugAction
      */
     public function it_returns_options_listings()
     {
         $allowedMethods = 'OPTIONS, GET, POST, PUT, DELETE';
         $testCases = [
             // method name,    arguments,      allowed HTTP methods
-            ['getEntryById', ['foo', "0"], $allowedMethods],
-            ['getEntryBySlug', ['foo', 'bar'], $allowedMethods],
-            ['getEntriesByFieldValue', ['foo', 'bar'], $allowedMethods],
-            ['getEntries', ['foo'], $allowedMethods],
-            ['createEntry', ['foo'], $allowedMethods],
-            ['updateEntryById', ['foo', 0], $allowedMethods],
-            ['updateEntryBySlug', ['foo', 'bar'], $allowedMethods],
-            ['deleteEntryById', ['foo', 0], $allowedMethods],
-            ['deleteEntryBySlug', ['foo', 'bar'], $allowedMethods]
+            ['getEntryByIdAction', ['foo', "0"], $allowedMethods],
+            ['getEntryBySlugAction', ['foo', 'bar'], $allowedMethods],
+            ['getEntriesByFieldValueAction', ['foo', 'bar'], $allowedMethods],
+            ['getEntriesAction', ['foo'], $allowedMethods],
+            ['createEntryAction', ['foo'], $allowedMethods],
+            ['updateEntryByIdAction', ['foo', 0], $allowedMethods],
+            ['updateEntryBySlugAction', ['foo', 'bar'], $allowedMethods],
+            ['deleteEntryByIdAction', ['foo', 0], $allowedMethods],
+            ['deleteEntryBySlugAction', ['foo', 'bar'], $allowedMethods]
         ];
         foreach ($testCases as [$method, $args, $allowMethods]) {
             $request = Mockery::mock(Request::class);
@@ -163,27 +163,27 @@ class RestControllerTest extends TestCase
     /**
      * @test
      * @covers ::__construct
-     * @covers ::getEntryById
-     * @covers ::getEntryBySlug
-     * @covers ::getEntriesByFieldValue
-     * @covers ::getEntries
-     * @covers ::deleteEntryById
-     * @covers ::deleteEntryBySlug
-     * @covers ::updateEntryById
-     * @covers ::updateEntryBySlug
+     * @covers ::getEntryByIdAction
+     * @covers ::getEntryBySlugAction
+     * @covers ::getEntriesByFieldValueAction
+     * @covers ::getEntriesAction
+     * @covers ::deleteEntryByIdAction
+     * @covers ::deleteEntryBySlugAction
+     * @covers ::updateEntryByIdAction
+     * @covers ::updateEntryBySlugAction
      */
     public function it_does_not_find_entries()
     {
         $testCases = [
             // method name,  arguments,     GET query, expect dispatch, expect build form
-            ['getEntryById', ['foo', '10'], [], false, false],
-            ['getEntryBySlug', ['foo', 'bar'], [], false, false],
-            ['getEntriesByFieldValue', ['foo', 'bar'], ['value' => 23], false, false],
-            ['getEntries', ['foo'], [], false, false],
-            ['deleteEntryById', ['foo', 12], [], true, false],
-            ['deleteEntryBySlug', ['foo', 'bar'], [], true, false],
-            ['updateEntryById', ['foo', 13], [], true, true],
-            ['updateEntryBySlug', ['foo', 'bar'], [], true, true]
+            ['getEntryByIdAction', ['foo', '10'], [], false, false],
+            ['getEntryBySlugAction', ['foo', 'bar'], [], false, false],
+            ['getEntriesByFieldValueAction', ['foo', 'bar'], ['value' => 23], false, false],
+            ['getEntriesAction', ['foo'], [], false, false],
+            ['deleteEntryByIdAction', ['foo', 12], [], true, false],
+            ['deleteEntryBySlugAction', ['foo', 'bar'], [], true, false],
+            ['updateEntryByIdAction', ['foo', 13], [], true, true],
+            ['updateEntryBySlugAction', ['foo', 'bar'], [], true, true]
         ];
         foreach ($testCases as [$method, $args, $query, $expectDispatch, $expectBuildForm]) {
 
@@ -237,23 +237,23 @@ class RestControllerTest extends TestCase
     /**
      * @test
      * @covers ::__construct
-     * @covers ::getEntryById
-     * @covers ::getEntryBySlug
-     * @covers ::getEntriesByFieldValue
-     * @covers ::getEntries
-     * @covers ::deleteEntryBySlug
-     * @covers ::deleteEntryById
+     * @covers ::getEntryByIdAction
+     * @covers ::getEntryBySlugAction
+     * @covers ::getEntriesByFieldValueAction
+     * @covers ::getEntriesAction
+     * @covers ::deleteEntryBySlugAction
+     * @covers ::deleteEntryByIdAction
      */
     public function it_fails_getting_entries_while_reading()
     {
         $testCases = [
             // method name,  arguments,     GET query, expect dispatch
-            ['getEntryById', ['foo', '10'], [],        false],
-            ['getEntryBySlug', ['foo', 'bar'], [], false],
-            ['getEntriesByFieldValue', ['foo', 'bar'], ['value' => 23], false],
-            ['getEntries', ['foo'], [], false],
-            ['deleteEntryBySlug', ['foo', 'bar'], [], true],
-            ['deleteEntryById', ['foo', 247], [], true]
+            ['getEntryByIdAction', ['foo', '10'], [],        false],
+            ['getEntryBySlugAction', ['foo', 'bar'], [], false],
+            ['getEntriesByFieldValueAction', ['foo', 'bar'], ['value' => 23], false],
+            ['getEntriesAction', ['foo'], [], false],
+            ['deleteEntryBySlugAction', ['foo', 'bar'], [], true],
+            ['deleteEntryByIdAction', ['foo', 247], [], true]
         ];
         foreach ($testCases as [$method, $args, $query, $expectDispatch]) {
             $request = new Request($query, [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
@@ -304,17 +304,17 @@ class RestControllerTest extends TestCase
     /**
      * @test
      * @covers ::__construct
-     * @covers ::createEntry
-     * @covers ::updateEntryById
-     * @covers ::updateEntryBySlug
+     * @covers ::createEntryAction
+     * @covers ::updateEntryByIdAction
+     * @covers ::updateEntryBySlugAction
      */
     public function it_fails_getting_entries_while_building_a_form()
     {
         $testCases = [
             // method name,  arguments,     GET query, expect dispatch
-            ['createEntry', ['foo'], ['baz' => 'bat'], true],
-            ['updateEntryById', ['foo', 14], [], true],
-            ['updateEntryBySlug', ['foo', 'bar'], [], true]
+            ['createEntryAction', ['foo'], ['baz' => 'bat'], true],
+            ['updateEntryByIdAction', ['foo', 14], [], true],
+            ['updateEntryBySlugAction', ['foo', 'bar'], [], true]
         ];
         foreach ($testCases as [$method, $args, $query, $expectDispatch]) {
             $request = new Request($query, [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
@@ -343,8 +343,8 @@ class RestControllerTest extends TestCase
     /**
      * @test
      * @covers ::__construct
-     * @covers ::getEntryById
-     * @covers ::getEntryBySlug
+     * @covers ::getEntryByIdAction
+     * @covers ::getEntryBySlugAction
      * @covers \Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy
      */
     public function it_should_get_entry_by_id()
@@ -384,18 +384,18 @@ class RestControllerTest extends TestCase
 
         $this->dispatcher->shouldReceive('dispatch');
 
-        $response = $this->controller->getEntryById('sexyHandle', '90000');
+        $response = $this->controller->getEntryByIdAction('sexyHandle', '90000');
         $this->assertSame('[]', $response->getContent());
 
 
-        $response = $this->controller->getEntryBySlug('sexyHandle', 'slug');
+        $response = $this->controller->getEntryBySlugAction('sexyHandle', 'slug');
         $this->assertSame('[]', $response->getContent());
     }
 
     /**
      * TEST IS IGNORED
      * @covers ::__construct
-     * @covers ::getEntriesByFieldValue
+     * @covers ::getEntriesByFieldValueAction
      * @covers \Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy
      */
     public function it_should_get_entries_by_field_value()
@@ -461,14 +461,14 @@ class RestControllerTest extends TestCase
 
         $this->serialize->shouldReceive('toArray')->twice();
 
-        $response = $this->controller->getEntriesByFieldValue($sectionHandle, $fieldHandle);
+        $response = $this->controller->getEntriesByFieldValueAction($sectionHandle, $fieldHandle);
 
         $this->assertSame('[[],[]]', $response->getContent());
     }
 
     /**
      * @covers ::__construct
-     * @covers ::getEntriesByFieldValue
+     * @covers ::getEntriesByFieldValueAction
      * @covers \Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy
      */
     public function it_should_get_entries_by_multiple_field_values()
@@ -530,14 +530,14 @@ class RestControllerTest extends TestCase
                 Mockery::mock(CommonSectionInterface::class)
             ]));
 
-        $response = $this->controller->getEntriesByFieldValue($sectionHandle, $fieldHandle);
+        $response = $this->controller->getEntriesByFieldValueAction($sectionHandle, $fieldHandle);
 
         $this->assertSame('[[],[]]', $response->getContent());
     }
 
     /**
      * @covers ::__construct
-     * @covers ::getEntries
+     * @covers ::getEntriesAction
      * @covers \Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy
      */
     public function it_should_get_the_entries()
@@ -623,7 +623,7 @@ class RestControllerTest extends TestCase
 
         $this->serialize->shouldReceive('toArray')->twice();
 
-        $response = $this->controller->getEntries('sexy');
+        $response = $this->controller->getEntriesAction('sexy');
 
         $this->assertSame('[[],[]]', $response->getContent());
     }
@@ -631,7 +631,7 @@ class RestControllerTest extends TestCase
     /**
      * @test
      * @covers ::__construct
-     * @covers ::createEntry
+     * @covers ::createEntryAction
      */
     public function it_creates_an_entry()
     {
@@ -693,7 +693,7 @@ class RestControllerTest extends TestCase
 
         $this->serialize->shouldReceive('toArray')->once();
 
-        $response = $this->controller->createEntry('sexy');
+        $response = $this->controller->createEntryAction('sexy');
         $this->assertSame(
             '{"code":200,"success":true,"errors":false,"entry":[]}',
             $response->getContent()
@@ -703,7 +703,7 @@ class RestControllerTest extends TestCase
     /**
      * @test
      * @covers ::__construct
-     * @covers ::createEntry
+     * @covers ::createEntryAction
      */
     public function it_fails_creating_an_entry_during_save_and_returns_the_correct_response()
     {
@@ -761,7 +761,7 @@ class RestControllerTest extends TestCase
         $this->requestStack->shouldReceive('getCurrentRequest')
             ->andReturn($mockedRequest);
 
-        $response = $this->controller->createEntry('sexy');
+        $response = $this->controller->createEntryAction('sexy');
         $this->assertSame(
             '{"code":500,"exception":"Something woeful occurred"}',
             $response->getContent()
@@ -771,7 +771,7 @@ class RestControllerTest extends TestCase
     /**
      * @test
      * @covers ::__construct
-     * @covers ::createEntry
+     * @covers ::createEntryAction
      */
     public function it_does_not_create_an_entry_and_returns_correct_response()
     {
@@ -816,7 +816,7 @@ class RestControllerTest extends TestCase
         $this->requestStack->shouldReceive('getCurrentRequest')
             ->andReturn($mockedRequest);
 
-        $response = $this->controller->createEntry('sexy');
+        $response = $this->controller->createEntryAction('sexy');
 
         $this->assertSame(400, $response->getStatusCode());
         $this->assertSame(
@@ -828,8 +828,8 @@ class RestControllerTest extends TestCase
     /**
      * @test
      * @covers ::__construct
-     * @covers ::updateEntryById
-     * @covers ::updateEntryBySlug
+     * @covers ::updateEntryByIdAction
+     * @covers ::updateEntryBySlugAction
      */
     public function it_updates_entries()
     {
@@ -904,13 +904,13 @@ class RestControllerTest extends TestCase
             ->twice()
             ->andReturn(true);
 
-        $response = $this->controller->updateEntryById('sexy', 9);
+        $response = $this->controller->updateEntryByIdAction('sexy', 9);
         $this->assertSame(
             '{"code":200,"success":true,"errors":false,"entry":[]}',
             $response->getContent()
         );
 
-        $response = $this->controller->updateEntryBySlug('sexy', 'snail');
+        $response = $this->controller->updateEntryBySlugAction('sexy', 'snail');
         $this->assertSame(
             '{"code":200,"success":true,"errors":false,"entry":[]}',
             $response->getContent()
@@ -920,8 +920,8 @@ class RestControllerTest extends TestCase
     /**
      * @test
      * @covers ::__construct
-     * @covers ::updateEntryById
-     * @covers ::updateEntryBySlug
+     * @covers ::updateEntryByIdAction
+     * @covers ::updateEntryBySlugAction
      */
     public function it_does_not_update_entries_and_returns_correct_response()
     {
@@ -999,14 +999,14 @@ class RestControllerTest extends TestCase
                 ApiUpdateEntry::NAME
             ]);
 
-        $response = $this->controller->updateEntryById('sexy', 9);
+        $response = $this->controller->updateEntryByIdAction('sexy', 9);
         $this->assertSame(400, $response->getStatusCode());
         $this->assertSame(
             '{"code":400,"errors":{"0":"you are wrong!","name of form":["you are wrong!"]}}',
             $response->getContent()
         );
 
-        $response = $this->controller->updateEntryBySlug('sexy', 'snail');
+        $response = $this->controller->updateEntryBySlugAction('sexy', 'snail');
         $this->assertSame(400, $response->getStatusCode());
         $this->assertSame(
             '{"code":400,"errors":{"0":"you are wrong!","name of form":["you are wrong!"]}}',
@@ -1017,8 +1017,8 @@ class RestControllerTest extends TestCase
     /**
      * @test
      * @covers ::__construct
-     * @covers ::deleteEntryById
-     * @covers ::deleteEntryBySlug
+     * @covers ::deleteEntryByIdAction
+     * @covers ::deleteEntryBySlugAction
      * @runInSeparateProcess
      */
     public function it_deletes_entries()
@@ -1054,18 +1054,18 @@ class RestControllerTest extends TestCase
                 ApiDeleteEntry::NAME
             ]);
 
-        $response = $this->controller->deleteEntryById('notsexy', 1);
+        $response = $this->controller->deleteEntryByIdAction('notsexy', 1);
         $this->assertSame('{"success":true}', $response->getContent());
 
-        $response = $this->controller->deleteEntryBySlug('notsexy', 'snail');
+        $response = $this->controller->deleteEntryBySlugAction('notsexy', 'snail');
         $this->assertSame('{"success":true}', $response->getContent());
     }
 
     /**
      * @test
      * @covers ::__construct
-     * @covers ::deleteEntryById
-     * @covers ::deleteEntryBySlug
+     * @covers ::deleteEntryByIdAction
+     * @covers ::deleteEntryBySlugAction
      * @runInSeparateProcess
      */
     public function it_does_not_delete_entries_and_return_the_correct_response()
@@ -1101,17 +1101,17 @@ class RestControllerTest extends TestCase
                 ApiDeleteEntry::NAME
             ]);
 
-        $response = $this->controller->deleteEntryById('notsexy', 1);
+        $response = $this->controller->deleteEntryByIdAction('notsexy', 1);
         $this->assertSame('{"success":false}', $response->getContent());
 
-        $response = $this->controller->deleteEntryBySlug('notsexy', 'snail');
+        $response = $this->controller->deleteEntryBySlugAction('notsexy', 'snail');
         $this->assertSame('{"success":false}', $response->getContent());
     }
 
     /**
      * @test
      * @covers ::__construct
-     * @covers ::updateEntryBySlug
+     * @covers ::updateEntryBySlugAction
      */
     public function it_should_abort_with_abort_flag_on_update()
     {
@@ -1123,7 +1123,7 @@ class RestControllerTest extends TestCase
 
         $this->dispatcher->shouldReceive('dispatch');
 
-        $response = $this->controller->updateEntryBySlug('sectionHandle', 'slug');
+        $response = $this->controller->updateEntryBySlugAction('sectionHandle', 'slug');
 
         $this->assertSame($response->getStatusCode(), 409);
     }
@@ -1131,7 +1131,7 @@ class RestControllerTest extends TestCase
     /**
      * @test
      * @covers ::__construct
-     * @covers ::createEntry
+     * @covers ::createEntryAction
      */
     public function it_should_abort_with_abort_flag_on_create()
     {
@@ -1143,7 +1143,7 @@ class RestControllerTest extends TestCase
 
         $this->dispatcher->shouldReceive('dispatch');
 
-        $response = $this->controller->createEntry('sectionHandle');
+        $response = $this->controller->createEntryAction('sectionHandle');
 
         $this->assertSame($response->getStatusCode(), 409);
     }
