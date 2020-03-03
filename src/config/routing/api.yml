@@ -1,24 +1,24 @@
 # # GET ALL ENTRIES OF SECTION
 rest.section.all:
   path: /v1/section/{sectionHandle}
-  defaults: { _controller: 'rest.controller:getEntries' }
+  defaults: { _controller: 'rest.controller:getEntriesAction' }
   methods: [ GET, OPTIONS ]
 
 # GET INFORMATION OF SECTION, HOW TO BUILD FORM
 rest.section.info.by.slug:
   path: /v1/section/info/{sectionHandle}/slug/{slug}
-  defaults: { _controller: 'rest.info.controller:getSectionInfoBySlug' }
+  defaults: { _controller: 'rest.info.controller:getSectionInfoBySlugAction' }
   methods: [ GET, OPTIONS ]
 
-rest.section.info:
+rest.section.info.by.id:
   path: /v1/section/info/{sectionHandle}/{id}
-  defaults: { _controller: 'rest.info.controller:getSectionInfo', id: null }
+  defaults: { _controller: 'rest.info.controller:getSectionInfoByIdAction', id: null }
   methods: [ GET, OPTIONS ]
 
 # SELECT BY ID
 rest.section.entry.by.id:
   path: /v1/section/{sectionHandle}/id/{id}
-  defaults: { _controller: 'rest.controller:getEntryById' }
+  defaults: { _controller: 'rest.controller:getEntryByIdAction' }
   requirements:
     id: '\d+'
   methods: [ GET, OPTIONS ]
@@ -26,25 +26,25 @@ rest.section.entry.by.id:
 # SELECT BY SLUG
 rest.section.entry.by.slug:
   path: /v1/section/{sectionHandle}/slug/{slug}
-  defaults: { _controller: 'rest.controller:getEntryBySlug' }
+  defaults: { _controller: 'rest.controller:getEntryBySlugAction' }
   methods: [ GET, OPTIONS ]
 
 # SELECT BY FIELD AND IT'S VALUE
 rest.section.entry.by.fieldvalue:
   path: /v1/section/fieldvalue/{sectionHandle}/{fieldHandle}
-  defaults: { _controller: 'rest.controller:getEntriesByFieldValue' }
+  defaults: { _controller: 'rest.controller:getEntriesByFieldValueAction' }
   methods: [ GET, OPTIONS ]
 
 # CREATE NEW ENTRY
 rest.section.create:
   path: /v1/section/{sectionHandle}
-  defaults: { _controller: 'rest.controller:createEntry' }
+  defaults: { _controller: 'rest.controller:createEntryAction' }
   methods: [ POST, OPTIONS ]
 
 # UPDATE BY ID
 rest.section.update.id:
   path: /v1/section/{sectionHandle}/id/{id}
-  defaults: { _controller: 'rest.controller:updateEntryById' }
+  defaults: { _controller: 'rest.controller:updateEntryByIdAction' }
   requirements:
     id: '\d+'
   methods: [ PUT, OPTIONS ]
@@ -52,13 +52,13 @@ rest.section.update.id:
 # UPDATE BY SLUG
 rest.section.update.slug:
   path: /v1/section/{sectionHandle}/slug/{slug}
-  defaults: { _controller: 'rest.controller:updateEntryBySlug' }
+  defaults: { _controller: 'rest.controller:updateEntryBySlugAction' }
   methods: [ PUT, OPTIONS ]
 
 # DELETE BY ID
 rest.section.delete.id:
   path: /v1/section/{sectionHandle}/id/{id}
-  defaults: { _controller: 'rest.controller:deleteEntryById' }
+  defaults: { _controller: 'rest.controller:deleteEntryByIdAction' }
   requirements:
     id: '\d+'
   methods: [ DELETE, OPTIONS ]
@@ -66,5 +66,5 @@ rest.section.delete.id:
 # DELETE BY SLUG
 rest.section.delete.slug:
   path: /v1/section/{sectionHandle}/slug/{slug}
-  defaults: { _controller: 'rest.controller:deleteEntryBySlug' }
+  defaults: { _controller: 'rest.controller:deleteEntryBySlugAction' }
   methods: [ DELETE, OPTIONS ]

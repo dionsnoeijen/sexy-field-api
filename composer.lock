@@ -5776,12 +5776,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/dionsnoeijen/sexy-field-doctrine.git",
-                "reference": "31b50ea06fab8960450841e65dd6c307b766029e"
+                "reference": "f85175ce5c9b6cc5a678284a4bc666cb02358d51"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field-doctrine/zipball/31b50ea06fab8960450841e65dd6c307b766029e",
-                "reference": "31b50ea06fab8960450841e65dd6c307b766029e",
+                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field-doctrine/zipball/f85175ce5c9b6cc5a678284a4bc666cb02358d51",
+                "reference": "f85175ce5c9b6cc5a678284a4bc666cb02358d51",
                 "shasum": ""
             },
             "require": {
@@ -5817,7 +5817,7 @@
                 }
             ],
             "description": "SexyField Doctrine package, containing config generator, writer, reader and deleter",
-            "time": "2019-07-24T11:08:25+00:00"
+            "time": "2020-02-18T13:57:40+00:00"
         },
         {
             "name": "tardigrades/sexy-field-entity",
@@ -5873,12 +5873,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/dionsnoeijen/sexy-field-field-types-base.git",
-                "reference": "e2c9cd401c9875e3a79055facc5433283264603a"
+                "reference": "962473fad4eefe4152fe023bc5dc80cdadc4d4d8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field-field-types-base/zipball/e2c9cd401c9875e3a79055facc5433283264603a",
-                "reference": "e2c9cd401c9875e3a79055facc5433283264603a",
+                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field-field-types-base/zipball/962473fad4eefe4152fe023bc5dc80cdadc4d4d8",
+                "reference": "962473fad4eefe4152fe023bc5dc80cdadc4d4d8",
                 "shasum": ""
             },
             "require": {
@@ -5911,7 +5911,7 @@
                 }
             ],
             "description": "Section field basic field types",
-            "time": "2019-07-24T11:12:22+00:00"
+            "time": "2020-01-09T14:51:22+00:00"
         },
         {
             "name": "tardigrades/sexy-field-form",
@@ -5919,12 +5919,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/dionsnoeijen/sexy-field-form.git",
-                "reference": "b72e84cca5a8bb520c1d8f6d1773762ed5e403c0"
+                "reference": "48159804bb2f526bc38c04764c08dc85347b1f61"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field-form/zipball/b72e84cca5a8bb520c1d8f6d1773762ed5e403c0",
-                "reference": "b72e84cca5a8bb520c1d8f6d1773762ed5e403c0",
+                "url": "https://api.github.com/repos/dionsnoeijen/sexy-field-form/zipball/48159804bb2f526bc38c04764c08dc85347b1f61",
+                "reference": "48159804bb2f526bc38c04764c08dc85347b1f61",
                 "shasum": ""
             },
             "require": {
@@ -5946,7 +5946,7 @@
                 "phpunit/phpunit": "^6.1",
                 "squizlabs/php_codesniffer": "^2.8",
                 "tardigrades/sexy-field": "dev-sym-4.x",
-                "tardigrades/sexy-field-field-types-base": "dev-sym-4.x"
+                "tardigrades/sexy-field-field-types-base": "dev-sym-4-integrate-purifier"
             },
             "type": "library",
             "autoload": {
@@ -5965,7 +5965,7 @@
                 }
             ],
             "description": "SexyField Form. Generate symfony forms based on section configuration.",
-            "time": "2019-07-24T11:14:23+00:00"
+            "time": "2019-11-26T11:44:11+00:00"
         },
         {
             "name": "theseer/tokenizer",

@@ -34,7 +34,7 @@ class RestInfoAutoController extends RestAutoController implements RestControlle
      * @param string $id
      * @return JsonResponse
      */
-    public function getSectionInfoAction(
+    public function getSectionInfoByIdAction(
         string $sectionHandle,
         string $id = null
     ): JsonResponse {
@@ -186,7 +186,7 @@ class RestInfoAutoController extends RestAutoController implements RestControlle
         } catch (\Exception $exception) {
             return $this->errorResponse($this->requestStack->getCurrentRequest(), $exception);
         }
-        return $this->getSectionInfoAction($sectionHandle, (string)$entry->getId());
+        return $this->getSectionInfoByIdAction($sectionHandle, (string)$entry->getId());
     }
 
     /**
@@ -365,6 +365,7 @@ class RestInfoAutoController extends RestAutoController implements RestControlle
      * @param string $sectionHandle
      * @param int|null $id
      * @return array|null
+     * @throws EntryNotFoundException
      */
     private function getRelationshipsTo(
         string $fieldHandle,
