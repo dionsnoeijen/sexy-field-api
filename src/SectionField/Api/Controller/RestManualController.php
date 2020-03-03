@@ -239,12 +239,12 @@ class RestManualController extends RestInfoAutoController
                 return $this->preFlightOptions($request);
             case Request::METHOD_GET:
                 if (!is_null($id)) {
-                    return $this->getSectionInfoAction($sectionHandle, $id);
+                    return $this->getSectionInfoByIdAction($sectionHandle, $id);
                 }
                 if (!is_null($slug)) {
                     return $this->getSectionInfoBySlugAction($sectionHandle, $slug);
                 }
-                return $this->getSectionInfoAction($sectionHandle);
+                return $this->getSectionInfoByIdAction($sectionHandle);
             default:
                 return JsonResponse::create([
                     'error' => 'invalid_routing_configuration'

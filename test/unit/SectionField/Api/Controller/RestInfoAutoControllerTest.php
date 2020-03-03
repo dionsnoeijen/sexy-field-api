@@ -108,7 +108,7 @@ class RestInfoAutoControllerTest extends TestCase
     /**
      * @test
      * @covers ::__construct
-     * @covers ::getSectionInfoAction
+     * @covers ::getSectionInfoByIdAction
      */
     public function it_returns_options_listings()
     {
@@ -117,7 +117,7 @@ class RestInfoAutoControllerTest extends TestCase
         $allowedMethods = 'OPTIONS, GET, POST, PUT, DELETE';
         $testCases = [
             // method name,    arguments,      allowed HTTP methods
-            ['getSectionInfoAction', ['foo', "0"], $allowedMethods]
+            ['getSectionInfoByIdAction', ['foo', "0"], $allowedMethods]
         ];
         foreach ($testCases as [$method, $args, $allowMethods]) {
             $request = Mockery::mock(Request::class);
@@ -148,7 +148,7 @@ class RestInfoAutoControllerTest extends TestCase
     /**
      * @test
      * @covers ::__construct
-     * @covers ::getSectionInfoAction
+     * @covers ::getSectionInfoByIdAction
      */
     public function it_gets_section_info_of_a_section_without_relationships()
     {
@@ -237,14 +237,14 @@ class RestInfoAutoControllerTest extends TestCase
             'Access-Control-Allow-Credentials' => 'true'
         ]);
 
-        $response = $this->controller->getSectionInfoAction('sexyHandle');
+        $response = $this->controller->getSectionInfoByIdAction('sexyHandle');
         $this->assertEquals($expectedResponse, $response);
     }
 
     /**
      * @test
      * @covers ::__construct
-     * @covers ::getSectionInfoAction
+     * @covers ::getSectionInfoByIdAction
      */
     public function it_does_not_find_sections()
     {
@@ -265,14 +265,14 @@ class RestInfoAutoControllerTest extends TestCase
 
         $this->dispatcher->shouldReceive('dispatch')->once();
 
-        $response = $this->controller->getSectionInfoAction('foo');
+        $response = $this->controller->getSectionInfoByIdAction('foo');
         $this->assertEquals($expectedResponse, $response);
     }
 
     /**
      * @test
      * @covers ::__construct
-     * @covers ::getSectionInfoAction
+     * @covers ::getSectionInfoByIdAction
      */
     public function it_fails_finding_sections_for_another_reason()
     {
@@ -293,14 +293,14 @@ class RestInfoAutoControllerTest extends TestCase
 
         $this->dispatcher->shouldReceive('dispatch')->once();
 
-        $response = $this->controller->getSectionInfoAction('foo');
+        $response = $this->controller->getSectionInfoByIdAction('foo');
         $this->assertEquals($expectedResponse, $response);
     }
 
     /**
      * @test
      * @covers ::__construct
-     * @covers ::getSectionInfoAction
+     * @covers ::getSectionInfoByIdAction
      * @runInSeparateProcess
      */
     public function it_gets_section_info_of_a_section_with_relationships()
@@ -426,7 +426,7 @@ class RestInfoAutoControllerTest extends TestCase
 
         $this->readSection->shouldReceive('read')->andReturn($sectionEntitiesTo);
 
-        $response = $this->controller->getSectionInfoAction('sexyHandle');
+        $response = $this->controller->getSectionInfoByIdAction('sexyHandle');
 
         $this->assertEquals($expectedResponse, $response);
     }
@@ -434,7 +434,7 @@ class RestInfoAutoControllerTest extends TestCase
     /**
      * @test
      * @covers ::__construct
-     * @covers ::getSectionInfoAction
+     * @covers ::getSectionInfoByIdAction
      * @runInSeparateProcess
      */
     public function it_fails_getting_section_info_of_a_section_with_relationships()
@@ -505,7 +505,7 @@ class RestInfoAutoControllerTest extends TestCase
         $this->readSection->shouldReceive('read')->andThrow(EntryNotFoundException::class, 'Entry not found');
         $this->readSection->shouldReceive('read')->andThrow(EntryNotFoundException::class, 'Entry not found');
 
-        $response = $this->controller->getSectionInfoAction('sexyHandle');
+        $response = $this->controller->getSectionInfoByIdAction('sexyHandle');
         $expectedResponse = new JsonResponse(
             $expectedFieldInfo,
             200,
