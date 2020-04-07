@@ -43,8 +43,7 @@ final class TriggerHandlerTest extends TestCase
      */
     public function it_should_execute_a_trigger()
     {
-        /** @var  JsonSerializationVisitor|m\MockInterface $visitor */
-        $visitor = m::mock(JsonSerializationVisitor::class);
+        $visitor = new JsonSerializationVisitor();
 
         /** @var CommonSectionInterface|m\MockInterface $entity */
         $entity = m::mock(CommonSectionInterface::class);
@@ -81,8 +80,7 @@ final class TriggerHandlerTest extends TestCase
         $this->expectException(TriggerHandlerException::class);
         $this->expectExceptionMessage('Invalid trigger service');
 
-        /** @var  JsonSerializationVisitor|m\MockInterface $visitor */
-        $visitor = m::mock(JsonSerializationVisitor::class);
+        $visitor = new JsonSerializationVisitor();
 
         /** @var CommonSectionInterface|m\MockInterface $entity */
         $entity = m::mock(CommonSectionInterface::class);
