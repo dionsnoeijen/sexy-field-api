@@ -314,10 +314,14 @@ class RestAutoController implements RestControllerInterface
         // but if the request arguments are set with null
         // explicitly, it will return null. Therefore also
         // have a definite fallback on null.
-        $offset = $request->get('offset', 0) ?? 0;
-        $limit = $request->get('limit', 100) ?? 100;
-        $orderBy = $request->get('orderBy', 'created') ?? 'created';
-        $sort = $request->get('sort', 'DESC') ?? 'DESC';
+        $offset = $request->get('offset', 0);
+        $offset = empty($offset) ? 0 : $offset;
+        $limit = $request->get('limit', 100);
+        $limit = empty($limit) ? 100 : $limit;
+        $orderBy = $request->get('orderBy', 'created');
+        $orderBy = empty($orderBy) ? 'created' : $orderBy;
+        $sort = $request->get('sort', 'DESC');
+        $sort = empty($sort) ? 'DESC' : $sort;
 
         try {
             $section = $this->sectionManager->readByHandle(Handle::fromString($sectionHandle));
@@ -414,10 +418,14 @@ class RestAutoController implements RestControllerInterface
         // but if the request arguments are set with null
         // explicitly, it will return null. Therefore also
         // have a definite fallback on null.
-        $offset = $request->get('offset', 0) ?? 0;
-        $limit = $request->get('limit', 100) ?? 100;
-        $orderBy = $request->get('orderBy', 'created') ?? 'created';
-        $sort = $request->get('sort', 'DESC') ?? 'DESC';
+        $offset = $request->get('offset', 0);
+        $offset = empty($offset) ? 0 : $offset;
+        $limit = $request->get('limit', 100);
+        $limit = empty($limit) ? 100 : $limit;
+        $orderBy = $request->get('orderBy', 'created');
+        $orderBy = empty($orderBy) ? 'created' : $orderBy;
+        $sort = $request->get('sort', 'DESC');
+        $sort = empty($sort) ? 'DESC' : $sort;
         $fields = $request->get('fields', null);
 
         try {

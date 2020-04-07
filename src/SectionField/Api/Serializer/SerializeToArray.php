@@ -77,6 +77,10 @@ class SerializeToArray implements SerializeToArrayInterface {
     private function getContext(Request $request): SerializationContext
     {
         $fields = $request->get('fields', ['id']);
+        // If request value is added through the manual controller
+        // the above second argument does not work. This is an extra
+        // fallback to make sure it has ['id'].
+        $fields = empty($fields) ? ['id'] : $fields;
         $depth = $request->get('depth', 20);
         $depth = is_numeric($depth) ? (int)$depth : 20;
 
