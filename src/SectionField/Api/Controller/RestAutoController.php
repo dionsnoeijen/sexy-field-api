@@ -319,7 +319,7 @@ class RestAutoController implements RestControllerInterface
         $limit = $request->get('limit', 100);
         $limit = empty($limit) ? 100 : $limit;
         $orderBy = $request->get('orderBy', 'created');
-        $orderBy = empty($orderBy) ? 'orderBy' : $orderBy;
+        $orderBy = empty($orderBy) ? 'created' : $orderBy;
         $sort = $request->get('sort', 'DESC');
         $sort = empty($sort) ? 'DESC' : $sort;
 
@@ -423,7 +423,7 @@ class RestAutoController implements RestControllerInterface
         $limit = $request->get('limit', 100);
         $limit = empty($limit) ? 100 : $limit;
         $orderBy = $request->get('orderBy', 'created');
-        $orderBy = empty($orderBy) ? 'orderBy' : $orderBy;
+        $orderBy = empty($orderBy) ? 'created' : $orderBy;
         $sort = $request->get('sort', 'DESC');
         $sort = empty($sort) ? 'DESC' : $sort;
         $fields = $request->get('fields', null);
