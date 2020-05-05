@@ -21,6 +21,7 @@ use JMS\Serializer\SerializerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Tardigrades\SectionField\Api\Handler\DateTimeTimezoneHandler;
+use Tardigrades\SectionField\Api\Handler\PurifierHandler;
 use Tardigrades\SectionField\Api\Handler\TriggerHandler;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 
@@ -61,6 +62,7 @@ class SerializeToArray implements SerializeToArrayInterface {
             ->configureHandlers(function(HandlerRegistry $registry) {
                 $registry->registerSubscribingHandler(new DateTimeTimezoneHandler());
                 $registry->registerSubscribingHandler(new TriggerHandler($this->container));
+                $registry->registerSubscribingHandler(new PurifierHandler($this->container));
             })
             ->setCacheDir($this->cacheDir . '/serializer')
             ->build();
