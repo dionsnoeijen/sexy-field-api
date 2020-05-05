@@ -21,6 +21,7 @@ use JMS\Serializer\SerializerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Tardigrades\SectionField\Api\Handler\DateTimeTimezoneHandler;
+use Tardigrades\SectionField\Api\Handler\PurifierHandler;
 use Tardigrades\SectionField\Api\Handler\TriggerHandler;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 

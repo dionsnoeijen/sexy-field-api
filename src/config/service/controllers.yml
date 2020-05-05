@@ -18,6 +18,7 @@ services:
       - '@Tardigrades\SectionField\Api\Serializer\SerializeToArray'
       - '@default.cache'
       - '@security.token_storage'
+      - '@sexy_field.default'
 
   rest.controller:
     alias: 'Tardigrades\SectionField\Api\Controller\RestAutoController'
@@ -36,6 +37,7 @@ services:
       - '@Tardigrades\SectionField\Api\Serializer\SerializeToArray'
       - '@default.cache'
       - '@security.token_storage'
+      - '@sexy_field.default'
 
   rest.info.controller:
     alias: 'Tardigrades\SectionField\Api\Controller\RestInfoAutoController'
@@ -54,6 +56,7 @@ services:
       - '@Tardigrades\SectionField\Api\Serializer\SerializeToArray'
       - '@default.cache'
       - '@security.token_storage'
+      - '@sexy_field.default'
 
   rest.manual.controller:
     alias: 'Tardigrades\SectionField\Api\Controller\RestManualController'

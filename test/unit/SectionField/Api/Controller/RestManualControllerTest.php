@@ -74,6 +74,9 @@ class RestManualControllerTest extends TestCase
     /** @var TokenStorageInterface|Mockery\MockInterface */
     private $tokenStorage;
 
+    /** @var \HTMLPurifier|Mockery\LegacyMockInterface|Mockery\MockInterface */
+    private $purifier;
+
     /** @var RestManualController */
     private $controller;
 
@@ -89,6 +92,7 @@ class RestManualControllerTest extends TestCase
         $this->serialize = Mockery::mock(SerializeToArrayInterface::class);
         $this->cache = Mockery::mock(CacheInterface::class);
         $this->tokenStorage = Mockery::mock(TokenStorageInterface::class);
+        $this->purifier = Mockery::mock(\HTMLPurifier::class);
 
         $this->controller = new RestManualController(
             $this->createSection,
@@ -100,7 +104,8 @@ class RestManualControllerTest extends TestCase
             $this->dispatcher,
             $this->serialize,
             $this->cache,
-            $this->tokenStorage
+            $this->tokenStorage,
+            $this->purifier
         );
     }
 
