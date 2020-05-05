@@ -75,11 +75,14 @@ class RestAutoControllerTest extends TestCase
     /** @var CacheInterface|Mockery\MockInterface */
     private $cache;
 
-    /** @var RestAutoController */
-    private $controller;
+    /** @var \HTMLPurifier|Mockery\LegacyMockInterface|Mockery\MockInterface */
+    private $purifier;
 
     /** @var TokenStorageInterface|Mockery\MockInterface */
     private $tokenStorage;
+
+    /** @var RestAutoController */
+    private $controller;
 
     public function setUp()
     {
@@ -93,6 +96,7 @@ class RestAutoControllerTest extends TestCase
         $this->serialize = Mockery::mock(SerializeToArrayInterface::class);
         $this->cache = Mockery::mock(CacheInterface::class);
         $this->tokenStorage = Mockery::mock(TokenStorageInterface::class);
+        $this->purifier = Mockery::mock(\HTMLPurifier::class);
 
         $this->controller = new RestAutoController(
             $this->createSection,
@@ -104,7 +108,8 @@ class RestAutoControllerTest extends TestCase
             $this->dispatcher,
             $this->serialize,
             $this->cache,
-            $this->tokenStorage
+            $this->tokenStorage,
+            $this->purifier
         );
     }
 

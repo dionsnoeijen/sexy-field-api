@@ -62,7 +62,6 @@ class SerializeToArray implements SerializeToArrayInterface {
             ->configureHandlers(function(HandlerRegistry $registry) {
                 $registry->registerSubscribingHandler(new DateTimeTimezoneHandler());
                 $registry->registerSubscribingHandler(new TriggerHandler($this->container));
-                $registry->registerSubscribingHandler(new PurifierHandler($this->container));
             })
             ->setCacheDir($this->cacheDir . '/serializer')
             ->build();

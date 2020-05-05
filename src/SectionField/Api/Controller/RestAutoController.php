@@ -76,16 +76,18 @@ class RestAutoController implements RestControllerInterface
     /** @var TokenStorageInterface */
     protected $tokenStorage;
 
+    /** @var \HTMLPurifier */
+    private $purifier;
+
     const DEFAULT_RELATIONSHIPS_LIMIT = 100;
     const DEFAULT_RELATIONSHIPS_OFFSET = 0;
-    const OPTIONS_CALL = 'options';
 
+    const OPTIONS_CALL = 'options';
     const CACHE_CONTEXT_GET_ENTRY_BY_ID = 'get.entry.by.id';
     const CACHE_CONTEXT_GET_ENTRY_BY_SLUG = 'get.entry.by.slug';
     const CACHE_CONTEXT_GET_ENTRIES_BY_FIELD_VALUE = 'get.entries.by.field.value';
-    const CACHE_CONTEXT_GET_ENTRIES = 'get.entries';
 
-    /** @var string */
+    const CACHE_CONTEXT_GET_ENTRIES = 'get.entries';
     const ALLOWED_HTTP_METHODS = 'OPTIONS, GET, POST, PUT, DELETE';
 
     /**
@@ -100,6 +102,7 @@ class RestAutoController implements RestControllerInterface
      * @param SerializeToArrayInterface $serialize
      * @param CacheInterface $cache
      * @param TokenStorageInterface $tokenStorage
+     * @param \HTMLPurifier $purifier
      */
     public function __construct(
         CreateSectionInterface $createSection,
@@ -111,7 +114,8 @@ class RestAutoController implements RestControllerInterface
         EventDispatcherInterface $dispatcher,
         SerializeToArrayInterface $serialize,
         CacheInterface $cache,
-        TokenStorageInterface $tokenStorage
+        TokenStorageInterface $tokenStorage,
+        \HTMLPurifier $purifier
     ) {
         $this->readSection = $readSection;
         $this->createSection = $createSection;
@@ -123,6 +127,7 @@ class RestAutoController implements RestControllerInterface
         $this->serialize = $serialize;
         $this->cache = $cache;
         $this->tokenStorage = $tokenStorage;
+        $this->purifier = $purifier;
     }
 
     /**
@@ -177,6 +182,7 @@ class RestAutoController implements RestControllerInterface
             ]))->current();
 
             $responseData = $this->serialize->toArray($request, $entry);
+            $this->purifyResponseData($responseData);
             $jsonResponse = new JsonResponse(
                 $responseData,
                 JsonResponse::HTTP_OK,
@@ -252,7 +258,12 @@ class RestAutoController implements RestControllerInterface
             ]))->current();
 
             $responseData = $this->serialize->toArray($request, $entry);
-            $jsonResponse = new JsonResponse($responseData, JsonResponse::HTTP_OK, $this->getDefaultResponseHeaders($request));
+            $this->purifyResponseData($responseData);
+            $jsonResponse = new JsonResponse(
+                $responseData,
+                JsonResponse::HTTP_OK,
+                $this->getDefaultResponseHeaders($request)
+            );
 
             $this->dispatcher->dispatch(
                 new ApiEntryFetched($request, $responseData, $jsonResponse, $entry),
@@ -363,6 +374,7 @@ class RestAutoController implements RestControllerInterface
                     $responseData[] = $entry;
                 }
             }
+            $this->purifyResponseData($responseData);
             $jsonResponse = new JsonResponse(
                 $responseData,
                 JsonResponse::HTTP_OK,
@@ -464,6 +476,7 @@ class RestAutoController implements RestControllerInterface
                     $responseData[] = $entry;
                 }
             }
+            $this->purifyResponseData($responseData);
             $jsonResponse = new JsonResponse(
                 $responseData,
                 JsonResponse::HTTP_OK,
@@ -525,6 +538,7 @@ class RestAutoController implements RestControllerInterface
             );
             $form->submit($request->get($form->getName()));
 
+            $this->purifyResponseData($responseData);
             $jsonResponse = new JsonResponse(
                 $responseData,
                 $responseData['code'],
@@ -613,7 +627,7 @@ class RestAutoController implements RestControllerInterface
             )->current();
 
             $form->submit($request->get($form->getName()), false);
-
+            $this->purifyResponseData($responseData);
             $jsonResponse = new JsonResponse(
                 $responseData,
                 $responseData['code'],
@@ -638,6 +652,7 @@ class RestAutoController implements RestControllerInterface
                 }
 
                 $responseData = $this->save($form, $jsonResponse, $request);
+                $this->purifyResponseData($responseData);
                 $jsonResponse->setData($responseData);
                 $this->dispatcher->dispatch(
                     new ApiEntryUpdated(
@@ -733,6 +748,7 @@ class RestAutoController implements RestControllerInterface
                 }
 
                 $responseData = $this->save($form, $jsonResponse, $request);
+                $this->purifyResponseData($responseData);
                 $jsonResponse->setData($responseData);
                 $this->dispatcher->dispatch(
                     new ApiEntryUpdated(
@@ -999,5 +1015,15 @@ class RestAutoController implements RestControllerInterface
         }
 
         return $fields;
+    }
+
+    protected function purifyResponseData(array &$responseData): void
+    {
+        array_walk_recursive(
+            $responseData,
+            function (&$value) {
+                $value = is_string($value) ? $this->purifier->purify($value) : $value;
+            }
+        );
     }
 }
