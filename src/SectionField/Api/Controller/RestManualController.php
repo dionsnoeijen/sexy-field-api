@@ -63,7 +63,7 @@ class RestManualController extends RestInfoAutoController
         ]);
         switch ($method) {
             case Request::METHOD_OPTIONS:
-                return $this->preFlightOptions($request);
+                return $this->preFlightOptions($request, 'OPTIONS,GET');
             case Request::METHOD_GET:
                 if (!is_null($id)) {
                     return $this->getEntryByIdAction($sectionHandle, $id);
@@ -108,7 +108,7 @@ class RestManualController extends RestInfoAutoController
         ]);
         switch ($method) {
             case Request::METHOD_OPTIONS:
-                return $this->preFlightOptions($request);
+                return $this->preFlightOptions($request, 'OPTIONS,POST');
             case Request::METHOD_POST:
                 return $this->createEntryAction($sectionHandle);
             default:
@@ -148,7 +148,7 @@ class RestManualController extends RestInfoAutoController
         ]);
         switch ($method) {
             case Request::METHOD_OPTIONS:
-                return $this->preFlightOptions($request);
+                return $this->preFlightOptions($request, 'OPTIONS,PUT');
             case Request::METHOD_PUT:
                 if (!is_null($id)) {
                     return $this->updateEntryByIdAction($sectionHandle, $id);
@@ -186,7 +186,7 @@ class RestManualController extends RestInfoAutoController
         $method = $request->getMethod();
         switch ($method) {
             case Request::METHOD_OPTIONS:
-                return $this->preFlightOptions($request);
+                return $this->preFlightOptions($request, 'OPTIONS,DELETE');
             case Request::METHOD_DELETE:
                 if (!is_null($id)) {
                     return $this->deleteEntryByIdAction($sectionHandle, $id);
@@ -236,7 +236,7 @@ class RestManualController extends RestInfoAutoController
         ]);
         switch ($method) {
             case Request::METHOD_OPTIONS:
-                return $this->preFlightOptions($request);
+                return $this->preFlightOptions($request, 'OPTIONS,GET');
             case Request::METHOD_GET:
                 if (!is_null($id)) {
                     return $this->getSectionInfoByIdAction($sectionHandle, $id);
