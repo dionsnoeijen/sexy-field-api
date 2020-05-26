@@ -109,6 +109,7 @@ class SerializeToArray implements SerializeToArrayInterface {
         }
 
         $context = new SerializationContext();
+        $context->enableMaxDepthChecks();
         $context->addExclusionStrategy(new FieldsExclusionStrategy($fields));
         $context->addExclusionStrategy(new DepthExclusionStrategy($depth));
 
