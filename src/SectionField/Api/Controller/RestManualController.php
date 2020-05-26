@@ -211,6 +211,11 @@ class RestManualController extends RestInfoAutoController
      *        sectionHandle: something
      *        options: someRelationshipFieldHandle|limit:100|offset:0
      *
+     * To have variables for options do:
+     * options: someRelationshipFieldHandle|limit:{limit}|offset:{offset}
+     *
+     * And then pass those vars to the url: ?limit=100&offset=0
+     *
      * @param string|null $sectionHandle
      * @param string|null $id
      * @param string|null $slug
@@ -229,6 +234,20 @@ class RestManualController extends RestInfoAutoController
     ): JsonResponse {
         $request = $this->requestStack->getCurrentRequest();
         $method = $request->getMethod();
+
+        // Make it possible to pass get vars to the options config
+        $getVars = $request->query->all();
+        foreach ($getVars as $varName=>$getVar) {
+            if (strpos($options, $varName) !== false) {
+                $options = str_replace($varName, $getVar, $options);
+            }
+        }
+        if (strpos($options, '{') !== false || strpos($options, '}') !== false) {
+            return JsonResponse::create([
+                'error' => 'options_variable_missing'
+            ], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
         $request->attributes->add([
             'fields' => $fields,
             'depth' => $depth,
