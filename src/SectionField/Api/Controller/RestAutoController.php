@@ -362,8 +362,7 @@ class RestAutoController implements RestControllerInterface
                 ReadOptions::RELATE => $fieldHandles,
                 ReadOptions::OFFSET => (int) $offset,
                 ReadOptions::LIMIT => (int) $limit,
-                ReadOptions::ORDER_BY => [ $orderBy => strtolower($sort) ],
-                ReadOptions::FETCH_FIELDS => $request->get('fields', null)
+                ReadOptions::ORDER_BY => [ $orderBy => strtolower($sort) ]
             ];
             $entries = $this->readSection->read(ReadOptions::fromArray($readOptions));
             $responseData = [];
@@ -465,8 +464,7 @@ class RestAutoController implements RestControllerInterface
                 ReadOptions::SECTION => $sectionHandle,
                 ReadOptions::OFFSET => (int) $offset,
                 ReadOptions::LIMIT => (int) $limit,
-                ReadOptions::ORDER_BY => [ $orderBy => strtolower($sort) ],
-                ReadOptions::FETCH_FIELDS => $fields
+                ReadOptions::ORDER_BY => [ $orderBy => strtolower($sort) ]
             ]));
             $responseData = [];
             foreach ($entries as $entry) {

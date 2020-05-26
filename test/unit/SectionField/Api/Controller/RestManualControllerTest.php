@@ -301,8 +301,7 @@ class RestManualControllerTest extends TestCase
                     'limit' => 100,
                     'orderBy' =>  [
                         'created' => 'desc'
-                    ],
-                    'fetchFields' => []
+                    ]
                 ];
             }))
             ->andReturn(new \ArrayIterator([new SomeCommonSectionEntity()]));
@@ -380,8 +379,7 @@ class RestManualControllerTest extends TestCase
                     'limit' => 100,
                     'orderBy' => [
                         'created' => 'desc'
-                    ],
-                    'fetchFields' => []
+                    ]
                 ];
             }))
             ->andReturn(new \ArrayIterator([ new SomeCommonSectionEntity() ]));
