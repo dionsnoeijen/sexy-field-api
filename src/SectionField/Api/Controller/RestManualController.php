@@ -68,7 +68,7 @@ class RestManualController extends RestInfoAutoController
             $getVars = $request->query->all();
             foreach ($getVars as $varName=>$getVar) {
                 if (strpos($value, $varName) !== false) {
-                    $value = str_replace($varName, $getVar, $value);
+                    $value = str_replace('{' . $varName . '}', $getVar, $value);
                 }
             }
             if (strpos($value, '{') !== false || strpos($value, '}') !== false) {
@@ -267,7 +267,7 @@ class RestManualController extends RestInfoAutoController
             $getVars = $request->query->all();
             foreach ($getVars as $varName => $getVar) {
                 if (strpos($options, $varName) !== false) {
-                    $options = str_replace($varName, $getVar, $options);
+                    $options = str_replace('{' . $varName . '}', $getVar, $options);
                 }
             }
             if (strpos($options, '{') !== false || strpos($options, '}') !== false) {
