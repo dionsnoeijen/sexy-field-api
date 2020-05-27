@@ -23,6 +23,16 @@ class RestManualController extends RestInfoAutoController
      *            - name
      *            - anyField
      *
+     * If you want to pass a dynamic value to get a specific realtionship do:
+     *
+     * defaults:
+     *      value: {values}
+     *
+     * And pass the vars like this: ?values=a,b,c
+     *
+     * Note: The variable name "{values}" is arbitrary. It can be anything
+     * as long as the argument that is passed along to the route is the same.
+     *
      * @param string|null $sectionHandle
      * @param string|null $fieldHandle
      * @param string|null $id
@@ -52,6 +62,22 @@ class RestManualController extends RestInfoAutoController
     ): JsonResponse {
         $request = $this->requestStack->getCurrentRequest();
         $method = $request->getMethod();
+
+        // Make it possible to pass get vars to the options config
+        if (!is_null($value)) {
+            $getVars = $request->query->all();
+            foreach ($getVars as $varName=>$getVar) {
+                if (strpos($value, $varName) !== false) {
+                    $value = str_replace('{' . $varName . '}', $getVar, $value);
+                }
+            }
+            if (strpos($value, '{') !== false || strpos($value, '}') !== false) {
+                return JsonResponse::create([
+                    'error' => 'value_variable_missing'
+                ], JsonResponse::HTTP_BAD_REQUEST);
+            }
+        }
+
         $request->attributes->add([
             'fields' => $fields,
             'offset' => $offset,
@@ -211,6 +237,12 @@ class RestManualController extends RestInfoAutoController
      *        sectionHandle: something
      *        options: someRelationshipFieldHandle|limit:100|offset:0
      *
+     * To have variables for options do:
+     * defaults:
+     *     options: someRelationshipFieldHandle|limit:{limit}|offset:{offset}
+     *
+     * And then pass those vars to the url: ?limit=100&offset=0
+     *
      * @param string|null $sectionHandle
      * @param string|null $id
      * @param string|null $slug
@@ -229,6 +261,22 @@ class RestManualController extends RestInfoAutoController
     ): JsonResponse {
         $request = $this->requestStack->getCurrentRequest();
         $method = $request->getMethod();
+
+        // Make it possible to pass get vars to the options config
+        if (!is_null($options)) {
+            $getVars = $request->query->all();
+            foreach ($getVars as $varName => $getVar) {
+                if (strpos($options, $varName) !== false) {
+                    $options = str_replace('{' . $varName . '}', $getVar, $options);
+                }
+            }
+            if (strpos($options, '{') !== false || strpos($options, '}') !== false) {
+                return JsonResponse::create([
+                    'error' => 'options_variable_missing'
+                ], JsonResponse::HTTP_BAD_REQUEST);
+            }
+        }
+
         $request->attributes->add([
             'fields' => $fields,
             'depth' => $depth,
