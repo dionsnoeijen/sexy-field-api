@@ -79,13 +79,15 @@ class SerializeToArray implements SerializeToArrayInterface {
     public function toArray(Request $request, CommonSectionInterface $entry): array
     {
         $bundle = explode('\\', get_class($entry));
-        if ($bundle[0] !== 'Proxies') {
-            $metadata =  str_replace('/vendor/tardigrades/sexy-field-api/src/SectionField/Api/Serializer', '', __DIR__);
-            $metadata .= '/src/' . $bundle[0] . '/Resources/config/serializer/';
-            if ($metadata !== $this->metadataDir) {
-                $this->metadataDir = $metadata;
-                $this->initSerializer();
-            }
+        $bundleName = $bundle[0];
+        if ($bundle[0] == 'Proxies') {
+            $bundleName = $bundle[2];
+        }
+        $metadata =  str_replace('/vendor/tardigrades/sexy-field-api/src/SectionField/Api/Serializer', '', __DIR__);
+        $metadata .= '/src/' . $bundleName . '/Resources/config/serializer/';
+        if ($metadata !== $this->metadataDir) {
+            $this->metadataDir = $metadata;
+            $this->initSerializer();
         }
         return $this->serializer->toArray($entry, $this->getContext($request));
     }
