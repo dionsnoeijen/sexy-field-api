@@ -18,6 +18,7 @@ use Tardigrades\Entity\FieldType;
 use Tardigrades\Entity\SectionInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Api\Serializer\SerializeToArrayInterface;
+use Tardigrades\SectionField\Api\Utils\AccessControlAllowOrigin;
 use Tardigrades\SectionField\Event\ApiSectionInfoFetched;
 use Tardigrades\SectionField\Form\FormInterface;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
@@ -124,6 +125,9 @@ class RestInfoAutoControllerTest extends TestCase
             // method name,    arguments,      allowed HTTP methods
             ['getSectionInfoByIdAction', ['foo', "0"], $allowedMethods]
         ];
+
+        $_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS] = 'someorigin.com';
+
         foreach ($testCases as [$method, $args, $allowMethods]) {
             $request = Mockery::mock(Request::class);
             $request->shouldReceive('getMethod')
@@ -148,6 +152,8 @@ class RestInfoAutoControllerTest extends TestCase
             ]);
             $this->assertEquals($this->controller->$method(...$args), $response);
         }
+
+        unset($_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS]);
     }
 
     /**
@@ -237,10 +243,14 @@ class RestInfoAutoControllerTest extends TestCase
 
         $expectedFieldInfo['fields'] = $fields;
 
+        $_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS] = 'iamtheorigin.com';
+
         $expectedResponse = new JsonResponse($expectedFieldInfo, 200, [
             'Access-Control-Allow-Origin' => 'iamtheorigin.com',
             'Access-Control-Allow-Credentials' => 'true'
         ]);
+
+        unset($_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS]);
 
         $response = $this->controller->getSectionInfoByIdAction('sexyHandle');
         $this->assertEquals($expectedResponse, $response);
@@ -510,6 +520,8 @@ class RestInfoAutoControllerTest extends TestCase
         $this->readSection->shouldReceive('read')->andThrow(EntryNotFoundException::class, 'Entry not found');
         $this->readSection->shouldReceive('read')->andThrow(EntryNotFoundException::class, 'Entry not found');
 
+        $_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS] = 'iamtheorigin.com';
+
         $response = $this->controller->getSectionInfoByIdAction('sexyHandle');
         $expectedResponse = new JsonResponse(
             $expectedFieldInfo,
@@ -519,6 +531,8 @@ class RestInfoAutoControllerTest extends TestCase
                 'Access-Control-Allow-Credentials' => 'true'
             ]
         );
+
+        unset($_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS]);
 
         $this->assertEquals($expectedResponse, $response);
     }

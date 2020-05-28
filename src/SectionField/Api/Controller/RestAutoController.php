@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Form\FormInterface as SymfonyFormInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Tardigrades\SectionField\Api\Serializer\SerializeToArrayInterface;
+use Tardigrades\SectionField\Api\Utils\AccessControlAllowOrigin;
 use Tardigrades\SectionField\Event\ApiFetchEntries;
 use Tardigrades\SectionField\Event\ApiFetchEntry;
 use Tardigrades\SectionField\Service\CacheInterface;
@@ -874,9 +875,8 @@ class RestAutoController implements RestControllerInterface
     protected function preFlightOptions(Request $request, string $allowMethods = 'OPTIONS'): ?JsonResponse
     {
         if (strtolower($request->getMethod()) === self::OPTIONS_CALL) {
-            $origin = $request->headers->get('Origin');
             return new JsonResponse([], JsonResponse::HTTP_OK, [
-                'Access-Control-Allow-Origin' => $origin ?: '*',
+                'Access-Control-Allow-Origin' => AccessControlAllowOrigin::get($request),
                 'Access-Control-Allow-Methods' => $allowMethods,
                 'Access-Control-Allow-Credentials' => 'true'
             ]);
@@ -974,9 +974,8 @@ class RestAutoController implements RestControllerInterface
      */
     protected function getDefaultResponseHeaders($request): array
     {
-        $origin = $request->headers->get('Origin');
         return [
-            'Access-Control-Allow-Origin' => $origin ?: '*',
+            'Access-Control-Allow-Origin' => AccessControlAllowOrigin::get($request),
             'Access-Control-Allow-Credentials' => 'true'
         ];
     }
