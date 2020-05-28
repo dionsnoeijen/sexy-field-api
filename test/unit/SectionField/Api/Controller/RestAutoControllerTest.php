@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Tardigrades\Entity\SectionInterface;
 use Tardigrades\SectionField\Api\Serializer\SerializeToArrayInterface;
+use Tardigrades\SectionField\Api\Utils\AccessControlAllowOrigin;
 use Tardigrades\SectionField\Event\ApiBeforeEntrySavedAfterValidated;
 use Tardigrades\SectionField\Event\ApiBeforeEntryUpdatedAfterValidated;
 use Tardigrades\SectionField\Event\ApiCreateEntry;
@@ -141,6 +142,9 @@ class RestAutoControllerTest extends TestCase
             ['deleteEntryByIdAction', ['foo', 0], $allowedMethods],
             ['deleteEntryBySlugAction', ['foo', 'bar'], $allowedMethods]
         ];
+
+        $_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS] = 'someorigin.com';
+
         foreach ($testCases as [$method, $args, $allowMethods]) {
             $request = Mockery::mock(Request::class);
             $request->shouldReceive('getMethod')
@@ -163,6 +167,8 @@ class RestAutoControllerTest extends TestCase
 
             $this->assertEquals($expectedResponse, $this->controller->$method(...$args));
         }
+
+        unset($_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS]);
     }
 
     /**
@@ -228,6 +234,8 @@ class RestAutoControllerTest extends TestCase
                 $this->form->shouldReceive('buildFormForSection')->once();
             }
 
+            $_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS] = 'iamtheorigin.com';
+
             $response = $this->controller->$method(...$args);
             $expectedResponse = new JsonResponse([
                 'error' => 'Entry not found'
@@ -235,6 +243,9 @@ class RestAutoControllerTest extends TestCase
                 'Access-Control-Allow-Origin' => 'iamtheorigin.com',
                 'Access-Control-Allow-Credentials' => 'true'
             ]);
+
+            unset($_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS]);
+
             $this->assertEquals($expectedResponse, $response);
         }
     }
@@ -296,12 +307,17 @@ class RestAutoControllerTest extends TestCase
                 ->once()
                 ->andThrow(\Exception::class, "Something exceptional happened");
 
+            $_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS] = 'iamtheorigin.com';
+
             $expectedResponse = new JsonResponse(['error' => "Something exceptional happened"], 400, [
                 'Access-Control-Allow-Origin' => 'iamtheorigin.com',
                 'Access-Control-Allow-Credentials' => 'true'
             ]);
 
             $response = $this->controller->$method(...$args);
+
+            unset($_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS]);
+
             $this->assertEquals($expectedResponse, $response);
         }
     }
@@ -321,6 +337,9 @@ class RestAutoControllerTest extends TestCase
             ['updateEntryByIdAction', ['foo', 14], [], true],
             ['updateEntryBySlugAction', ['foo', 'bar'], [], true]
         ];
+
+        $_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS] = 'iamtheorigin.com';
+
         foreach ($testCases as [$method, $args, $query, $expectDispatch]) {
             $request = new Request($query, [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
 
@@ -343,6 +362,8 @@ class RestAutoControllerTest extends TestCase
             $response = $this->controller->$method(...$args);
             $this->assertEquals($expectedResponse, $response);
         }
+
+        unset($_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS]);
     }
 
     /**

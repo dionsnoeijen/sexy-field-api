@@ -19,6 +19,7 @@ use Tardigrades\Entity\Section;
 use Tardigrades\Entity\SectionInterface;
 use Tardigrades\FieldType\Relationship\Relationship;
 use Tardigrades\SectionField\Api\Serializer\SerializeToArrayInterface;
+use Tardigrades\SectionField\Api\Utils\AccessControlAllowOrigin;
 use Tardigrades\SectionField\Form\FormInterface;
 use Tardigrades\SectionField\Generator\CommonSectionInterface;
 use Tardigrades\SectionField\Service\CacheInterface;
@@ -678,12 +679,17 @@ class RestManualControllerTest extends TestCase
 
         $expectedFieldInfo['fields'] = $fields;
 
+        $_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS] = 'iamtheorigin.com';
+
         $expectedResponse = new JsonResponse($expectedFieldInfo, 200, [
             'Access-Control-Allow-Origin' => 'iamtheorigin.com',
             'Access-Control-Allow-Credentials' => 'true'
         ]);
 
         $response = $this->controller->infoAction('sexyHandle');
+
+        unset($_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS]);
+
         $this->assertEquals($expectedResponse, $response);
     }
 
