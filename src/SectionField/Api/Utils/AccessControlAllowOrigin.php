@@ -15,10 +15,9 @@ class AccessControlAllowOrigin
 
         $accessControlAllowOrigin = 'null';
         if (!empty($_ENV[self::ACCESS_CONTROL_ALLOWED_ORIGINS])) {
-            $accessControlAllowOrigin = explode(',', $_ENV[self::ACCESS_CONTROL_ALLOWED_ORIGINS]);
-            if (in_array($origin, $accessControlAllowOrigin)) {
-                $accessControlAllowOrigin =
-                    $accessControlAllowOrigin[array_search($origin, $accessControlAllowOrigin)];
+            $origins = explode(',', $_ENV[self::ACCESS_CONTROL_ALLOWED_ORIGINS]);
+            if (in_array($origin, $origins)) {
+                $accessControlAllowOrigin = $origins[array_search($origin, $origins)];
             }
         }
 
