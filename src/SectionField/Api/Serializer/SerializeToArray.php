@@ -87,6 +87,9 @@ class SerializeToArray implements SerializeToArrayInterface {
         $metadata .= '/src/' . $bundleName . '/Resources/config/serializer/';
         if ($metadata !== $this->metadataDir) {
             $this->metadataDir = $metadata;
+            if (!file_exists($metadata) && !is_dir($metadata)) {
+                mkdir($metadata, 0644, true);
+            }
             $this->initSerializer();
         }
         return $this->serializer->toArray($entry, $this->getContext($request));
