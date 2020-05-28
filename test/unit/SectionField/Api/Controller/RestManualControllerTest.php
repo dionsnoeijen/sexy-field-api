@@ -686,9 +686,10 @@ class RestManualControllerTest extends TestCase
             'Access-Control-Allow-Credentials' => 'true'
         ]);
 
+        $response = $this->controller->infoAction('sexyHandle');
+
         unset($_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS]);
 
-        $response = $this->controller->infoAction('sexyHandle');
         $this->assertEquals($expectedResponse, $response);
     }
 

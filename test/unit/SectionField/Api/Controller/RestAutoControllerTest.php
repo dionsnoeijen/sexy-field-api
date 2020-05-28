@@ -337,6 +337,9 @@ class RestAutoControllerTest extends TestCase
             ['updateEntryByIdAction', ['foo', 14], [], true],
             ['updateEntryBySlugAction', ['foo', 'bar'], [], true]
         ];
+
+        $_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS] = 'iamtheorigin.com';
+
         foreach ($testCases as [$method, $args, $query, $expectDispatch]) {
             $request = new Request($query, [], [], [], [], ['HTTP_ORIGIN' => 'iamtheorigin.com']);
 
@@ -359,6 +362,8 @@ class RestAutoControllerTest extends TestCase
             $response = $this->controller->$method(...$args);
             $this->assertEquals($expectedResponse, $response);
         }
+
+        unset($_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS]);
     }
 
     /**

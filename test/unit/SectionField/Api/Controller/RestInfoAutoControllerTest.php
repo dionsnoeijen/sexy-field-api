@@ -249,10 +249,10 @@ class RestInfoAutoControllerTest extends TestCase
             'Access-Control-Allow-Origin' => 'iamtheorigin.com',
             'Access-Control-Allow-Credentials' => 'true'
         ]);
+        $response = $this->controller->getSectionInfoByIdAction('sexyHandle');
 
         unset($_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS]);
 
-        $response = $this->controller->getSectionInfoByIdAction('sexyHandle');
         $this->assertEquals($expectedResponse, $response);
     }
 
@@ -273,6 +273,8 @@ class RestInfoAutoControllerTest extends TestCase
             ->once()
             ->andThrow(SectionNotFoundException::class, 'Section not found');
 
+        $_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS] = 'iamtheorigin.com';
+
         $expectedResponse = new JsonResponse(['error' => 'Section not found'], 404, [
             'Access-Control-Allow-Origin' => 'iamtheorigin.com',
             'Access-Control-Allow-Credentials' => 'true'
@@ -281,6 +283,9 @@ class RestInfoAutoControllerTest extends TestCase
         $this->dispatcher->shouldReceive('dispatch')->once();
 
         $response = $this->controller->getSectionInfoByIdAction('foo');
+
+        unset($_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS]);
+
         $this->assertEquals($expectedResponse, $response);
     }
 
@@ -301,6 +306,8 @@ class RestInfoAutoControllerTest extends TestCase
             ->once()
             ->andThrow(\Exception::class, "Uh-oh");
 
+        $_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS] = 'iamtheorigin.com';
+
         $expectedResponse = new JsonResponse(['error' => 'Uh-oh'], 400, [
             'Access-Control-Allow-Origin' => 'iamtheorigin.com',
             'Access-Control-Allow-Credentials' => 'true'
@@ -309,6 +316,9 @@ class RestInfoAutoControllerTest extends TestCase
         $this->dispatcher->shouldReceive('dispatch')->once();
 
         $response = $this->controller->getSectionInfoByIdAction('foo');
+
+        unset($_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS]);
+
         $this->assertEquals($expectedResponse, $response);
     }
 
@@ -430,6 +440,8 @@ class RestInfoAutoControllerTest extends TestCase
         $expectedFieldInfo['fields'] = $this->givenASetOfFieldInfo(true);
         $expectedFieldInfo['fields'][2]['someRelationshipFieldHandle']['whatever'] = $formattedRecords;
 
+        $_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS] = 'iamtheorigin.com';
+
         $expectedResponse = new JsonResponse(
             $expectedFieldInfo,
             200,
@@ -442,6 +454,9 @@ class RestInfoAutoControllerTest extends TestCase
         $this->readSection->shouldReceive('read')->andReturn($sectionEntitiesTo);
 
         $response = $this->controller->getSectionInfoByIdAction('sexyHandle');
+
+        unset($_ENV[AccessControlAllowOrigin::ACCESS_CONTROL_ALLOWED_ORIGINS]);
+
 
         $this->assertEquals($expectedResponse, $response);
     }
