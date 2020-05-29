@@ -878,7 +878,8 @@ class RestAutoController implements RestControllerInterface
             return new JsonResponse([], JsonResponse::HTTP_OK, [
                 'Access-Control-Allow-Origin' => AccessControlAllowOrigin::get($request),
                 'Access-Control-Allow-Methods' => $allowMethods,
-                'Access-Control-Allow-Credentials' => 'true'
+                'Access-Control-Allow-Credentials' => 'true',
+                'Access-Control-Allow-Headers' => 'token'
             ]);
         }
 
