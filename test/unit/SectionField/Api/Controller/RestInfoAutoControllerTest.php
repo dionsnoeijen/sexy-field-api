@@ -148,7 +148,8 @@ class RestInfoAutoControllerTest extends TestCase
             $response = new JsonResponse([], JsonResponse::HTTP_OK, [
                 'Access-Control-Allow-Origin' => 'someorigin.com',
                 'Access-Control-Allow-Methods' => $allowMethods,
-                'Access-Control-Allow-Credentials' => 'true'
+                'Access-Control-Allow-Credentials' => 'true',
+                'Access-Control-Allow-Headers' => 'token'
             ]);
             $this->assertEquals($this->controller->$method(...$args), $response);
         }
