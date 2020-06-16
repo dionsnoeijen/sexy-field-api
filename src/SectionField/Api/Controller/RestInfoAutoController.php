@@ -199,6 +199,18 @@ class RestInfoAutoController extends RestAutoController implements RestControlle
      */
     private function handleToPropertyName(string $handle, array $fieldProperties): string
     {
+        if (!empty($fieldProperties['type']) &&
+            $fieldProperties['type'] === 'Relationship'
+        ) {
+            $singularPropertyName = $fieldProperties['as'] ?? $fieldProperties['to'];
+            $kind = $fieldProperties['kind'];
+            if ($kind === 'one-to-many' || $kind === 'many-to-many') {
+                $handle = Inflector::pluralize($singularPropertyName);
+            } else {
+                $handle = $singularPropertyName;
+            }
+        }
+
         foreach ($fieldProperties as $propertyName=>$property) {
             if ($property['handle'] === $handle) {
                 return $propertyName;
@@ -225,19 +237,7 @@ class RestInfoAutoController extends RestAutoController implements RestControlle
         foreach ($responseData['fields'] as $key=>&$field) {
             $value = null;
             $config = $field[key($field)];
-            $fieldHandle = $config['handle'];
-
-            if ($config['type'] === 'Relationship') {
-                $singularPropertyName = $config['as'] ?? $config['to'];
-                $kind = $config['kind'];
-                if ($kind === 'one-to-many' || $kind === 'many-to-many') {
-                    $plural = true;
-                    $fieldHandle = Inflector::pluralize($singularPropertyName);
-                } else {
-                    $plural = false;
-                    $fieldHandle = $singularPropertyName;
-                }
-            }
+            $fieldHandle = $this->handleToPropertyName($config['handle'], $field);
 
             try {
                 $mapsTo = $field[key($field)]['form']['sexy-field-instructions']['maps-to'];
@@ -388,7 +388,7 @@ class RestInfoAutoController extends RestAutoController implements RestControlle
         string $sectionHandle,
         int $id = null
     ): ?array {
-
+        $fieldInfo[$fieldHandle]['handle'] = $fieldHandle;
         if (!empty($fieldInfo[$fieldHandle]['to'])) {
             try {
                 $sexyFieldInstructions = $this->getSexyFieldRelationshipInstructions($fieldInfo, $fieldHandle);
