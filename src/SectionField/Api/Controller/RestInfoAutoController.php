@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Tardigrades\SectionField\Api\Controller;
 
-use Doctrine\Common\Inflector\Inflector;
+use Doctrine\Inflector\InflectorFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Tardigrades\Entity\FieldInterface;
 use Tardigrades\Entity\SectionInterface;
@@ -205,7 +205,8 @@ class RestInfoAutoController extends RestAutoController implements RestControlle
             $singularPropertyName = $fieldProperties['as'] ?? $fieldProperties['to'];
             $kind = $fieldProperties['kind'];
             if ($kind === 'one-to-many' || $kind === 'many-to-many') {
-                $handle = Inflector::pluralize($singularPropertyName);
+                $inflector = InflectorFactory::create()->build();
+                $handle = $inflector->pluralize($singularPropertyName);
             } else {
                 $handle = $singularPropertyName;
             }
