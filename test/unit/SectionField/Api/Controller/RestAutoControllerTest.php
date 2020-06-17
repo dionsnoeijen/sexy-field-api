@@ -23,7 +23,6 @@ use Tardigrades\SectionField\Event\ApiDeleteEntry;
 use Tardigrades\SectionField\Event\ApiEntriesFetched;
 use Tardigrades\SectionField\Event\ApiEntryCreated;
 use Tardigrades\SectionField\Event\ApiEntryDeleted;
-use Tardigrades\SectionField\Event\ApiEntryFetched;
 use Tardigrades\SectionField\Event\ApiEntryUpdated;
 use Tardigrades\SectionField\Event\ApiUpdateEntry;
 use Tardigrades\SectionField\Form\FormInterface;

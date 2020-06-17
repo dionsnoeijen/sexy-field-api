@@ -36,9 +36,9 @@
     "tardigrades/sexy-field-form": "The api requires you to use form"
   },
   "require-dev": {
-    "tardigrades/sexy-field": "dev-sym-4.x",
+    "tardigrades/sexy-field": "dev-integrate-create-and-delete-options",
     "tardigrades/sexy-field-entity": "dev-sym-4.x",
-    "tardigrades/sexy-field-doctrine": "dev-sym-4.x",
+    "tardigrades/sexy-field-doctrine": "dev-integrate-create-and-delete-options",
     "tardigrades/sexy-field-form": "dev-sym-4.x",
     "tardigrades/sexy-field-field-types-base": "dev-sym-4.x",
     "phpunit/phpunit": "^7.0",
