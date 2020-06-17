@@ -15,7 +15,7 @@ use Tardigrades\SectionField\Generator\CommonSectionInterface;
 use Tardigrades\SectionField\Service\EntryNotFoundException;
 use Tardigrades\SectionField\Service\ReadOptions;
 use Tardigrades\SectionField\ValueObject\Handle;
-use Tardigrades\SectionField\Service\ReadOptionsInterface;
+use Tardigrades\SectionField\Service\OptionsInterface;
 
 class RestInfoAutoController extends RestAutoController implements RestControllerInterface
 {
@@ -487,13 +487,13 @@ class RestInfoAutoController extends RestAutoController implements RestControlle
      * @param string $fieldHandle
      * @param array $fieldInfo
      * @param array|null $sexyFieldInstructions
-     * @return ReadOptionsInterface
+     * @return OptionsInterface
      */
     private function getRelationshipReadOptions(
         string $fieldHandle,
         array $fieldInfo,
         array $sexyFieldInstructions = null
-    ): ReadOptionsInterface {
+    ): OptionsInterface {
         $options = $this->getOptions();
 
         $readOptions = [
