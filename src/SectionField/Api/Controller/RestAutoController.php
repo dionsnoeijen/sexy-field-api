@@ -898,16 +898,11 @@ class RestAutoController implements RestControllerInterface
 
         $data = $form->getData();
 
-        try {
-            $this->createSection->save($data);
-            $responseData['success'] = true;
-            $responseData['errors'] = false;
-            $responseData['code'] = JsonResponse::HTTP_OK;
-            $responseData['entry'] = $this->serialize->toArray($request, $data);
-        } catch (\Exception $exception) {
-            $responseData['code'] = JsonResponse::HTTP_INTERNAL_SERVER_ERROR;
-            $responseData['exception'] = $exception->getMessage();
-        }
+        $this->createSection->save($data);
+        $responseData['success'] = true;
+        $responseData['errors'] = false;
+        $responseData['code'] = JsonResponse::HTTP_OK;
+        $responseData['entry'] = $this->serialize->toArray($request, $data);
 
         $responseData = array_merge(json_decode($jsonResponse->getContent(), true), $responseData);
 
