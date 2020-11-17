@@ -753,13 +753,6 @@ class RestAutoControllerTest extends TestCase
                 ApiBeforeEntrySavedAfterValidated::NAME
             ]);
 
-        $this->dispatcher->shouldReceive('dispatch')
-            ->once()
-            ->withArgs([
-                Mockery::type(ApiEntryCreated::class),
-                ApiEntryCreated::NAME
-            ]);
-
         $entryMock = Mockery::mock(CommonSectionInterface::class);
 
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
@@ -789,7 +782,7 @@ class RestAutoControllerTest extends TestCase
 
         $response = $this->controller->createEntryAction('sexy');
         $this->assertSame(
-            '{"code":500,"exception":"Something woeful occurred"}',
+            '{"error":"Something woeful occurred"}',
             $response->getContent()
         );
     }
