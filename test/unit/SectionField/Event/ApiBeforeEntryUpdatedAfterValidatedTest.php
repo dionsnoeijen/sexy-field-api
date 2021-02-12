@@ -36,7 +36,7 @@ final class ApiBeforeEntryUpdatedAfterValidatedTest extends TestCase
     /** @var CommonSectionInterface */
     private $originalEntry;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->request = new Request();
         $this->responseData = [];

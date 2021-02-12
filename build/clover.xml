@@ -1,0 +1,1194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1613148150">
+  <project timestamp="1613148150">
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/DependencyInjection/SectionFieldApiExtension.php">
+      <class name="Tardigrades\DependencyInjection\SectionFieldApiExtension" namespace="global">
+        <metrics complexity="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="6" coveredstatements="6" elements="7" coveredelements="7"/>
+      </class>
+      <line num="13" type="method" name="load" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="15" type="stmt" count="1"/>
+      <line num="16" type="stmt" count="1"/>
+      <line num="17" type="stmt" count="1"/>
+      <line num="18" type="stmt" count="1"/>
+      <line num="22" type="stmt" count="1"/>
+      <line num="23" type="stmt" count="1"/>
+      <metrics loc="24" ncloc="24" classes="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="6" coveredstatements="6" elements="7" coveredelements="7"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Api/Controller/RestAutoController.php">
+      <class name="Tardigrades\SectionField\Api\Controller\RestAutoController" namespace="global">
+        <metrics complexity="91" methods="19" coveredmethods="10" conditionals="0" coveredconditionals="0" statements="450" coveredstatements="374" elements="469" coveredelements="384"/>
+      </class>
+      <line num="108" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="20"/>
+      <line num="121" type="stmt" count="20"/>
+      <line num="122" type="stmt" count="20"/>
+      <line num="123" type="stmt" count="20"/>
+      <line num="124" type="stmt" count="20"/>
+      <line num="125" type="stmt" count="20"/>
+      <line num="126" type="stmt" count="20"/>
+      <line num="127" type="stmt" count="20"/>
+      <line num="128" type="stmt" count="20"/>
+      <line num="129" type="stmt" count="20"/>
+      <line num="130" type="stmt" count="20"/>
+      <line num="131" type="stmt" count="20"/>
+      <line num="132" type="stmt" count="20"/>
+      <line num="140" type="method" name="getEntryByIdAction" visibility="public" complexity="7" crap="7.28" count="4"/>
+      <line num="142" type="stmt" count="4"/>
+      <line num="144" type="stmt" count="4"/>
+      <line num="145" type="stmt" count="4"/>
+      <line num="146" type="stmt" count="1"/>
+      <line num="149" type="stmt" count="3"/>
+      <line num="150" type="stmt" count="3"/>
+      <line num="151" type="stmt" count="3"/>
+      <line num="154" type="stmt" count="3"/>
+      <line num="155" type="stmt" count="0"/>
+      <line num="159" type="stmt" count="3"/>
+      <line num="162" type="stmt" count="3"/>
+      <line num="163" type="stmt" count="3"/>
+      <line num="164" type="stmt" count="3"/>
+      <line num="165" type="stmt" count="3"/>
+      <line num="168" type="stmt" count="0"/>
+      <line num="172" type="stmt" count="3"/>
+      <line num="173" type="stmt" count="0"/>
+      <line num="174" type="stmt" count="0"/>
+      <line num="175" type="stmt" count="0"/>
+      <line num="176" type="stmt" count="0"/>
+      <line num="180" type="stmt" count="3"/>
+      <line num="181" type="stmt" count="3"/>
+      <line num="182" type="stmt" count="3"/>
+      <line num="183" type="stmt" count="1"/>
+      <line num="185" type="stmt" count="1"/>
+      <line num="186" type="stmt" count="1"/>
+      <line num="187" type="stmt" count="1"/>
+      <line num="188" type="stmt" count="1"/>
+      <line num="189" type="stmt" count="1"/>
+      <line num="190" type="stmt" count="1"/>
+      <line num="193" type="stmt" count="1"/>
+      <line num="194" type="stmt" count="1"/>
+      <line num="195" type="stmt" count="1"/>
+      <line num="198" type="stmt" count="1"/>
+      <line num="199" type="stmt" count="0"/>
+      <line num="202" type="stmt" count="1"/>
+      <line num="204" type="stmt" count="1"/>
+      <line num="205" type="stmt" count="2"/>
+      <line num="206" type="stmt" count="2"/>
+      <line num="216" type="method" name="getEntryBySlugAction" visibility="public" complexity="7" crap="7.28" count="4"/>
+      <line num="218" type="stmt" count="4"/>
+      <line num="220" type="stmt" count="4"/>
+      <line num="221" type="stmt" count="4"/>
+      <line num="222" type="stmt" count="1"/>
+      <line num="225" type="stmt" count="3"/>
+      <line num="226" type="stmt" count="3"/>
+      <line num="227" type="stmt" count="3"/>
+      <line num="230" type="stmt" count="3"/>
+      <line num="231" type="stmt" count="0"/>
+      <line num="235" type="stmt" count="3"/>
+      <line num="238" type="stmt" count="3"/>
+      <line num="239" type="stmt" count="3"/>
+      <line num="240" type="stmt" count="3"/>
+      <line num="241" type="stmt" count="3"/>
+      <line num="244" type="stmt" count="0"/>
+      <line num="248" type="stmt" count="3"/>
+      <line num="249" type="stmt" count="0"/>
+      <line num="250" type="stmt" count="0"/>
+      <line num="251" type="stmt" count="0"/>
+      <line num="252" type="stmt" count="0"/>
+      <line num="256" type="stmt" count="3"/>
+      <line num="257" type="stmt" count="3"/>
+      <line num="258" type="stmt" count="3"/>
+      <line num="259" type="stmt" count="1"/>
+      <line num="261" type="stmt" count="1"/>
+      <line num="262" type="stmt" count="1"/>
+      <line num="263" type="stmt" count="1"/>
+      <line num="264" type="stmt" count="1"/>
+      <line num="265" type="stmt" count="1"/>
+      <line num="266" type="stmt" count="1"/>
+      <line num="269" type="stmt" count="1"/>
+      <line num="270" type="stmt" count="1"/>
+      <line num="271" type="stmt" count="1"/>
+      <line num="274" type="stmt" count="1"/>
+      <line num="275" type="stmt" count="0"/>
+      <line num="278" type="stmt" count="1"/>
+      <line num="280" type="stmt" count="1"/>
+      <line num="281" type="stmt" count="2"/>
+      <line num="282" type="stmt" count="2"/>
+      <line num="295" type="method" name="getEntriesByFieldValueAction" visibility="public" complexity="14" crap="28.18" count="3"/>
+      <line num="297" type="stmt" count="3"/>
+      <line num="299" type="stmt" count="3"/>
+      <line num="300" type="stmt" count="3"/>
+      <line num="301" type="stmt" count="1"/>
+      <line num="304" type="stmt" count="2"/>
+      <line num="305" type="stmt" count="2"/>
+      <line num="306" type="stmt" count="2"/>
+      <line num="309" type="stmt" count="2"/>
+      <line num="310" type="stmt" count="0"/>
+      <line num="315" type="stmt" count="2"/>
+      <line num="316" type="stmt" count="2"/>
+      <line num="320" type="stmt" count="2"/>
+      <line num="321" type="stmt" count="2"/>
+      <line num="322" type="stmt" count="0"/>
+      <line num="329" type="stmt" count="2"/>
+      <line num="330" type="stmt" count="2"/>
+      <line num="331" type="stmt" count="2"/>
+      <line num="332" type="stmt" count="2"/>
+      <line num="333" type="stmt" count="2"/>
+      <line num="334" type="stmt" count="2"/>
+      <line num="335" type="stmt" count="2"/>
+      <line num="336" type="stmt" count="2"/>
+      <line num="339" type="stmt" count="2"/>
+      <line num="342" type="stmt" count="2"/>
+      <line num="343" type="stmt" count="2"/>
+      <line num="344" type="stmt" count="2"/>
+      <line num="345" type="stmt" count="2"/>
+      <line num="348" type="stmt" count="0"/>
+      <line num="352" type="stmt" count="2"/>
+      <line num="353" type="stmt" count="0"/>
+      <line num="354" type="stmt" count="0"/>
+      <line num="355" type="stmt" count="0"/>
+      <line num="356" type="stmt" count="0"/>
+      <line num="361" type="stmt" count="2"/>
+      <line num="362" type="stmt" count="2"/>
+      <line num="363" type="stmt" count="2"/>
+      <line num="364" type="stmt" count="2"/>
+      <line num="365" type="stmt" count="2"/>
+      <line num="366" type="stmt" count="2"/>
+      <line num="368" type="stmt" count="2"/>
+      <line num="369" type="stmt" count="0"/>
+      <line num="370" type="stmt" count="0"/>
+      <line num="371" type="stmt" count="0"/>
+      <line num="372" type="stmt" count="0"/>
+      <line num="374" type="stmt" count="0"/>
+      <line num="377" type="stmt" count="0"/>
+      <line num="378" type="stmt" count="0"/>
+      <line num="379" type="stmt" count="0"/>
+      <line num="380" type="stmt" count="0"/>
+      <line num="381" type="stmt" count="0"/>
+      <line num="383" type="stmt" count="0"/>
+      <line num="384" type="stmt" count="0"/>
+      <line num="385" type="stmt" count="0"/>
+      <line num="390" type="stmt" count="0"/>
+      <line num="393" type="stmt" count="0"/>
+      <line num="394" type="stmt" count="0"/>
+      <line num="397" type="stmt" count="0"/>
+      <line num="399" type="stmt" count="0"/>
+      <line num="400" type="stmt" count="2"/>
+      <line num="401" type="stmt" count="2"/>
+      <line num="410" type="method" name="getEntriesAction" visibility="public" complexity="13" crap="27.84" count="3"/>
+      <line num="413" type="stmt" count="3"/>
+      <line num="415" type="stmt" count="3"/>
+      <line num="416" type="stmt" count="3"/>
+      <line num="417" type="stmt" count="1"/>
+      <line num="420" type="stmt" count="2"/>
+      <line num="421" type="stmt" count="2"/>
+      <line num="422" type="stmt" count="2"/>
+      <line num="425" type="stmt" count="2"/>
+      <line num="426" type="stmt" count="0"/>
+      <line num="433" type="stmt" count="2"/>
+      <line num="434" type="stmt" count="2"/>
+      <line num="435" type="stmt" count="2"/>
+      <line num="436" type="stmt" count="2"/>
+      <line num="437" type="stmt" count="2"/>
+      <line num="438" type="stmt" count="2"/>
+      <line num="439" type="stmt" count="2"/>
+      <line num="440" type="stmt" count="2"/>
+      <line num="441" type="stmt" count="2"/>
+      <line num="444" type="stmt" count="2"/>
+      <line num="447" type="stmt" count="2"/>
+      <line num="448" type="stmt" count="2"/>
+      <line num="449" type="stmt" count="2"/>
+      <line num="450" type="stmt" count="2"/>
+      <line num="452" type="stmt" count="0"/>
+      <line num="456" type="stmt" count="2"/>
+      <line num="457" type="stmt" count="0"/>
+      <line num="458" type="stmt" count="0"/>
+      <line num="459" type="stmt" count="0"/>
+      <line num="460" type="stmt" count="0"/>
+      <line num="464" type="stmt" count="2"/>
+      <line num="465" type="stmt" count="2"/>
+      <line num="466" type="stmt" count="2"/>
+      <line num="467" type="stmt" count="2"/>
+      <line num="468" type="stmt" count="2"/>
+      <line num="470" type="stmt" count="0"/>
+      <line num="471" type="stmt" count="0"/>
+      <line num="472" type="stmt" count="0"/>
+      <line num="473" type="stmt" count="0"/>
+      <line num="475" type="stmt" count="0"/>
+      <line num="478" type="stmt" count="0"/>
+      <line num="479" type="stmt" count="0"/>
+      <line num="480" type="stmt" count="0"/>
+      <line num="481" type="stmt" count="0"/>
+      <line num="482" type="stmt" count="0"/>
+      <line num="484" type="stmt" count="0"/>
+      <line num="485" type="stmt" count="0"/>
+      <line num="486" type="stmt" count="0"/>
+      <line num="491" type="stmt" count="0"/>
+      <line num="494" type="stmt" count="0"/>
+      <line num="495" type="stmt" count="0"/>
+      <line num="498" type="stmt" count="0"/>
+      <line num="500" type="stmt" count="0"/>
+      <line num="501" type="stmt" count="2"/>
+      <line num="502" type="stmt" count="2"/>
+      <line num="511" type="method" name="createEntryAction" visibility="public" complexity="7" crap="7.02" count="6"/>
+      <line num="513" type="stmt" count="6"/>
+      <line num="515" type="stmt" count="6"/>
+      <line num="516" type="stmt" count="6"/>
+      <line num="517" type="stmt" count="1"/>
+      <line num="520" type="stmt" count="5"/>
+      <line num="521" type="stmt" count="5"/>
+      <line num="522" type="stmt" count="5"/>
+      <line num="525" type="stmt" count="5"/>
+      <line num="526" type="stmt" count="1"/>
+      <line num="530" type="stmt" count="4"/>
+      <line num="532" type="stmt" count="4"/>
+      <line num="533" type="stmt" count="4"/>
+      <line num="534" type="stmt" count="4"/>
+      <line num="535" type="stmt" count="4"/>
+      <line num="536" type="stmt" count="4"/>
+      <line num="538" type="stmt" count="3"/>
+      <line num="540" type="stmt" count="3"/>
+      <line num="541" type="stmt" count="3"/>
+      <line num="542" type="stmt" count="3"/>
+      <line num="543" type="stmt" count="3"/>
+      <line num="544" type="stmt" count="3"/>
+      <line num="547" type="stmt" count="3"/>
+      <line num="548" type="stmt" count="2"/>
+      <line num="549" type="stmt" count="2"/>
+      <line num="550" type="stmt" count="2"/>
+      <line num="552" type="stmt" count="2"/>
+      <line num="553" type="stmt" count="2"/>
+      <line num="554" type="stmt" count="0"/>
+      <line num="555" type="stmt" count="0"/>
+      <line num="557" type="stmt" count="0"/>
+      <line num="561" type="stmt" count="2"/>
+      <line num="562" type="stmt" count="1"/>
+      <line num="563" type="stmt" count="1"/>
+      <line num="564" type="stmt" count="1"/>
+      <line num="565" type="stmt" count="1"/>
+      <line num="568" type="stmt" count="1"/>
+      <line num="569" type="stmt" count="1"/>
+      <line num="572" type="stmt" count="1"/>
+      <line num="573" type="stmt" count="1"/>
+      <line num="574" type="stmt" count="1"/>
+      <line num="575" type="stmt" count="1"/>
+      <line num="578" type="stmt" count="2"/>
+      <line num="579" type="stmt" count="2"/>
+      <line num="580" type="stmt" count="2"/>
+      <line num="591" type="method" name="updateEntryByIdAction" visibility="public" complexity="6" crap="6.02" count="5"/>
+      <line num="593" type="stmt" count="5"/>
+      <line num="595" type="stmt" count="5"/>
+      <line num="596" type="stmt" count="5"/>
+      <line num="597" type="stmt" count="1"/>
+      <line num="600" type="stmt" count="4"/>
+      <line num="601" type="stmt" count="4"/>
+      <line num="602" type="stmt" count="4"/>
+      <line num="605" type="stmt" count="4"/>
+      <line num="606" type="stmt" count="0"/>
+      <line num="610" type="stmt" count="4"/>
+      <line num="611" type="stmt" count="4"/>
+      <line num="612" type="stmt" count="4"/>
+      <line num="613" type="stmt" count="4"/>
+      <line num="614" type="stmt" count="4"/>
+      <line num="615" type="stmt" count="0"/>
+      <line num="616" type="stmt" count="4"/>
+      <line num="618" type="stmt" count="4"/>
+      <line num="621" type="stmt" count="3"/>
+      <line num="622" type="stmt" count="0"/>
+      <line num="623" type="stmt" count="3"/>
+      <line num="624" type="stmt" count="3"/>
+      <line num="626" type="stmt" count="2"/>
+      <line num="628" type="stmt" count="2"/>
+      <line num="629" type="stmt" count="2"/>
+      <line num="630" type="stmt" count="2"/>
+      <line num="631" type="stmt" count="2"/>
+      <line num="632" type="stmt" count="2"/>
+      <line num="633" type="stmt" count="2"/>
+      <line num="636" type="stmt" count="2"/>
+      <line num="637" type="stmt" count="1"/>
+      <line num="638" type="stmt" count="1"/>
+      <line num="639" type="stmt" count="1"/>
+      <line num="640" type="stmt" count="1"/>
+      <line num="646" type="stmt" count="1"/>
+      <line num="649" type="stmt" count="1"/>
+      <line num="650" type="stmt" count="0"/>
+      <line num="653" type="stmt" count="1"/>
+      <line num="654" type="stmt" count="1"/>
+      <line num="655" type="stmt" count="1"/>
+      <line num="656" type="stmt" count="1"/>
+      <line num="657" type="stmt" count="1"/>
+      <line num="658" type="stmt" count="1"/>
+      <line num="664" type="stmt" count="1"/>
+      <line num="667" type="stmt" count="1"/>
+      <line num="668" type="stmt" count="1"/>
+      <line num="669" type="stmt" count="1"/>
+      <line num="670" type="stmt" count="1"/>
+      <line num="673" type="stmt" count="2"/>
+      <line num="674" type="stmt" count="2"/>
+      <line num="675" type="stmt" count="2"/>
+      <line num="688" type="method" name="updateEntryBySlugAction" visibility="public" complexity="6" crap="6.01" count="6"/>
+      <line num="690" type="stmt" count="6"/>
+      <line num="692" type="stmt" count="6"/>
+      <line num="693" type="stmt" count="6"/>
+      <line num="694" type="stmt" count="1"/>
+      <line num="697" type="stmt" count="5"/>
+      <line num="698" type="stmt" count="5"/>
+      <line num="699" type="stmt" count="5"/>
+      <line num="702" type="stmt" count="5"/>
+      <line num="703" type="stmt" count="1"/>
+      <line num="707" type="stmt" count="4"/>
+      <line num="708" type="stmt" count="4"/>
+      <line num="709" type="stmt" count="4"/>
+      <line num="710" type="stmt" count="4"/>
+      <line num="711" type="stmt" count="4"/>
+      <line num="712" type="stmt" count="0"/>
+      <line num="713" type="stmt" count="4"/>
+      <line num="715" type="stmt" count="4"/>
+      <line num="718" type="stmt" count="3"/>
+      <line num="719" type="stmt" count="0"/>
+      <line num="720" type="stmt" count="3"/>
+      <line num="721" type="stmt" count="3"/>
+      <line num="723" type="stmt" count="2"/>
+      <line num="725" type="stmt" count="2"/>
+      <line num="726" type="stmt" count="2"/>
+      <line num="727" type="stmt" count="2"/>
+      <line num="728" type="stmt" count="2"/>
+      <line num="729" type="stmt" count="2"/>
+      <line num="732" type="stmt" count="2"/>
+      <line num="733" type="stmt" count="1"/>
+      <line num="734" type="stmt" count="1"/>
+      <line num="735" type="stmt" count="1"/>
+      <line num="736" type="stmt" count="1"/>
+      <line num="742" type="stmt" count="1"/>
+      <line num="745" type="stmt" count="1"/>
+      <line num="746" type="stmt" count="0"/>
+      <line num="749" type="stmt" count="1"/>
+      <line num="750" type="stmt" count="1"/>
+      <line num="751" type="stmt" count="1"/>
+      <line num="752" type="stmt" count="1"/>
+      <line num="753" type="stmt" count="1"/>
+      <line num="754" type="stmt" count="1"/>
+      <line num="760" type="stmt" count="1"/>
+      <line num="763" type="stmt" count="1"/>
+      <line num="764" type="stmt" count="1"/>
+      <line num="765" type="stmt" count="1"/>
+      <line num="766" type="stmt" count="1"/>
+      <line num="769" type="stmt" count="2"/>
+      <line num="770" type="stmt" count="2"/>
+      <line num="771" type="stmt" count="2"/>
+      <line num="781" type="method" name="deleteEntryByIdAction" visibility="public" complexity="4" crap="4" count="5"/>
+      <line num="783" type="stmt" count="5"/>
+      <line num="785" type="stmt" count="5"/>
+      <line num="786" type="stmt" count="5"/>
+      <line num="787" type="stmt" count="1"/>
+      <line num="790" type="stmt" count="4"/>
+      <line num="791" type="stmt" count="4"/>
+      <line num="792" type="stmt" count="4"/>
+      <line num="796" type="stmt" count="4"/>
+      <line num="797" type="stmt" count="4"/>
+      <line num="798" type="stmt" count="4"/>
+      <line num="799" type="stmt" count="2"/>
+      <line num="800" type="stmt" count="2"/>
+      <line num="801" type="stmt" count="2"/>
+      <line num="802" type="stmt" count="2"/>
+      <line num="803" type="stmt" count="2"/>
+      <line num="804" type="stmt" count="2"/>
+      <line num="805" type="stmt" count="2"/>
+      <line num="807" type="stmt" count="2"/>
+      <line num="808" type="stmt" count="2"/>
+      <line num="809" type="stmt" count="2"/>
+      <line num="811" type="stmt" count="2"/>
+      <line num="812" type="stmt" count="2"/>
+      <line num="813" type="stmt" count="2"/>
+      <line num="823" type="method" name="deleteEntryBySlugAction" visibility="public" complexity="6" crap="6.01" count="5"/>
+      <line num="825" type="stmt" count="5"/>
+      <line num="827" type="stmt" count="5"/>
+      <line num="828" type="stmt" count="5"/>
+      <line num="829" type="stmt" count="1"/>
+      <line num="832" type="stmt" count="4"/>
+      <line num="833" type="stmt" count="4"/>
+      <line num="834" type="stmt" count="4"/>
+      <line num="837" type="stmt" count="4"/>
+      <line num="838" type="stmt" count="0"/>
+      <line num="842" type="stmt" count="4"/>
+      <line num="843" type="stmt" count="4"/>
+      <line num="844" type="stmt" count="4"/>
+      <line num="845" type="stmt" count="2"/>
+      <line num="846" type="stmt" count="2"/>
+      <line num="847" type="stmt" count="2"/>
+      <line num="848" type="stmt" count="2"/>
+      <line num="849" type="stmt" count="2"/>
+      <line num="850" type="stmt" count="2"/>
+      <line num="851" type="stmt" count="2"/>
+      <line num="853" type="stmt" count="2"/>
+      <line num="854" type="stmt" count="2"/>
+      <line num="855" type="stmt" count="2"/>
+      <line num="858" type="stmt" count="2"/>
+      <line num="859" type="stmt" count="0"/>
+      <line num="862" type="stmt" count="2"/>
+      <line num="863" type="stmt" count="2"/>
+      <line num="864" type="stmt" count="2"/>
+      <line num="875" type="method" name="preFlightOptions" visibility="protected" complexity="2" crap="2" count="29"/>
+      <line num="877" type="stmt" count="29"/>
+      <line num="878" type="stmt" count="2"/>
+      <line num="879" type="stmt" count="2"/>
+      <line num="880" type="stmt" count="2"/>
+      <line num="881" type="stmt" count="2"/>
+      <line num="882" type="stmt" count="2"/>
+      <line num="886" type="stmt" count="27"/>
+      <line num="895" type="method" name="save" visibility="private" complexity="1" crap="1" count="6"/>
+      <line num="897" type="stmt" count="6"/>
+      <line num="899" type="stmt" count="6"/>
+      <line num="901" type="stmt" count="6"/>
+      <line num="902" type="stmt" count="5"/>
+      <line num="903" type="stmt" count="5"/>
+      <line num="904" type="stmt" count="5"/>
+      <line num="905" type="stmt" count="5"/>
+      <line num="907" type="stmt" count="5"/>
+      <line num="909" type="stmt" count="5"/>
+      <line num="912" type="method" name="shouldAbort" visibility="protected" complexity="2" crap="2" count="20"/>
+      <line num="914" type="stmt" count="20"/>
+      <line num="915" type="stmt" count="20"/>
+      <line num="916" type="stmt" count="2"/>
+      <line num="917" type="stmt" count="2"/>
+      <line num="919" type="stmt" count="2"/>
+      <line num="922" type="stmt" count="18"/>
+      <line num="929" type="method" name="getFormErrors" visibility="protected" complexity="5" crap="5" count="2"/>
+      <line num="931" type="stmt" count="2"/>
+      <line num="937" type="stmt" count="2"/>
+      <line num="938" type="stmt" count="2"/>
+      <line num="942" type="stmt" count="2"/>
+      <line num="943" type="stmt" count="2"/>
+      <line num="944" type="stmt" count="2"/>
+      <line num="945" type="stmt" count="2"/>
+      <line num="950" type="stmt" count="2"/>
+      <line num="957" type="method" name="putToPost" visibility="protected" complexity="1" crap="1" count="6"/>
+      <line num="959" type="stmt" count="6"/>
+      <line num="960" type="stmt" count="6"/>
+      <line num="961" type="stmt" count="6"/>
+      <line num="963" type="stmt" count="6"/>
+      <line num="964" type="stmt" count="6"/>
+      <line num="971" type="method" name="getDefaultResponseHeaders" visibility="protected" complexity="1" crap="1" count="27"/>
+      <line num="974" type="stmt" count="27"/>
+      <line num="975" type="stmt" count="27"/>
+      <line num="985" type="method" name="errorResponse" visibility="protected" complexity="3" crap="3" count="6"/>
+      <line num="987" type="stmt" count="6"/>
+      <line num="988" type="stmt" count="2"/>
+      <line num="990" type="stmt" count="4"/>
+      <line num="992" type="stmt" count="6"/>
+      <line num="993" type="stmt" count="6"/>
+      <line num="994" type="stmt" count="6"/>
+      <line num="1002" type="method" name="getFields" visibility="protected" complexity="3" crap="3.14" count="11"/>
+      <line num="1004" type="stmt" count="11"/>
+      <line num="1006" type="stmt" count="11"/>
+      <line num="1007" type="stmt" count="0"/>
+      <line num="1010" type="stmt" count="11"/>
+      <line num="1013" type="method" name="purifyResponseData" visibility="protected" complexity="2" crap="2" count="13"/>
+      <line num="1015" type="stmt" count="13"/>
+      <line num="1016" type="stmt" count="13"/>
+      <line num="1017" type="stmt" count="13"/>
+      <line num="1018" type="stmt" count="12"/>
+      <line num="1019" type="stmt" count="13"/>
+      <line num="1021" type="stmt" count="13"/>
+      <metrics loc="1022" ncloc="893" classes="1" methods="19" coveredmethods="10" conditionals="0" coveredconditionals="0" statements="450" coveredstatements="374" elements="469" coveredelements="384"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Api/Controller/RestControllerInterface.php">
+      <metrics loc="16" ncloc="9" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Api/Controller/RestInfoAutoController.php">
+      <class name="Tardigrades\SectionField\Api\Controller\RestInfoAutoController" namespace="global">
+        <metrics complexity="103" methods="12" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="256" coveredstatements="147" elements="268" coveredelements="150"/>
+      </class>
+      <line num="38" type="method" name="getSectionInfoByIdAction" visibility="public" complexity="13" crap="19.84" count="6"/>
+      <line num="42" type="stmt" count="6"/>
+      <line num="44" type="stmt" count="6"/>
+      <line num="45" type="stmt" count="6"/>
+      <line num="46" type="stmt" count="6"/>
+      <line num="49" type="stmt" count="6"/>
+      <line num="50" type="stmt" count="6"/>
+      <line num="51" type="stmt" count="0"/>
+      <line num="52" type="stmt" count="0"/>
+      <line num="54" type="stmt" count="0"/>
+      <line num="58" type="stmt" count="6"/>
+      <line num="59" type="stmt" count="6"/>
+      <line num="60" type="stmt" count="1"/>
+      <line num="64" type="stmt" count="5"/>
+      <line num="65" type="stmt" count="3"/>
+      <line num="70" type="stmt" count="3"/>
+      <line num="71" type="stmt" count="3"/>
+      <line num="72" type="stmt" count="3"/>
+      <line num="73" type="stmt" count="0"/>
+      <line num="75" type="stmt" count="3"/>
+      <line num="76" type="stmt" count="3"/>
+      <line num="81" type="stmt" count="0"/>
+      <line num="85" type="stmt" count="3"/>
+      <line num="86" type="stmt" count="0"/>
+      <line num="87" type="stmt" count="0"/>
+      <line num="88" type="stmt" count="0"/>
+      <line num="89" type="stmt" count="0"/>
+      <line num="94" type="stmt" count="3"/>
+      <line num="95" type="stmt" count="3"/>
+      <line num="98" type="stmt" count="3"/>
+      <line num="101" type="stmt" count="3"/>
+      <line num="102" type="stmt" count="3"/>
+      <line num="104" type="stmt" count="3"/>
+      <line num="106" type="stmt" count="3"/>
+      <line num="109" type="stmt" count="3"/>
+      <line num="110" type="stmt" count="2"/>
+      <line num="111" type="stmt" count="2"/>
+      <line num="114" type="stmt" count="2"/>
+      <line num="117" type="stmt" count="3"/>
+      <line num="121" type="stmt" count="3"/>
+      <line num="122" type="stmt" count="3"/>
+      <line num="123" type="stmt" count="3"/>
+      <line num="125" type="stmt" count="3"/>
+      <line num="126" type="stmt" count="3"/>
+      <line num="127" type="stmt" count="3"/>
+      <line num="128" type="stmt" count="3"/>
+      <line num="131" type="stmt" count="3"/>
+      <line num="133" type="stmt" count="0"/>
+      <line num="134" type="stmt" count="0"/>
+      <line num="135" type="stmt" count="0"/>
+      <line num="136" type="stmt" count="0"/>
+      <line num="138" type="stmt" count="0"/>
+      <line num="139" type="stmt" count="0"/>
+      <line num="140" type="stmt" count="0"/>
+      <line num="141" type="stmt" count="0"/>
+      <line num="142" type="stmt" count="0"/>
+      <line num="145" type="stmt" count="0"/>
+      <line num="146" type="stmt" count="0"/>
+      <line num="147" type="stmt" count="0"/>
+      <line num="148" type="stmt" count="0"/>
+      <line num="150" type="stmt" count="0"/>
+      <line num="155" type="stmt" count="3"/>
+      <line num="156" type="stmt" count="3"/>
+      <line num="157" type="stmt" count="3"/>
+      <line num="160" type="stmt" count="3"/>
+      <line num="162" type="stmt" count="3"/>
+      <line num="163" type="stmt" count="2"/>
+      <line num="164" type="stmt" count="2"/>
+      <line num="177" type="method" name="getSectionInfoBySlugAction" visibility="public" complexity="2" crap="6" count="0"/>
+      <line num="183" type="stmt" count="0"/>
+      <line num="184" type="stmt" count="0"/>
+      <line num="185" type="stmt" count="0"/>
+      <line num="186" type="stmt" count="0"/>
+      <line num="187" type="stmt" count="0"/>
+      <line num="188" type="stmt" count="0"/>
+      <line num="190" type="stmt" count="0"/>
+      <line num="200" type="method" name="handleToPropertyName" visibility="private" complexity="7" crap="21.52" count="4"/>
+      <line num="202" type="stmt" count="4"/>
+      <line num="203" type="stmt" count="4"/>
+      <line num="205" type="stmt" count="0"/>
+      <line num="206" type="stmt" count="0"/>
+      <line num="207" type="stmt" count="0"/>
+      <line num="208" type="stmt" count="0"/>
+      <line num="209" type="stmt" count="0"/>
+      <line num="211" type="stmt" count="0"/>
+      <line num="215" type="stmt" count="4"/>
+      <line num="216" type="stmt" count="0"/>
+      <line num="217" type="stmt" count="0"/>
+      <line num="221" type="stmt" count="4"/>
+      <line num="232" type="method" name="mapEntryToFields" visibility="private" complexity="16" crap="272" count="0"/>
+      <line num="238" type="stmt" count="0"/>
+      <line num="239" type="stmt" count="0"/>
+      <line num="240" type="stmt" count="0"/>
+      <line num="241" type="stmt" count="0"/>
+      <line num="244" type="stmt" count="0"/>
+      <line num="245" type="stmt" count="0"/>
+      <line num="246" type="stmt" count="0"/>
+      <line num="248" type="stmt" count="0"/>
+      <line num="249" type="stmt" count="0"/>
+      <line num="251" type="stmt" count="0"/>
+      <line num="252" type="stmt" count="0"/>
+      <line num="253" type="stmt" count="0"/>
+      <line num="254" type="stmt" count="0"/>
+      <line num="255" type="stmt" count="0"/>
+      <line num="256" type="stmt" count="0"/>
+      <line num="257" type="stmt" count="0"/>
+      <line num="258" type="stmt" count="0"/>
+      <line num="262" type="stmt" count="0"/>
+      <line num="266" type="stmt" count="0"/>
+      <line num="267" type="stmt" count="0"/>
+      <line num="269" type="stmt" count="0"/>
+      <line num="271" type="stmt" count="0"/>
+      <line num="272" type="stmt" count="0"/>
+      <line num="273" type="stmt" count="0"/>
+      <line num="276" type="stmt" count="0"/>
+      <line num="280" type="stmt" count="0"/>
+      <line num="281" type="stmt" count="0"/>
+      <line num="283" type="stmt" count="0"/>
+      <line num="285" type="stmt" count="0"/>
+      <line num="288" type="stmt" count="0"/>
+      <line num="291" type="stmt" count="0"/>
+      <line num="294" type="stmt" count="0"/>
+      <line num="305" type="method" name="orderFields" visibility="private" complexity="11" crap="11.84" count="4"/>
+      <line num="307" type="stmt" count="4"/>
+      <line num="308" type="stmt" count="4"/>
+      <line num="309" type="stmt" count="4"/>
+      <line num="311" type="stmt" count="4"/>
+      <line num="312" type="stmt" count="0"/>
+      <line num="313" type="stmt" count="0"/>
+      <line num="314" type="stmt" count="0"/>
+      <line num="315" type="stmt" count="0"/>
+      <line num="319" type="stmt" count="4"/>
+      <line num="322" type="stmt" count="4"/>
+      <line num="323" type="stmt" count="4"/>
+      <line num="325" type="stmt" count="4"/>
+      <line num="326" type="stmt" count="4"/>
+      <line num="327" type="stmt" count="4"/>
+      <line num="328" type="stmt" count="4"/>
+      <line num="332" type="stmt" count="4"/>
+      <line num="333" type="stmt" count="4"/>
+      <line num="334" type="stmt" count="4"/>
+      <line num="335" type="stmt" count="4"/>
+      <line num="336" type="stmt" count="4"/>
+      <line num="341" type="stmt" count="4"/>
+      <line num="350" type="method" name="cleanFields" visibility="private" complexity="3" crap="3.07" count="4"/>
+      <line num="352" type="stmt" count="4"/>
+      <line num="353" type="stmt" count="4"/>
+      <line num="354" type="stmt" count="0"/>
+      <line num="358" type="stmt" count="4"/>
+      <line num="359" type="stmt" count="4"/>
+      <line num="368" type="method" name="getEntityProperties" visibility="private" complexity="1" crap="1" count="4"/>
+      <line num="370" type="stmt" count="4"/>
+      <line num="371" type="stmt" count="4"/>
+      <line num="373" type="stmt" count="4"/>
+      <line num="386" type="method" name="getRelationshipsTo" visibility="private" complexity="14" crap="14.45" count="2"/>
+      <line num="392" type="stmt" count="2"/>
+      <line num="393" type="stmt" count="2"/>
+      <line num="395" type="stmt" count="2"/>
+      <line num="398" type="stmt" count="2"/>
+      <line num="399" type="stmt" count="2"/>
+      <line num="400" type="stmt" count="2"/>
+      <line num="402" type="stmt" count="2"/>
+      <line num="406" type="stmt" count="2"/>
+      <line num="407" type="stmt" count="2"/>
+      <line num="408" type="stmt" count="2"/>
+      <line num="410" type="stmt" count="0"/>
+      <line num="413" type="stmt" count="2"/>
+      <line num="414" type="stmt" count="2"/>
+      <line num="416" type="stmt" count="1"/>
+      <line num="419" type="stmt" count="1"/>
+      <line num="422" type="stmt" count="1"/>
+      <line num="424" type="stmt" count="1"/>
+      <line num="425" type="stmt" count="1"/>
+      <line num="426" type="stmt" count="1"/>
+      <line num="427" type="stmt" count="1"/>
+      <line num="428" type="stmt" count="1"/>
+      <line num="431" type="stmt" count="1"/>
+      <line num="432" type="stmt" count="1"/>
+      <line num="438" type="stmt" count="1"/>
+      <line num="439" type="stmt" count="1"/>
+      <line num="440" type="stmt" count="1"/>
+      <line num="441" type="stmt" count="1"/>
+      <line num="442" type="stmt" count="1"/>
+      <line num="447" type="stmt" count="1"/>
+      <line num="448" type="stmt" count="0"/>
+      <line num="449" type="stmt" count="0"/>
+      <line num="452" type="stmt" count="1"/>
+      <line num="454" type="stmt" count="1"/>
+      <line num="455" type="stmt" count="1"/>
+      <line num="458" type="stmt" count="2"/>
+      <line num="459" type="stmt" count="0"/>
+      <line num="460" type="stmt" count="0"/>
+      <line num="468" type="stmt" count="2"/>
+      <line num="478" type="method" name="getSexyFieldRelationshipInstructions" visibility="private" complexity="2" crap="2" count="2"/>
+      <line num="480" type="stmt" count="2"/>
+      <line num="481" type="stmt" count="2"/>
+      <line num="492" type="method" name="getRelationshipReadOptions" visibility="private" complexity="21" crap="27.89" count="2"/>
+      <line num="497" type="stmt" count="2"/>
+      <line num="500" type="stmt" count="2"/>
+      <line num="501" type="stmt" count="2"/>
+      <line num="502" type="stmt" count="1"/>
+      <line num="503" type="stmt" count="1"/>
+      <line num="504" type="stmt" count="1"/>
+      <line num="505" type="stmt" count="2"/>
+      <line num="506" type="stmt" count="2"/>
+      <line num="507" type="stmt" count="0"/>
+      <line num="508" type="stmt" count="2"/>
+      <line num="509" type="stmt" count="2"/>
+      <line num="510" type="stmt" count="2"/>
+      <line num="514" type="stmt" count="2"/>
+      <line num="515" type="stmt" count="2"/>
+      <line num="516" type="stmt" count="2"/>
+      <line num="518" type="stmt" count="2"/>
+      <line num="519" type="stmt" count="2"/>
+      <line num="521" type="stmt" count="2"/>
+      <line num="522" type="stmt" count="2"/>
+      <line num="527" type="stmt" count="2"/>
+      <line num="528" type="stmt" count="2"/>
+      <line num="529" type="stmt" count="2"/>
+      <line num="530" type="stmt" count="2"/>
+      <line num="532" type="stmt" count="0"/>
+      <line num="533" type="stmt" count="0"/>
+      <line num="535" type="stmt" count="0"/>
+      <line num="536" type="stmt" count="0"/>
+      <line num="541" type="stmt" count="2"/>
+      <line num="542" type="stmt" count="2"/>
+      <line num="543" type="stmt" count="2"/>
+      <line num="544" type="stmt" count="2"/>
+      <line num="546" type="stmt" count="0"/>
+      <line num="547" type="stmt" count="0"/>
+      <line num="550" type="stmt" count="0"/>
+      <line num="551" type="stmt" count="0"/>
+      <line num="555" type="stmt" count="2"/>
+      <line num="568" type="method" name="setSelectedRelationshipsTo" visibility="private" complexity="9" crap="90" count="0"/>
+      <line num="575" type="stmt" count="0"/>
+      <line num="576" type="stmt" count="0"/>
+      <line num="577" type="stmt" count="0"/>
+      <line num="578" type="stmt" count="0"/>
+      <line num="580" type="stmt" count="0"/>
+      <line num="583" type="stmt" count="0"/>
+      <line num="584" type="stmt" count="0"/>
+      <line num="585" type="stmt" count="0"/>
+      <line num="586" type="stmt" count="0"/>
+      <line num="587" type="stmt" count="0"/>
+      <line num="588" type="stmt" count="0"/>
+      <line num="589" type="stmt" count="0"/>
+      <line num="591" type="stmt" count="0"/>
+      <line num="592" type="stmt" count="0"/>
+      <line num="595" type="stmt" count="0"/>
+      <line num="597" type="stmt" count="0"/>
+      <line num="598" type="stmt" count="0"/>
+      <line num="599" type="stmt" count="0"/>
+      <line num="604" type="stmt" count="0"/>
+      <line num="608" type="stmt" count="0"/>
+      <line num="628" type="method" name="getOptions" visibility="private" complexity="4" crap="4" count="2"/>
+      <line num="630" type="stmt" count="2"/>
+      <line num="632" type="stmt" count="2"/>
+      <line num="633" type="stmt" count="1"/>
+      <line num="636" type="stmt" count="1"/>
+      <line num="637" type="stmt" count="1"/>
+      <line num="638" type="stmt" count="1"/>
+      <line num="639" type="stmt" count="1"/>
+      <line num="640" type="stmt" count="1"/>
+      <line num="641" type="stmt" count="1"/>
+      <line num="642" type="stmt" count="1"/>
+      <line num="643" type="stmt" count="1"/>
+      <line num="644" type="stmt" count="1"/>
+      <line num="648" type="stmt" count="1"/>
+      <metrics loc="650" ncloc="538" classes="1" methods="12" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="256" coveredstatements="147" elements="268" coveredelements="150"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Api/Controller/RestManualController.php">
+      <class name="Tardigrades\SectionField\Api\Controller\RestManualController" namespace="global">
+        <metrics complexity="39" methods="5" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="96" coveredstatements="55" elements="101" coveredelements="55"/>
+      </class>
+      <line num="50" type="method" name="getAction" visibility="public" complexity="12" crap="15.52" count="4"/>
+      <line num="63" type="stmt" count="4"/>
+      <line num="64" type="stmt" count="4"/>
+      <line num="67" type="stmt" count="4"/>
+      <line num="68" type="stmt" count="1"/>
+      <line num="69" type="stmt" count="1"/>
+      <line num="70" type="stmt" count="0"/>
+      <line num="71" type="stmt" count="0"/>
+      <line num="74" type="stmt" count="1"/>
+      <line num="75" type="stmt" count="0"/>
+      <line num="76" type="stmt" count="0"/>
+      <line num="77" type="stmt" count="0"/>
+      <line num="81" type="stmt" count="4"/>
+      <line num="82" type="stmt" count="4"/>
+      <line num="83" type="stmt" count="4"/>
+      <line num="84" type="stmt" count="4"/>
+      <line num="85" type="stmt" count="4"/>
+      <line num="86" type="stmt" count="4"/>
+      <line num="87" type="stmt" count="4"/>
+      <line num="88" type="stmt" count="4"/>
+      <line num="90" type="stmt" count="4"/>
+      <line num="92" type="stmt" count="0"/>
+      <line num="94" type="stmt" count="4"/>
+      <line num="95" type="stmt" count="1"/>
+      <line num="97" type="stmt" count="3"/>
+      <line num="98" type="stmt" count="1"/>
+      <line num="100" type="stmt" count="2"/>
+      <line num="101" type="stmt" count="1"/>
+      <line num="103" type="stmt" count="1"/>
+      <line num="105" type="stmt" count="0"/>
+      <line num="106" type="stmt" count="0"/>
+      <line num="107" type="stmt" count="0"/>
+      <line num="124" type="method" name="postAction" visibility="public" complexity="4" crap="4.77" count="1"/>
+      <line num="129" type="stmt" count="1"/>
+      <line num="130" type="stmt" count="1"/>
+      <line num="131" type="stmt" count="1"/>
+      <line num="132" type="stmt" count="1"/>
+      <line num="133" type="stmt" count="1"/>
+      <line num="135" type="stmt" count="1"/>
+      <line num="137" type="stmt" count="0"/>
+      <line num="139" type="stmt" count="1"/>
+      <line num="141" type="stmt" count="0"/>
+      <line num="142" type="stmt" count="0"/>
+      <line num="143" type="stmt" count="0"/>
+      <line num="162" type="method" name="putAction" visibility="public" complexity="6" crap="7.90" count="2"/>
+      <line num="169" type="stmt" count="2"/>
+      <line num="170" type="stmt" count="2"/>
+      <line num="171" type="stmt" count="2"/>
+      <line num="172" type="stmt" count="2"/>
+      <line num="173" type="stmt" count="2"/>
+      <line num="175" type="stmt" count="2"/>
+      <line num="177" type="stmt" count="0"/>
+      <line num="179" type="stmt" count="2"/>
+      <line num="180" type="stmt" count="1"/>
+      <line num="182" type="stmt" count="1"/>
+      <line num="183" type="stmt" count="1"/>
+      <line num="185" type="stmt" count="0"/>
+      <line num="187" type="stmt" count="0"/>
+      <line num="188" type="stmt" count="0"/>
+      <line num="189" type="stmt" count="0"/>
+      <line num="191" type="stmt" count="0"/>
+      <line num="206" type="method" name="deleteAction" visibility="public" complexity="6" crap="14.39" count="1"/>
+      <line num="211" type="stmt" count="1"/>
+      <line num="212" type="stmt" count="1"/>
+      <line num="213" type="stmt" count="1"/>
+      <line num="215" type="stmt" count="0"/>
+      <line num="217" type="stmt" count="1"/>
+      <line num="218" type="stmt" count="1"/>
+      <line num="220" type="stmt" count="0"/>
+      <line num="221" type="stmt" count="0"/>
+      <line num="223" type="stmt" count="0"/>
+      <line num="225" type="stmt" count="0"/>
+      <line num="226" type="stmt" count="0"/>
+      <line num="227" type="stmt" count="0"/>
+      <line num="229" type="stmt" count="0"/>
+      <line num="254" type="method" name="infoAction" visibility="public" complexity="11" crap="32.25" count="1"/>
+      <line num="262" type="stmt" count="1"/>
+      <line num="263" type="stmt" count="1"/>
+      <line num="266" type="stmt" count="1"/>
+      <line num="267" type="stmt" count="0"/>
+      <line num="268" type="stmt" count="0"/>
+      <line num="269" type="stmt" count="0"/>
+      <line num="270" type="stmt" count="0"/>
+      <line num="273" type="stmt" count="0"/>
+      <line num="274" type="stmt" count="0"/>
+      <line num="275" type="stmt" count="0"/>
+      <line num="276" type="stmt" count="0"/>
+      <line num="280" type="stmt" count="1"/>
+      <line num="281" type="stmt" count="1"/>
+      <line num="282" type="stmt" count="1"/>
+      <line num="283" type="stmt" count="1"/>
+      <line num="285" type="stmt" count="1"/>
+      <line num="287" type="stmt" count="0"/>
+      <line num="289" type="stmt" count="1"/>
+      <line num="290" type="stmt" count="0"/>
+      <line num="292" type="stmt" count="1"/>
+      <line num="293" type="stmt" count="0"/>
+      <line num="295" type="stmt" count="1"/>
+      <line num="297" type="stmt" count="0"/>
+      <line num="298" type="stmt" count="0"/>
+      <line num="299" type="stmt" count="0"/>
+      <metrics loc="302" ncloc="198" classes="1" methods="5" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="96" coveredstatements="55" elements="101" coveredelements="55"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Api/Handler/DateTimeTimezoneHandler.php">
+      <class name="Tardigrades\SectionField\Api\Handler\DateTimeTimezoneHandler" namespace="global">
+        <metrics complexity="2" methods="2" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="3" coveredstatements="0" elements="5" coveredelements="0"/>
+      </class>
+      <line num="31" type="method" name="getSubscribingMethods" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="33" type="stmt" count="0"/>
+      <line num="43" type="method" name="serializeDateTimeToJson" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="45" type="stmt" count="0"/>
+      <line num="46" type="stmt" count="0"/>
+      <metrics loc="48" ncloc="33" classes="1" methods="2" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="3" coveredstatements="0" elements="5" coveredelements="0"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Api/Handler/TriggerHandler.php">
+      <class name="Tardigrades\SectionField\Api\Handler\TriggerHandler" namespace="global">
+        <metrics complexity="4" methods="3" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="9" coveredstatements="6" elements="12" coveredelements="8"/>
+      </class>
+      <line num="28" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="2"/>
+      <line num="30" type="stmt" count="2"/>
+      <line num="31" type="stmt" count="2"/>
+      <line num="33" type="method" name="getSubscribingMethods" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="37" type="stmt" count="0"/>
+      <line num="38" type="stmt" count="0"/>
+      <line num="40" type="stmt" count="0"/>
+      <line num="53" type="method" name="executeTrigger" visibility="public" complexity="2" crap="2" count="2"/>
+      <line num="59" type="stmt" count="2"/>
+      <line num="61" type="stmt" count="2"/>
+      <line num="62" type="stmt" count="1"/>
+      <line num="65" type="stmt" count="1"/>
+      <metrics loc="67" ncloc="51" classes="1" methods="3" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="9" coveredstatements="6" elements="12" coveredelements="8"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Api/Handler/TriggerHandlerException.php">
+      <class name="Tardigrades\SectionField\Api\Handler\TriggerHandlerException" namespace="global">
+        <metrics complexity="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="0" elements="3" coveredelements="0"/>
+      </class>
+      <line num="9" type="method" name="__construct" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="11" type="stmt" count="0"/>
+      <line num="12" type="stmt" count="0"/>
+      <metrics loc="13" ncloc="13" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="0" elements="3" coveredelements="0"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Api/Serializer/DepthExclusionStrategy.php">
+      <class name="Tardigrades\SectionField\Api\Serializer\DepthExclusionStrategy" namespace="global">
+        <metrics complexity="4" methods="4" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="5" coveredstatements="5" elements="9" coveredelements="9"/>
+      </class>
+      <line num="25" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="2"/>
+      <line num="27" type="stmt" count="2"/>
+      <line num="28" type="stmt" count="2"/>
+      <line num="30" type="method" name="shouldSkipClass" visibility="public" complexity="1" crap="1" count="2"/>
+      <line num="32" type="stmt" count="2"/>
+      <line num="35" type="method" name="shouldSkipProperty" visibility="public" complexity="1" crap="1" count="2"/>
+      <line num="37" type="stmt" count="2"/>
+      <line num="40" type="method" name="isTooDeep" visibility="private" complexity="1" crap="1" count="2"/>
+      <line num="42" type="stmt" count="2"/>
+      <metrics loc="44" ncloc="36" classes="1" methods="4" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="5" coveredstatements="5" elements="9" coveredelements="9"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Api/Serializer/FieldsExclusionStrategy.php">
+      <class name="Tardigrades\SectionField\Api\Serializer\FieldsExclusionStrategy" namespace="global">
+        <metrics complexity="5" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="7" coveredstatements="7" elements="10" coveredelements="10"/>
+      </class>
+      <line num="25" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="27" type="stmt" count="1"/>
+      <line num="28" type="stmt" count="1"/>
+      <line num="33" type="method" name="shouldSkipClass" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="35" type="stmt" count="1"/>
+      <line num="41" type="method" name="shouldSkipProperty" visibility="public" complexity="3" crap="3" count="2"/>
+      <line num="43" type="stmt" count="2"/>
+      <line num="44" type="stmt" count="1"/>
+      <line num="47" type="stmt" count="1"/>
+      <line num="49" type="stmt" count="1"/>
+      <metrics loc="51" ncloc="37" classes="1" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="7" coveredstatements="7" elements="10" coveredelements="10"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Api/Serializer/SerializeToArray.php">
+      <class name="Tardigrades\SectionField\Api\Serializer\SerializeToArray" namespace="global">
+        <metrics complexity="11" methods="4" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="29" coveredstatements="0" elements="33" coveredelements="0"/>
+      </class>
+      <line num="42" type="method" name="__construct" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="46" type="stmt" count="0"/>
+      <line num="47" type="stmt" count="0"/>
+      <line num="49" type="stmt" count="0"/>
+      <line num="52" type="method" name="initSerializer" visibility="private" complexity="1" crap="2" count="0"/>
+      <line num="54" type="stmt" count="0"/>
+      <line num="63" type="stmt" count="0"/>
+      <line num="64" type="stmt" count="0"/>
+      <line num="79" type="method" name="toArray" visibility="public" complexity="5" crap="30" count="0"/>
+      <line num="81" type="stmt" count="0"/>
+      <line num="82" type="stmt" count="0"/>
+      <line num="83" type="stmt" count="0"/>
+      <line num="84" type="stmt" count="0"/>
+      <line num="86" type="stmt" count="0"/>
+      <line num="87" type="stmt" count="0"/>
+      <line num="88" type="stmt" count="0"/>
+      <line num="89" type="stmt" count="0"/>
+      <line num="90" type="stmt" count="0"/>
+      <line num="91" type="stmt" count="0"/>
+      <line num="93" type="stmt" count="0"/>
+      <line num="95" type="stmt" count="0"/>
+      <line num="104" type="method" name="getContext" visibility="private" complexity="4" crap="20" count="0"/>
+      <line num="106" type="stmt" count="0"/>
+      <line num="110" type="stmt" count="0"/>
+      <line num="111" type="stmt" count="0"/>
+      <line num="112" type="stmt" count="0"/>
+      <line num="114" type="stmt" count="0"/>
+      <line num="115" type="stmt" count="0"/>
+      <line num="118" type="stmt" count="0"/>
+      <line num="119" type="stmt" count="0"/>
+      <line num="120" type="stmt" count="0"/>
+      <line num="121" type="stmt" count="0"/>
+      <line num="123" type="stmt" count="0"/>
+      <metrics loc="125" ncloc="98" classes="1" methods="4" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="29" coveredstatements="0" elements="33" coveredelements="0"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Api/Serializer/SerializeToArrayInterface.php">
+      <metrics loc="21" ncloc="13" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Api/Utils/AccessControlAllowOrigin.php">
+      <class name="Tardigrades\SectionField\Api\Utils\AccessControlAllowOrigin" namespace="global">
+        <metrics complexity="3" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="7" coveredstatements="0" elements="8" coveredelements="0"/>
+      </class>
+      <line num="12" type="method" name="get" visibility="public" complexity="3" crap="12" count="0"/>
+      <line num="14" type="stmt" count="0"/>
+      <line num="16" type="stmt" count="0"/>
+      <line num="17" type="stmt" count="0"/>
+      <line num="18" type="stmt" count="0"/>
+      <line num="19" type="stmt" count="0"/>
+      <line num="20" type="stmt" count="0"/>
+      <line num="24" type="stmt" count="0"/>
+      <metrics loc="26" ncloc="26" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="7" coveredstatements="0" elements="8" coveredelements="0"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Event/ApiAfterEntriesEvent.php">
+      <class name="Tardigrades\SectionField\Event\ApiAfterEntriesEvent" namespace="global">
+        <metrics complexity="5" methods="5" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="9" coveredstatements="9" elements="14" coveredelements="14"/>
+      </class>
+      <line num="36" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="4"/>
+      <line num="42" type="stmt" count="4"/>
+      <line num="43" type="stmt" count="4"/>
+      <line num="44" type="stmt" count="4"/>
+      <line num="45" type="stmt" count="4"/>
+      <line num="46" type="stmt" count="4"/>
+      <line num="48" type="method" name="getRequest" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="50" type="stmt" count="1"/>
+      <line num="53" type="method" name="getResponseData" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="55" type="stmt" count="1"/>
+      <line num="58" type="method" name="getResponse" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="60" type="stmt" count="1"/>
+      <line num="63" type="method" name="getEntries" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="65" type="stmt" count="1"/>
+      <metrics loc="67" ncloc="55" classes="1" methods="5" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="9" coveredstatements="9" elements="14" coveredelements="14"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Event/ApiAfterEntryEvent.php">
+      <class name="Tardigrades\SectionField\Event\ApiAfterEntryEvent" namespace="global">
+        <metrics complexity="5" methods="5" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="9" coveredstatements="9" elements="14" coveredelements="14"/>
+      </class>
+      <line num="44" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="12"/>
+      <line num="50" type="stmt" count="12"/>
+      <line num="51" type="stmt" count="12"/>
+      <line num="52" type="stmt" count="12"/>
+      <line num="53" type="stmt" count="12"/>
+      <line num="54" type="stmt" count="12"/>
+      <line num="56" type="method" name="getRequest" visibility="public" complexity="1" crap="1" count="4"/>
+      <line num="58" type="stmt" count="4"/>
+      <line num="61" type="method" name="getResponseData" visibility="public" complexity="1" crap="1" count="4"/>
+      <line num="63" type="stmt" count="4"/>
+      <line num="66" type="method" name="getResponse" visibility="public" complexity="1" crap="1" count="4"/>
+      <line num="68" type="stmt" count="4"/>
+      <line num="71" type="method" name="getEntry" visibility="public" complexity="1" crap="1" count="3"/>
+      <line num="73" type="stmt" count="3"/>
+      <metrics loc="75" ncloc="56" classes="1" methods="5" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="9" coveredstatements="9" elements="14" coveredelements="14"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Event/ApiBeforeEntryEvent.php">
+      <class name="Tardigrades\SectionField\Event\ApiBeforeEntryEvent" namespace="global">
+        <metrics complexity="3" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="5" coveredstatements="5" elements="8" coveredelements="8"/>
+      </class>
+      <line num="36" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="8"/>
+      <line num="38" type="stmt" count="8"/>
+      <line num="40" type="stmt" count="8"/>
+      <line num="41" type="stmt" count="8"/>
+      <line num="43" type="method" name="getRequest" visibility="public" complexity="1" crap="1" count="4"/>
+      <line num="45" type="stmt" count="4"/>
+      <line num="48" type="method" name="getSectionHandle" visibility="public" complexity="1" crap="1" count="4"/>
+      <line num="50" type="stmt" count="4"/>
+      <metrics loc="52" ncloc="35" classes="1" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="5" coveredstatements="5" elements="8" coveredelements="8"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Event/ApiBeforeEntrySavedAfterValidated.php">
+      <class name="Tardigrades\SectionField\Event\ApiBeforeEntrySavedAfterValidated" namespace="global">
+        <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+      </class>
+      <metrics loc="19" ncloc="11" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Event/ApiBeforeEntryUpdatedAfterValidated.php">
+      <class name="Tardigrades\SectionField\Event\ApiBeforeEntryUpdatedAfterValidated" namespace="global">
+        <metrics complexity="3" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="5" coveredstatements="5" elements="8" coveredelements="8"/>
+      </class>
+      <line num="27" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="5"/>
+      <line num="34" type="stmt" count="5"/>
+      <line num="35" type="stmt" count="5"/>
+      <line num="36" type="stmt" count="5"/>
+      <line num="38" type="method" name="getOriginalEntry" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="40" type="stmt" count="1"/>
+      <line num="43" type="method" name="getNewEntry" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="45" type="stmt" count="1"/>
+      <metrics loc="47" ncloc="38" classes="1" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="5" coveredstatements="5" elements="8" coveredelements="8"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Event/ApiCreateEntry.php">
+      <class name="Tardigrades\SectionField\Event\ApiCreateEntry" namespace="global">
+        <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+      </class>
+      <metrics loc="27" ncloc="11" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Event/ApiCreateEntryValidEvent.php">
+      <class name="Tardigrades\SectionField\Event\ApiCreateEntryValidEvent" namespace="global">
+        <metrics complexity="5" methods="5" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="9" coveredstatements="9" elements="14" coveredelements="14"/>
+      </class>
+      <line num="44" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="4"/>
+      <line num="50" type="stmt" count="4"/>
+      <line num="51" type="stmt" count="4"/>
+      <line num="52" type="stmt" count="4"/>
+      <line num="53" type="stmt" count="4"/>
+      <line num="54" type="stmt" count="4"/>
+      <line num="56" type="method" name="getRequest" visibility="public" complexity="1" crap="1" count="2"/>
+      <line num="58" type="stmt" count="2"/>
+      <line num="61" type="method" name="getResponseData" visibility="public" complexity="1" crap="1" count="2"/>
+      <line num="63" type="stmt" count="2"/>
+      <line num="66" type="method" name="getResponse" visibility="public" complexity="1" crap="1" count="2"/>
+      <line num="68" type="stmt" count="2"/>
+      <line num="71" type="method" name="getEntry" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="73" type="stmt" count="1"/>
+      <metrics loc="75" ncloc="56" classes="1" methods="5" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="9" coveredstatements="9" elements="14" coveredelements="14"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Event/ApiDeleteEntry.php">
+      <class name="Tardigrades\SectionField\Event\ApiDeleteEntry" namespace="global">
+        <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+      </class>
+      <metrics loc="26" ncloc="11" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Event/ApiEntriesFetched.php">
+      <class name="Tardigrades\SectionField\Event\ApiEntriesFetched" namespace="global">
+        <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+      </class>
+      <metrics loc="26" ncloc="11" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Event/ApiEntryCreated.php">
+      <class name="Tardigrades\SectionField\Event\ApiEntryCreated" namespace="global">
+        <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+      </class>
+      <metrics loc="27" ncloc="11" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Event/ApiEntryDeleted.php">
+      <class name="Tardigrades\SectionField\Event\ApiEntryDeleted" namespace="global">
+        <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+      </class>
+      <metrics loc="26" ncloc="11" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Event/ApiEntryFetched.php">
+      <class name="Tardigrades\SectionField\Event\ApiEntryFetched" namespace="global">
+        <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+      </class>
+      <metrics loc="26" ncloc="11" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Event/ApiEntryUpdated.php">
+      <class name="Tardigrades\SectionField\Event\ApiEntryUpdated" namespace="global">
+        <metrics complexity="3" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="5" coveredstatements="5" elements="8" coveredelements="8"/>
+      </class>
+      <line num="34" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="5"/>
+      <line num="41" type="stmt" count="5"/>
+      <line num="42" type="stmt" count="5"/>
+      <line num="43" type="stmt" count="5"/>
+      <line num="48" type="method" name="getOriginalEntry" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="50" type="stmt" count="1"/>
+      <line num="56" type="method" name="getNewEntry" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="58" type="stmt" count="1"/>
+      <metrics loc="60" ncloc="38" classes="1" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="5" coveredstatements="5" elements="8" coveredelements="8"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Event/ApiFetchEntries.php">
+      <class name="Tardigrades\SectionField\Event\ApiFetchEntries" namespace="global">
+        <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+      </class>
+      <metrics loc="25" ncloc="11" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Event/ApiFetchEntry.php">
+      <class name="Tardigrades\SectionField\Event\ApiFetchEntry" namespace="global">
+        <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+      </class>
+      <metrics loc="25" ncloc="11" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Event/ApiFetchSectionInfo.php">
+      <class name="Tardigrades\SectionField\Event\ApiFetchSectionInfo" namespace="global">
+        <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+      </class>
+      <metrics loc="25" ncloc="11" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Event/ApiSectionInfoFetched.php">
+      <class name="Tardigrades\SectionField\Event\ApiSectionInfoFetched" namespace="global">
+        <metrics complexity="6" methods="6" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="11" coveredstatements="8" elements="17" coveredelements="12"/>
+      </class>
+      <line num="43" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="3"/>
+      <line num="49" type="stmt" count="3"/>
+      <line num="50" type="stmt" count="3"/>
+      <line num="51" type="stmt" count="3"/>
+      <line num="52" type="stmt" count="3"/>
+      <line num="53" type="stmt" count="3"/>
+      <line num="55" type="method" name="getRequest" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="57" type="stmt" count="1"/>
+      <line num="60" type="method" name="setResponseData" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="62" type="stmt" count="0"/>
+      <line num="63" type="stmt" count="0"/>
+      <line num="65" type="method" name="getResponseData" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="67" type="stmt" count="1"/>
+      <line num="70" type="method" name="getResponse" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="72" type="stmt" count="1"/>
+      <line num="75" type="method" name="getSectionHandle" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="77" type="stmt" count="0"/>
+      <metrics loc="79" ncloc="60" classes="1" methods="6" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="11" coveredstatements="8" elements="17" coveredelements="12"/>
+    </file>
+    <file name="/Users/Dion/www/sexy-field/sexy-field-api/src/SectionField/Event/ApiUpdateEntry.php">
+      <class name="Tardigrades\SectionField\Event\ApiUpdateEntry" namespace="global">
+        <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+      </class>
+      <metrics loc="26" ncloc="11" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+    </file>
+    <metrics files="31" loc="3142" ncloc="2428" classes="18" methods="85" coveredmethods="51" conditionals="0" coveredconditionals="0" statements="923" coveredstatements="650" elements="1008" coveredelements="701"/>
+  </project>
+</coverage>

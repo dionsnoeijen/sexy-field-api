@@ -31,7 +31,7 @@ final class ApiEntriesFetchedTest extends TestCase
     /** @var JsonResponse */
     private $jsonResponse;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->request = new Request();
         $this->responseData = [];
