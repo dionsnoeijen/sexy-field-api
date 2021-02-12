@@ -13,10 +13,10 @@
   "require": {
     "php": "^7.2",
     "ext-json": "*",
-    "symfony/http-foundation": "^4",
-    "symfony/form": "^4",
-    "symfony/config": "^4",
-    "symfony/dependency-injection": "^4",
+    "symfony/http-foundation": "^5",
+    "symfony/form": "^5",
+    "symfony/config": "^5",
+    "symfony/dependency-injection": "^5",
     "jms/serializer": "^3.4"
   },
   "autoload": {
@@ -36,11 +36,11 @@
     "tardigrades/sexy-field-form": "The api requires you to use form"
   },
   "require-dev": {
-    "tardigrades/sexy-field": "dev-master",
-    "tardigrades/sexy-field-entity": "dev-master",
-    "tardigrades/sexy-field-doctrine": "dev-master",
-    "tardigrades/sexy-field-form": "dev-master",
-    "tardigrades/sexy-field-field-types-base": "dev-master",
+    "tardigrades/sexy-field": "dev-sym5",
+    "tardigrades/sexy-field-entity": "dev-sym5",
+    "tardigrades/sexy-field-doctrine": "dev-sym5",
+    "tardigrades/sexy-field-form": "dev-sym5",
+    "tardigrades/sexy-field-field-types-base": "dev-sym5",
     "phpunit/phpunit": "^7.0",
     "mockery/mockery": "^1.0",
     "mikey179/vfsstream": "^1.6",
