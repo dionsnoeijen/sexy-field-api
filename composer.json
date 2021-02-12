@@ -17,7 +17,9 @@
     "symfony/form": "^5",
     "symfony/config": "^5",
     "symfony/dependency-injection": "^5",
-    "jms/serializer": "^3.4"
+    "jms/serializer": "^3.4",
+    "symfony/security-core": "^5.2",
+    "ezyang/htmlpurifier": "^4.13"
   },
   "autoload": {
     "psr-4": {
