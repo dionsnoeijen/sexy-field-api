@@ -465,6 +465,9 @@ class RestInfoAutoController extends RestAutoController implements RestControlle
             }
         }
 
+        // Make sure it's always returning array values
+        $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']] = array_values($fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']]);
+
         return $fieldInfo;
     }
 
