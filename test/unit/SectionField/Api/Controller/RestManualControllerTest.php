@@ -424,6 +424,7 @@ class RestManualControllerTest extends TestCase
 
         $form->shouldReceive('getName')->once();
         $form->shouldReceive('submit')->once();
+        $form->shouldReceive('isSubmitted')->andReturn(true);
         $form->shouldReceive('isValid')->once()->andReturn(true);
         $form->shouldReceive('getData')->times(3)->andReturn($entry);
 
@@ -482,6 +483,7 @@ class RestManualControllerTest extends TestCase
 
         $form->shouldReceive('getName')->once();
         $form->shouldReceive('submit')->once();
+        $form->shouldReceive('isSubmitted')->andReturn(true);
         $form->shouldReceive('isValid')->once()->andReturn(true);
         $form->shouldReceive('getData')->times(2)->andReturn($entry);
 
@@ -537,6 +539,7 @@ class RestManualControllerTest extends TestCase
 
         $form->shouldReceive('getName')->once();
         $form->shouldReceive('submit')->once();
+        $form->shouldReceive('isSubmitted')->andReturn(true);
         $form->shouldReceive('isValid')->once()->andReturn(true);
         $form->shouldReceive('getData')->times(2)->andReturn($entry);
 
