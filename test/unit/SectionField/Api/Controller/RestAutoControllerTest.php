@@ -674,6 +674,8 @@ class RestAutoControllerTest extends TestCase
 
         $mockedForm->shouldReceive('submit')->once();
         $mockedForm->shouldReceive('getName')->once()->andReturn('form');
+        $mockedForm->shouldReceive('isSubmitted')
+            ->andReturn(true);
         $mockedForm->shouldReceive('isValid')
             ->andReturn(true);
         $mockedForm->shouldReceive('getData')
@@ -758,6 +760,7 @@ class RestAutoControllerTest extends TestCase
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->makePartial();
 
         $mockedForm->shouldReceive('submit')->once();
+        $mockedForm->shouldReceive('isSubmitted')->andReturn(true);
         $mockedForm->shouldReceive('getName')->once()->andReturn('form');
         $mockedForm->shouldReceive('isValid')->andReturn(true);
         $mockedForm->shouldReceive('getData')
@@ -798,6 +801,7 @@ class RestAutoControllerTest extends TestCase
 
         $mockedForm->shouldReceive('submit')->once();
         $mockedForm->shouldReceive('getName')->once()->andReturn('form');
+        $mockedForm->shouldReceive('isSubmitted')->andReturn(true);
         $mockedForm->shouldReceive('isValid')->andReturn(false);
         $mockedForm->shouldReceive('getName')->andReturn('name of form');
         $mockedForm->shouldReceive('getIterator')->andReturn(new \ArrayIterator([$mockedForm]));
@@ -909,6 +913,7 @@ class RestAutoControllerTest extends TestCase
 
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->makePartial();
         $mockedForm->shouldReceive('submit')->twice();
+        $mockedForm->shouldReceive('isSubmitted')->andReturn(true);
         $mockedForm->shouldReceive('getName')->twice()->andReturn('form');
         $mockedForm->shouldReceive('isValid')->andReturn(true);
         $mockedForm->shouldReceive('getData')
@@ -947,6 +952,7 @@ class RestAutoControllerTest extends TestCase
         $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
 
         $mockedForm->shouldReceive('handleRequest')->never();
+        $mockedForm->shouldReceive('isSubmitted')->andReturn(true);
         $mockedForm->shouldReceive('isValid')->andReturn(false);
         $mockedForm->shouldReceive('getName')->andReturn('name of form');
         $mockedForm->shouldReceive('getIterator')->andReturn(new \ArrayIterator([$mockedForm]));

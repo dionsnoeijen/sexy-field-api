@@ -2,3 +2,5 @@ language: php
 php:
   - '7.4'
 install: composer install
+before_script: echo 'xdebug.mode=coverage' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
+
