@@ -803,7 +803,6 @@ class RestAutoControllerTest extends TestCase
         $mockedForm->shouldReceive('getName')->once()->andReturn('form');
         $mockedForm->shouldReceive('isSubmitted')->andReturn(true);
         $mockedForm->shouldReceive('isValid')->andReturn(false);
-        $mockedForm->shouldReceive('getName')->andReturn('name of form');
         $mockedForm->shouldReceive('getIterator')->andReturn(new \ArrayIterator([$mockedForm]));
 
         $error = Mockery::mock(FormError::class)->makePartial();
