@@ -82,7 +82,7 @@ class RestInfoAutoControllerTest extends TestCase
     /** @var RestInfoAutoController */
     private $controller;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->readSection = Mockery::mock(ReadSectionInterface::class);
         $this->requestStack = Mockery::mock(RequestStack::class);

@@ -21,7 +21,7 @@ final class ApiUpdateEntryTest extends TestCase
     /** @var string */
     private $handle;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->request = new Request();
         $this->handle = 'someHandle';

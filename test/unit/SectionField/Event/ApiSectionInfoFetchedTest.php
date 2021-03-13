@@ -31,7 +31,7 @@ final class ApiSectionInfoFetchedTest extends TestCase
     /** @var string */
     private $sectionHandle;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->request = new Request();
         $this->responseData = [];

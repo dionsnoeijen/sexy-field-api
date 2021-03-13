@@ -68,8 +68,7 @@ class RestAutoController implements RestControllerInterface
     /** @var EventDispatcherInterface */
     protected $dispatcher;
 
-    /** @var SerializeToArrayInterface */
-    protected $serialize;
+    protected SerializeToArrayInterface $serialize;
 
     /** @var CacheInterface */
     protected $cache;

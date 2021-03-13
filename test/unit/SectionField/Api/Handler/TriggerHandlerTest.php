@@ -31,7 +31,7 @@ final class TriggerHandlerTest extends TestCase
     /** @var TriggerHandler */
     private $triggerHandler;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->container = m::mock(ContainerInterface::class);
         $this->triggerHandler = new TriggerHandler($this->container);

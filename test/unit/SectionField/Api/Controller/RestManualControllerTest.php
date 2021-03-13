@@ -81,7 +81,7 @@ class RestManualControllerTest extends TestCase
     /** @var RestManualController */
     private $controller;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->readSection = Mockery::mock(ReadSectionInterface::class);
         $this->requestStack = Mockery::mock(RequestStack::class);
@@ -422,7 +422,7 @@ class RestManualControllerTest extends TestCase
 
         $entry = new SomeCommonSectionEntity();
 
-        $form->shouldReceive('getName')->once();
+        $form->shouldReceive('getName')->once()->andReturn('form');
         $form->shouldReceive('submit')->once();
         $form->shouldReceive('isSubmitted')->andReturn(true);
         $form->shouldReceive('isValid')->once()->andReturn(true);
@@ -481,7 +481,7 @@ class RestManualControllerTest extends TestCase
             }))
             ->andReturn(new \ArrayIterator([ $entry ]));
 
-        $form->shouldReceive('getName')->once();
+        $form->shouldReceive('getName')->once()->andReturn('form');
         $form->shouldReceive('submit')->once();
         $form->shouldReceive('isSubmitted')->andReturn(true);
         $form->shouldReceive('isValid')->once()->andReturn(true);
@@ -537,7 +537,7 @@ class RestManualControllerTest extends TestCase
             }))
             ->andReturn(new \ArrayIterator([ $entry ]));
 
-        $form->shouldReceive('getName')->once();
+        $form->shouldReceive('getName')->once()->andReturn('form');
         $form->shouldReceive('submit')->once();
         $form->shouldReceive('isSubmitted')->andReturn(true);
         $form->shouldReceive('isValid')->once()->andReturn(true);
