@@ -84,7 +84,7 @@ class RestAutoControllerTest extends TestCase
     /** @var RestAutoController */
     private $controller;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->readSection = Mockery::mock(ReadSectionInterface::class);
         $this->requestStack = Mockery::mock(RequestStack::class);
@@ -670,10 +670,10 @@ class RestAutoControllerTest extends TestCase
 
         $entryMock = Mockery::mock(CommonSectionInterface::class);
 
-        $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
+        $mockedForm = Mockery::mock(SymfonyFormInterface::class)->makePartial();
 
         $mockedForm->shouldReceive('submit')->once();
-        $mockedForm->shouldReceive('getName')->once();
+        $mockedForm->shouldReceive('getName')->once()->andReturn('form');
         $mockedForm->shouldReceive('isSubmitted')
             ->andReturn(true);
         $mockedForm->shouldReceive('isValid')
@@ -757,11 +757,11 @@ class RestAutoControllerTest extends TestCase
 
         $entryMock = Mockery::mock(CommonSectionInterface::class);
 
-        $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
+        $mockedForm = Mockery::mock(SymfonyFormInterface::class)->makePartial();
 
         $mockedForm->shouldReceive('submit')->once();
-        $mockedForm->shouldReceive('getName')->once();
         $mockedForm->shouldReceive('isSubmitted')->andReturn(true);
+        $mockedForm->shouldReceive('getName')->once()->andReturn('form');
         $mockedForm->shouldReceive('isValid')->andReturn(true);
         $mockedForm->shouldReceive('getData')
             ->andReturn($entryMock);
@@ -797,13 +797,12 @@ class RestAutoControllerTest extends TestCase
      */
     public function it_does_not_create_an_entry_and_returns_correct_response()
     {
-        $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
+        $mockedForm = Mockery::mock(SymfonyFormInterface::class)->makePartial();
 
         $mockedForm->shouldReceive('submit')->once();
-        $mockedForm->shouldReceive('getName')->once();
+        $mockedForm->shouldReceive('getName')->once()->andReturn('form');
         $mockedForm->shouldReceive('isSubmitted')->andReturn(true);
         $mockedForm->shouldReceive('isValid')->andReturn(false);
-        $mockedForm->shouldReceive('getName')->andReturn('name of form');
         $mockedForm->shouldReceive('getIterator')->andReturn(new \ArrayIterator([$mockedForm]));
 
         $error = Mockery::mock(FormError::class)->makePartial();
@@ -911,10 +910,10 @@ class RestAutoControllerTest extends TestCase
             ]);
 
 
-        $mockedForm = Mockery::mock(SymfonyFormInterface::class)->shouldDeferMissing();
+        $mockedForm = Mockery::mock(SymfonyFormInterface::class)->makePartial();
         $mockedForm->shouldReceive('submit')->twice();
-        $mockedForm->shouldReceive('getName')->twice();
         $mockedForm->shouldReceive('isSubmitted')->andReturn(true);
+        $mockedForm->shouldReceive('getName')->twice()->andReturn('form');
         $mockedForm->shouldReceive('isValid')->andReturn(true);
         $mockedForm->shouldReceive('getData')
             ->andReturn($newEntryMock);

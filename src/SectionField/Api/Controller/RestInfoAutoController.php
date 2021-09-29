@@ -107,20 +107,12 @@ class RestInfoAutoController extends RestAutoController implements RestControlle
 
                     // If we have a relationship field, get the entries
                     if ((string) $field->getFieldType()->getFullyQualifiedClassName() === Relationship::class) {
-                        if (empty($fieldInfo[$fieldHandle]) ||
-                            empty($fieldInfo[$fieldHandle]['form']) ||
-                            empty($fieldInfo[$fieldHandle]['form']['sexy-field-instructions']) ||
-                            empty($fieldInfo[$fieldHandle]['form']['sexy-field-instructions']['section-info']) ||
-                            !isset($fieldInfo[$fieldHandle]['form']['sexy-field-instructions']['section-info']['data']) ||
-                            $fieldInfo[$fieldHandle]['form']['sexy-field-instructions']['section-info']['data'] === true
-                        ) {
-                            $fieldInfo = $this->getRelationshipsTo(
-                                $fieldHandle,
-                                $fieldInfo,
-                                $sectionHandle,
-                                (int) $id
-                            );
-                        }
+                        $fieldInfo = $this->getRelationshipsTo(
+                            $fieldHandle,
+                            $fieldInfo,
+                            $sectionHandle,
+                            (int) $id
+                        );
                     }
                     $responseData['fields'][] = $fieldInfo;
                 }
@@ -472,9 +464,6 @@ class RestInfoAutoController extends RestAutoController implements RestControlle
                 );
             }
         }
-
-        // Make sure it's always returning array values
-        $fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']] = array_values($fieldInfo[$fieldHandle][$fieldInfo[$fieldHandle]['to']]);
 
         return $fieldInfo;
     }

@@ -544,7 +544,7 @@ class RestAutoController implements RestControllerInterface
                 $this->getDefaultResponseHeaders($request)
             );
 
-            if ($form->isSubmitted() && $form->isValid()) {
+            if ($form->isValid()) {
                 $this->dispatcher->dispatch(
                     new ApiBeforeEntrySavedAfterValidated($request, $responseData, $jsonResponse, $form->getData()),
                     ApiBeforeEntrySavedAfterValidated::NAME
@@ -633,7 +633,7 @@ class RestAutoController implements RestControllerInterface
                 $this->getDefaultResponseHeaders($request)
             );
 
-            if ($form->isSubmitted() && $form->isValid()) {
+            if ($form->isValid()) {
                 $newEntry = $form->getData();
                 $this->dispatcher->dispatch(
                     new ApiBeforeEntryUpdatedAfterValidated(
@@ -729,7 +729,7 @@ class RestAutoController implements RestControllerInterface
                 $this->getDefaultResponseHeaders($request)
             );
 
-            if ($form->isSubmitted() && $form->isValid()) {
+            if ($form->isValid()) {
                 $newEntry = $form->getData();
                 $this->dispatcher->dispatch(
                     new ApiBeforeEntryUpdatedAfterValidated(
@@ -940,7 +940,7 @@ class RestAutoController implements RestControllerInterface
 
         /** @var SymfonyFormInterface $child */
         foreach ($form as $child) {
-            if ($child->isSubmitted() && !$child->isValid()) {
+            if (!$child->isValid()) {
                 foreach ($child->getErrors() as $error) {
                     $errors[$child->getName()][] = $error->getMessage();
                 }
